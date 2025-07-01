@@ -1,0 +1,45 @@
+jenkins:
+  systemMessage: "Controlled by Configuration as Code"
+  numExecutors: 1
+  quietPeriod: 0
+
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: true
+
+unclassified:
+  globalLibraries:
+    libraries:
+    - name: "ceph-qe-libs"
+      defaultVersion: "main"
+      retriever:
+        modernSCM:
+          scm:
+            git:
+              remote: "https://github.ibm.com/ceph-qe-ng/ceph-qe-jenkins.git"
+
+  mailer:
+    charset: "UTF-8"
+    defaultSuffix: "@ibm.com"
+    smtpHost: "smtp.corp.ibm.com"
+    useSsl: false
+
+  location:
+    adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
+
+  shell:
+    shell: "bash"
+
+  scmGit:
+    globalConfigEmail: "ceph-qe-sa@ibm.com"
+    globalConfigName: "ceph-qe-sa"
+
+  email-ext:
+    mailAccount:
+      smtpHost: "smtp.corp.ibm.com"
+
+configuration-as-code:
+  deprecated: warn
+
+jobs:
+  - url: "https://github.ibm.com/ceph-qe-ng/ceph-qe-jenkins/-/raw/main/jobs/main_seed_job.groovy"
