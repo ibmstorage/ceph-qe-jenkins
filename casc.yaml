@@ -7,6 +7,14 @@ jenkins:
     standard:
       excludeClientIPFromCrumb: true
 
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "rhcs-user"
+          name: "RedHat Ceph Storage User"
+          password: "1Admin@123"
+
 unclassified:
   globalLibraries:
     libraries:
@@ -42,4 +50,4 @@ configuration-as-code:
   deprecated: warn
 
 jobs:
-  - url: "https://github.ibm.com/ceph-qe-ng/ceph-qe-jenkins/-/raw/main/jobs/main_seed_job.groovy"
+  - job: /var/jenkins_home/jobs/seed-job/main_seed_job.groovy
