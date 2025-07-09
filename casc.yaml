@@ -7,14 +7,6 @@ jenkins:
     standard:
       excludeClientIPFromCrumb: true
 
-  securityRealm:
-    local:
-      allowsSignup: false
-      users:
-        - id: "rhcs-user"
-          name: "RedHat Ceph Storage User"
-          password: "1Admin@123"
-
 unclassified:
   globalLibraries:
     libraries:
