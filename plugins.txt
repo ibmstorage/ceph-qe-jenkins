@@ -1,0 +1,12 @@
+job-dsl
+pipeline-utility-steps
+workflow-aggregator
+workflow-basic-steps
+ssh-agent
+antisamy-markup-formatter
+ws-cleanup
+conditional-buildstep
+extra-columns
+progress-bar-column-plugin
+blueocean
+email-ext
