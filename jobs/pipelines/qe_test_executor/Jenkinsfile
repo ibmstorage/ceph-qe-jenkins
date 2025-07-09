@@ -1,0 +1,56 @@
+pipeline {
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "7"))
+    }
+    
+    stages {
+        stage("Validate") {
+            steps {
+                script {
+                    // This is where you can validate the parameters passed to the pipeline
+                    echo "Validating parameters..."
+                    // Example: if (!params.CLOUD_TYPE) { error "CLOUD_TYPE is required" }
+                    if (!params.CLOUD_TYPE) {
+                        error "CLOUD_TYPE is required"
+                    }
+                    echo "Parameters validated successfully."
+                }
+            }
+        }
+
+        stage("Setup") {
+            steps {
+                script {
+                    // This is where you can set up the environment, e.g., cloning repositories, setting up configurations
+                    echo "Setting up the environment..."
+                    // Example: sh 'git clone
+                }
+            }
+        }
+
+        stage("Execute") {
+            steps {
+                script {
+                    // This is where the main test execution logic will go
+                    echo "Executing tests..."
+                    // Example: sh 'run_tests.sh'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Always run this block
+                echo "This will always run, regardless of the build result."
+            }
+        }
+        cleanup {
+            script {
+                // Cleanup configs generated
+                echo "Cleaning up configs ..."
+            }
+        }
+    }
+}
