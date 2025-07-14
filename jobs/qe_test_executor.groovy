@@ -57,7 +57,8 @@ for (jobConfig in jobsConfiguration) {
                 scm {
                     git {
                         remote {
-                            url("https://gitlab.cee.redhat.com/rhcs-qe/cephqe-jenkins.git")
+                            url("git@github.ibm.com:ceph-qe-ng/ceph-qe-jenkins.git")
+                            credentials("jenkins-agent-ssh")
                         }
 
                         branch("*/main")
