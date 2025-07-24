@@ -88,7 +88,7 @@ for (jobConfig in jobsConfiguration) {
                 booleanParam("CAPTURE_CEPH_LOGS", false, "Capture ceph logs")
                 booleanParam("SKIP_SOS_REPORT", false, "Capture SOS report")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
-                choiceParam("CLOUD_TYPE", jobConfig.cloud_type, "Cloud Platform to execute Tests")
+                stringParam("CLOUD_TYPE", jobConfig.cloud_type, "Cloud Platform to execute Tests")
                 choiceParam("OSP_CRED", jobConfig.ospCreds, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "", "Email Address")
             }

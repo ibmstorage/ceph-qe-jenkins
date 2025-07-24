@@ -1,7 +1,9 @@
 package io.jenkins.plugins.casc
 
-job('seed') {
+def job = job('seed') {
     displayName('Ceph Qe Infra: Main Seed Job for DSL Jobs and Views')
+    label ("agents")
+
     wrappers {
         preBuildCleanup()
     }
@@ -21,7 +23,7 @@ job('seed') {
             remote {
                 name('origin')
                 url('${JOBS_REPOSITORY}')
-                credentials('ghiPAT')
+                credentials('ceph-qe-sa-pat')
             }
         }
     }
@@ -64,4 +66,10 @@ job('seed') {
             }
         }
     }
+}
+
+// This accepts changes in the script approval section of 'Manage Jenkins'.  You may or may not want this.
+org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval.get().with { approval ->
+    approval.preapproveAll()
+    approval.save()
 }

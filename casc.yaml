@@ -54,7 +54,6 @@ jenkins:
             sshHostKeyVerificationStrategy:
               manuallyTrustedKeyVerificationStrategy:
                 requireInitialManualTrust: false
-        mode: EXCLUSIVE
         name: "agent-vm-01"
         nodeDescription: "Workflow executor"
         numExecutors: 5
@@ -73,7 +72,6 @@ jenkins:
             sshHostKeyVerificationStrategy:
               manuallyTrustedKeyVerificationStrategy:
                 requireInitialManualTrust: false
-        mode: EXCLUSIVE
         name: "agent-vm-02"
         nodeDescription: "Workflow executor"
         numExecutors: 5
@@ -91,19 +89,20 @@ credentials:
       - credentials:
           - vaultTokenCredential:
               description: "Secrets Manager Vault Token"
-              id: SMAccessToken
+              id: "SMAccessToken"
               scope: GLOBAL
               token: "some dummy value. Needs to be dynamic"
+          - usernamePassword:
+              description: "Github IBM ceph-qe-sa PAT"
+              id: "ceph-qe-sa-pat"
+              scope: GLOBAL
+              username: "ceph-qe-sa@ibm.com"
+              password: "${GHI-PAT}"
           - string:
               description: "IBM Cloud SecretsManager Reader API Key"
-              id: SMAPIKey
+              id: "SMAPIKey"
               scope: GLOBAL
-              secret: ${SecretsManagerIAMKey}
-          - string:
-              description: "Github IBM access token"
-              id: ghiPAT
-              scope: GLOBAL
-              secret: ${GHI-PAT}
+              secret: "${SecretsManagerIAMKey}"
           - basicSSHUserPrivateKey:
               description: "SSH Private key for agent access"
               id: "jenkinsAgentSSHKey"
@@ -115,6 +114,9 @@ credentials:
               usernameSecret: true
 
 security:
+  globalJobDslSecurityConfiguration:
+    # Permit Job DSL to be run without the hassle of script security
+    useScriptSecurity: false
   gitHostKeyVerificationConfiguration:
     sshHostKeyVerificationStrategy: "noHostKeyVerificationStrategy"
   apiToken:
@@ -123,8 +125,12 @@ security:
     usageStatisticsEnabled: true
   scriptApproval:
     approvedSignatures:
-      - method hudson.model.ItemGroup getItem java.lang.String
-      - method hudson.model.Job getNextBuildNumber
+      - method java.io.File getName
+      - new java.lang.RuntimeException java.lang.String
+      - method org.jsoup.Connection get
+      - method org.yaml.snakeyaml.Yaml dump java.lang.Object
+      - staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods findAll java.lang.String java.lang.String
+      - staticMethod org.jsoup.Jsoup connect java.lang.String
 
 unclassified:
   email-ext:
@@ -140,7 +146,7 @@ unclassified:
             scm:
               git:
                 remote: "https://github.ibm.com/ceph-qe-ng/jenkins.git"
-                credentialsId: "ghiPAT"
+                credentialsId: "ceph-qe-sa-pat"
 
   hashicorpVault:
     configuration:
@@ -152,7 +158,7 @@ unclassified:
 
   location:
     adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
-    url: "http://10.243.80.4:8080/"
+    url: "https://149.81.216.83:8443/"
 
   mailer:
     charset: "UTF-8"

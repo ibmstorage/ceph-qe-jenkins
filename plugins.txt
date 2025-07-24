@@ -15,7 +15,6 @@ display-url-api
 email-ext
 git
 github-oauth
-git-client
 hashicorp-vault-plugin
 jackson2-api
 job-dsl
