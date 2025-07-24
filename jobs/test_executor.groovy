@@ -1,28 +1,23 @@
-// Job configuration placeholde
+// Job configuration placeholder
 def jobsConfiguration = []
 
 // Method to generate required job metadata
 def generate_jobs(data) {
-    // Platforms supported
-    def platforms = ["ibmc"]
-    def ospCreds = ["ci-vpc-01"]
-    def logLevel = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    def ospCreds = ["vpc-rgw", "vpc-nfsg", "vpc-dmfg", "vpc-cephci", "vpc-cephfs", "vpc-block", "ci-vpc-01"]
+    def logLevel = ["DEBUG", "INFO", "ERROR"]
 
-    // For creating job configuration for each platform
-    for (platform in platforms) {
-        // Add the job configurations
-        data.jobsConfiguration.add([
-            "name": "qe-${data.cephVersion}-test-executor-${platform}",
-            "displayName": "Ceph CI Test Executor - ${data.cephVersion} - ${platform}",
-            "logLevel": logLevel,
-            "cloud_type": [platform],
-            "ospCreds": ospCreds,
-            "build_version": data.buildVersion,
-            "rhel_version": data.rhelVersion,
-            "components": data.components,
-            "release": data.release
-        ])
-    }
+    // Add the job configurations
+    data.jobsConfiguration.add([
+        "name": "${data.cephVersion}-test-executor",
+        "displayName": "Ceph CI Test Executor - ${data.cephVersion}",
+        "logLevel": logLevel,
+        "cloud_type": "ibmc",
+        "ospCreds": ospCreds,
+        "build_version": data.buildVersion,
+        "rhel_version": data.rhelVersion,
+        "components": data.components,
+        "release": data.release
+    ])
 }
 
 // Create jobs specific to Ceph - Squid
@@ -30,8 +25,8 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "squid",
     buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9.5", "rhel-9.4", "rhel-9.3", "rhel-9.2", "rhel-9.1", "rhel-9.0"],
-    components: ["callhome", "cephadm", "cephfs", "cephmgr", "ceph_volume", "integrations", "interop", "mgr", "nfs", "nvmeof", "rados", "rbd", "rgw", "smoke", "upgrades", "smb"],
+    rhelVersion: ["rhel-9.6", "rhel-9.4"],
+    components: ["callhome", "cephadm", "cephfs", "cephmgr", "ceph_volume", "integrations", "mgr", "nfs", "nvmeof", "rados", "rbd", "rgw", "smoke", "upgrades", "smb"],
     release: ["", "latest"]
 )
 
@@ -40,7 +35,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9.5", "rhel-9.4", "rhel-9.3", "rhel-9.2", "rhel-9.1", "rhel-9.0"],
+    rhelVersion: ["rhel-9.6"],
     components: ["callhome", "cephadm", "cephfs", "cephmgr", "ceph_volume", "integrations", "interop", "mgr", "nfs", "nvmeof", "rados", "rbd", "rgw", "smoke", "upgrades", "smb"],
     release: ["", "latest"]
 )
@@ -57,14 +52,13 @@ for (jobConfig in jobsConfiguration) {
                 scm {
                     git {
                         remote {
-                            url("git@github.ibm.com:ceph-qe-ng/ceph-qe-jenkins.git")
-                            credentials("jenkins-agent-ssh")
+                            url("https://github.ibm.com/ceph-qe-ng/jenkins.git")
+                            credentials("ghiPAT")
                         }
-
                         branch("*/main")
                     }
                 }
-                scriptPath("jobs/pipelines/qe_test_executor/Jenkinsfile")
+                scriptPath("jobs/pipelines/test_executor/Jenkinsfile")
                 lightweight(false)
             }
 
@@ -95,8 +89,8 @@ for (jobConfig in jobsConfiguration) {
                 booleanParam("SKIP_SOS_REPORT", false, "Capture SOS report")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 choiceParam("CLOUD_TYPE", jobConfig.cloud_type, "Cloud Platform to execute Tests")
-                choiceParam("OSP_CRED", jobConfig.ospCreds, "OpenStack project to create/destroy resources")
-                stringParam("EMAIL_ADDRESS", "", "EMail Address")
+                choiceParam("OSP_CRED", jobConfig.ospCreds, "IBM Cloud VPC to create/destroy resources")
+                stringParam("EMAIL_ADDRESS", "", "Email Address")
             }
         }
     }

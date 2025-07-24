@@ -1,22 +1,158 @@
 jenkins:
-  systemMessage: "Controlled by Configuration as Code"
-  numExecutors: 1
+  systemMessage: "Controlled by Configuration as Code. Do not install or configure items manually as it would be lost."
+  numExecutors: 0
   quietPeriod: 0
 
   crumbIssuer:
     standard:
       excludeClientIPFromCrumb: true
 
+  securityRealm:
+    github:
+      githubWebUri: "https://github.ibm.com"
+      githubApiUri: "https://api.github.ibm.com/api/v3"
+      clientID: "9b8b8842d5bfe366ce3c"
+      clientSecret: "7daba8a4c1aa1692c34c4791be7910f6ffd7f2cc"
+      oauthScopes: "read:org,user:email,repo"
+
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "admin"
+            description: "Jenkins Administrator"
+            permissions:
+              - "Overall/Administer"
+            entries:
+              - group: "ceph-qe-ng*ceph-qe-ng-admins"
+          - name: "qe-team"
+            description: "Users of the CI."
+            permissions:
+              - "Overall/Read"
+              - "Credentials/View"
+              - "Job/Build"
+              - "Job/Discover"
+              - "Job/Read"
+              - "Run/Update"
+              - "Run/Replay"
+            entries:
+              - group: "ceph-qe-ng*ceph-qe-ibm"
+
+  slaveAgentPort: 50000
+
+  nodes:
+    - permanent:
+        labelString:  "agent-vm-01 agents"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: "10.243.80.9"
+            launchTimeoutSeconds: 60
+            maxNumRetries: 3
+            port: 22
+            retryWaitTime: 30
+            sshHostKeyVerificationStrategy:
+              manuallyTrustedKeyVerificationStrategy:
+                requireInitialManualTrust: false
+        mode: EXCLUSIVE
+        name: "agent-vm-01"
+        nodeDescription: "Workflow executor"
+        numExecutors: 5
+        remoteFS: "/data/jenkins"
+        retentionStrategy: "always"
+    - permanent:
+        labelString:  "agent-vm-02 agents"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: "10.243.80.10"
+            launchTimeoutSeconds: 60
+            maxNumRetries: 3
+            port: 22
+            retryWaitTime: 30
+            sshHostKeyVerificationStrategy:
+              manuallyTrustedKeyVerificationStrategy:
+                requireInitialManualTrust: false
+        mode: EXCLUSIVE
+        name: "agent-vm-02"
+        nodeDescription: "Workflow executor"
+        numExecutors: 5
+        remoteFS: "/data/jenkins"
+        retentionStrategy: "always"
+
+appearance:
+  themeManager:
+    disableUserThemes: true
+    theme: darkSystem
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - vaultTokenCredential:
+              description: "Secrets Manager Vault Token"
+              id: SMAccessToken
+              scope: GLOBAL
+              token: "some dummy value. Needs to be dynamic"
+          - string:
+              description: "IBM Cloud SecretsManager Reader API Key"
+              id: SMAPIKey
+              scope: GLOBAL
+              secret: ${SecretsManagerIAMKey}
+          - string:
+              description: "Github IBM access token"
+              id: ghiPAT
+              scope: GLOBAL
+              secret: ${GHI-PAT}
+          - basicSSHUserPrivateKey:
+              description: "SSH Private key for agent access"
+              id: "jenkinsAgentSSHKey"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:${JENKINS_SSH_KEY}}"
+              scope: SYSTEM
+              username: jenkins
+              usernameSecret: true
+
+security:
+  gitHostKeyVerificationConfiguration:
+    sshHostKeyVerificationStrategy: "noHostKeyVerificationStrategy"
+  apiToken:
+    creationOfLegacyTokenEnabled: false
+    tokenGenerationOnCreationEnabled: false
+    usageStatisticsEnabled: true
+  scriptApproval:
+    approvedSignatures:
+      - method hudson.model.ItemGroup getItem java.lang.String
+      - method hudson.model.Job getNextBuildNumber
+
 unclassified:
+  email-ext:
+    mailAccount:
+      smtpHost: "smtp.corp.ibm.com"
+
   globalLibraries:
     libraries:
-    - name: "ceph-qe-libs"
-      defaultVersion: "main"
-      retriever:
-        modernSCM:
-          scm:
-            git:
-              remote: "https://github.ibm.com/ceph-qe-ng/ceph-qe-jenkins.git"
+      - name: "ceph-qe-libs"
+        defaultVersion: "main"
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                remote: "https://github.ibm.com/ceph-qe-ng/jenkins.git"
+                credentialsId: "ghiPAT"
+
+  hashicorpVault:
+    configuration:
+      disableChildPoliciesOverride: false
+      engineVersion: 2
+      timeout: 60
+      vaultCredentialId: "SMAccessToken"
+      vaultUrl: "https://b4fc7484-5e05-41a3-a3bd-bcb72f6fc466.us-south.secrets-manager.appdomain.cloud"
+
+  location:
+    adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
+    url: "http://10.243.80.4:8080/"
 
   mailer:
     charset: "UTF-8"
@@ -24,22 +160,18 @@ unclassified:
     smtpHost: "smtp.corp.ibm.com"
     useSsl: false
 
-  location:
-    adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
-
-  shell:
-    shell: "bash"
-
   scmGit:
     globalConfigEmail: "ceph-qe-sa@ibm.com"
     globalConfigName: "ceph-qe-sa"
 
-  email-ext:
-    mailAccount:
-      smtpHost: "smtp.corp.ibm.com"
+  shell:
+    shell: "bash"
 
-configuration-as-code:
-  deprecated: warn
+tool:
+  git:
+    installations:
+      - name: git
+        home: /usr/bin/git
 
 jobs:
-  - job: /var/jenkins_home/jobs/seed-job/main_seed_job.groovy
+  - file: /usr/share/jenkins/seed.groovy

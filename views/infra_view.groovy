@@ -1,4 +1,4 @@
-def default_jobs = "ceph-qe-infra-main-seed-job"
+def default_jobs = "seed"
 
 def view_list = [
   ["name": "Default", "description": "Frequently used jobs", "job_regex": "${default_jobs}"]
