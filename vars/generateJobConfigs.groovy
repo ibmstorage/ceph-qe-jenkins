@@ -1,15 +1,18 @@
 // Method to generate job configurations for QE test executor
 
+import main.groovy.cephJobLib.cephciConfigs
+import main.groovy.cephJobLib.jobConfigs
+
 
 def call(Map parameters) {
     // Define required variables
     def jobConfig = [:]
-    def gitDir = "cephci"
-    def logDir = "logs"
-    
+
+    // Set job type parameters
+    jobConfig.job = parameters.get("job")
+
     // Set default values for job configuration
-    def jobDir = ["/home/jenkins/ceph-builds"]
-    jobConfig.job = "qe-test"
+    def jobDir = [jobConfigs.JOB_DIR_PATH]
 
     // Check for repository and container image
     if (!params.REPO || !params.CONTAINER_IMAGE) {
@@ -20,24 +23,30 @@ def call(Map parameters) {
     // Get ceph downstream repo
     jobConfig.rhsCephRepo = params.REPO
 
-    // Get hotfix repo
-    jobConfig.hotfixRepo = params.HOTFIX_REPO
-
     // Get container image
     jobConfig.containerImage = params.CONTAINER_IMAGE
 
     // Get prefix for resources
+    if (!params.PREFIX) {
+        currentBuild.result = "ABORTED"
+        error("Mandatory parameter 'PREFIX' is not provided")
+    }
     jobConfig.prefix = params.PREFIX
 
-    // Get Ceph CI git repo details
-    jobConfig.gitUrl = params.CEPHCI_REPO
-    jobConfig.gitBranch = params.BRANCH
+    // Get hotfix repo
+    jobConfig.hotfixRepo = params.HOTFIX_REPO
 
-    // Get cephci log level
-    jobConfig.logLevel = params.LOG_LEVEL ?: "DEBUG"
+    // Get Ceph CI git repo defaults
+    jobConfig.gitUrl = params.CEPHCI_REPO ?: cephciConfigs.GIT_URL
+    jobConfig.gitBranch = params.BRANCH ?: cephciConfigs.GIT_BRANCH
+    jobConfig.logLevel = params.LOG_LEVEL ?: cephciConfigs.LOG_LEVEL
+    jobConfig.cloudType = params.CLOUD_TYPE ?: cephciConfigs.CLOUD_TYPE
+    jobConfig.ibmcProfile = params.IBMC_PROFILE ?: cephciConfigs.IBMC_PROFILE
+    jobConfig.ospCred = params.OSP_CRED ?: cephciConfigs.OSP_CRED
+    jobConfig.python = cephciConfigs.PYTHON
+    jobConfig.venvDir = cephciConfigs.VENV_DIR
 
-    // Update dir paths based on cloud type
-    jobConfig.cloudType = params.CLOUD_TYPE
+    // Update job directory based on cloud type
     jobDir += [jobConfig.cloudType]
 
     // Update dir paths based on build type
@@ -82,23 +91,24 @@ def call(Map parameters) {
         jobConfig.customConfig = params.CUSTOM_CONFIG.split(",") as List
     }
 
-    // Check for IBM Cloud credentials
-    if (jobConfig.cloudType.toLowerCase() == "ibmc") {
-        jobConfig.ospCredPrefix = "ibmc"
-        jobConfig.ospCredId = "${jobConfig.ospCredPrefix}-${params.OSP_CRED}"
+    // Set inventory file
+    if (params.INVENTORY) {
+        jobConfig.inventory = params.INVENTORY
+    } else if (jobConfig.cloudType == "ibmc") {
+        jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
+    } else {
+        abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")
     }
 
     // Set base job directory
     jobConfig.jobDir = jobDir.join("/")
 
     // Set cephci config directory
-    jobConfig.gitDir = [jobConfig.jobDir, gitDir].join("/")
-    jobConfig.logDir = [jobConfig.jobDir, logDir].join("/")
+    jobConfig.gitDir = [jobConfig.jobDir, cephciConfigs.GIT_DIR].join("/")
+    jobConfig.logDir = [jobConfig.jobDir, cephciConfigs.LOG_DIR].join("/")
 
-    // Check for OSP Credential ID
-    if (jobConfig.ospCredId) {
-        jobConfig.ospCredFile = [jobConfig.gitDir, jobConfig.ospCredId].join("/")
-    }
+    // Check for IBMC Credential ID
+    jobConfig.ibmcCredFile = [jobConfig.gitDir, "ibmc-api-creds"].join("/")
 
     // Return the job configuration
     return jobConfig

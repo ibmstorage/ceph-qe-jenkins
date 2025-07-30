@@ -112,6 +112,11 @@ credentials:
               scope: SYSTEM
               username: jenkins
               usernameSecret: true
+          - file:
+              scope: GLOBAL
+              id: "ibmc-api-creds"
+              fileName: "ibmc_api_creds"
+              secretBytes: "${readFile:${IBMC_API_CREDS}}"
 
 security:
   globalJobDslSecurityConfiguration:

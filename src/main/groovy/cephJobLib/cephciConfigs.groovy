@@ -14,14 +14,13 @@ class cephciConfigs {
     static final String LOG_DIR = "logs"
     static final String LOG_LEVEL = "DEBUG"
     static final String INSTANCE_PREFIX = "cephci"
+    static final String CLOUD_TYPE = "ibmc"
+    static final String IBMC_PROFILE = "bx2-2x8"
+    static final String OSP_CRED = "vpc-cephci"
 
     // Default inventory config
-    static final Map OSP_INVENTORY = [
-        "rhel-8": "conf/inventory/rhel-8.10-server-x86_64-large.yaml",
-        "rhel-9": "conf/inventory/rhel-9.6-server-x86_64-large.yaml"
-    ]
     static final Map IBMC_INVENTORY = [
-        "rhel-8": "conf/inventory/ibm-rhel-8.10-server-bx2-4x16.yaml",
-        "rhel-9": "conf/inventory/ibm-rhel-9.6-server-bx2-4x16.yaml"
+        "rhel-8": "conf/inventory/ibm-eu-rhel-8.10.yaml",
+        "rhel-9": "conf/inventory/ibm-eu-rhel-9.6.yaml"
     ]
 }

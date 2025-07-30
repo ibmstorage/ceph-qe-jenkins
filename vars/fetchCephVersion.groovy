@@ -59,7 +59,7 @@ def call(Map parameters) {
     yumCmdArgs = yumCmdArgs.join(" && ")
 
     // Get final command
-    cmdArgs += [execCmd, "\"${yumCmdArgs}\"", "||", "exit 0"]
+    cmdArgs += ["${execCmd} \"${yumCmdArgs}\" || exit 0"]
 
     // Install repository on container
     def result = sh(returnStdout: true, script: cmdArgs.join(" "))

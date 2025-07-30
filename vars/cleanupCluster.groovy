@@ -2,43 +2,68 @@
 
 
 def call(Map parameters) {
-    // Get Ceph CI environment parameters
-    def python = parameters.get("pythonVersion", "python3")
+    // Check if Ceph CI directory present
+    def gitDir = parameters.get("gitDir")
+    if (!gitDir || !fileExists(gitDir)) {
+        throw new RuntimeException(
+            "Ceph CI directory '${gitDir}' does not exists"
+        )
+    }
 
-    // Get optional parameters
-    def cloudType = parameters.get("cloudType", "ibmc").toLowerCase()
-    def logLevel = parameters.get("logLevel", "DEBUG")
-    def gitDir = parameters.get("gitDir", "cephci")
+    // Check if virtual environment directory present
+    def venvDir = parameters.get("venvDir")
+    if (!venvDir || !fileExists("${gitDir}/${venvDir}")) {
+        throw new RuntimeException(
+            "Ceph CI virtual environment directory '${venvDir}' " +
+            "does not exists"
+        )
+    }
 
-    // Validate environment based on cloud type
-    if (!fileExists(gitDir)) {
-        throw new RuntimeException("Ceph CI directory '${gitDir}' does not exists")
+    // Check for mandatory parameters
+    def cloudType = parameters.get("cloudType")
+    if (!cloudType) {
+        throw new RuntimeException(
+            "Ceph CI requires 'cloudType' parameter to execute tests"
+        )
     }
 
     // Check for mandatory parameters
     def instanceName = parameters.get("instanceName")
     if (!instanceName) {
-        throw new RuntimeException("CephCI requires 'instances-name' parameter to execute tests")
+        throw new RuntimeException(
+            "CephCI requires 'instances-name' parameter to execute tests"
+        )
     }
 
     // Check for cloud credentials
-    def ospCredFile = parameters.get("ospCredFile")
-    if (!ospCredFile) {
-        throw new RuntimeException("Ceph CI requires OSP credential file to execute tests")
+    def ibmcCredFile = parameters.get("ibmcCredFile")
+    if (!ibmcCredFile) {
+        throw new RuntimeException(
+            "Ceph CI requires IBMC credential file to execute tests"
+        )
     }
-
 
     // Create arguments for run.py
     def cmd = [
-        "cd", gitDir, "&&",
-        ".venv/bin/python", "run.py",
-        "--cloud", cloudType,
-        "--log-level", logLevel,
-        "--osp-cred", ospCredFile,
-        "--cleanup", instanceName,
-        "||", "exit 0"      // exit 0 in case test case failed for unexpected errors
+        "${venvDir}/bin/python run.py",
+        "--cloud ${cloudType}",
+        "--osp-cred ${ibmcCredFile}",
+        "--cleanup ${instanceName}"
     ]
 
-    // Execute command
-    sh cmd.join(" ")
+    // Add optional parameters
+    def logLevel = parameters.get("logLevel")
+    if (logLevel) {
+        cmd += ["--log-level ${logLevel}"]
+    }
+
+    // Add exit status
+    cmd += [
+        "|| exit 0"  // exit 0 in case test case failed for unexpected errors
+    ]
+
+    // Start cephci run
+    dir(gitDir) {
+        sh(cmd.join(" "))
+    }
 }
