@@ -17,7 +17,8 @@ def generate_jobs(data) {
         "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
-        "release": data.release
+        "release": data.release,
+        "buildType": buildType
     ])
 }
 
