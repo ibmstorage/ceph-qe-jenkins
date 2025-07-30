@@ -4,6 +4,9 @@ import java.util.regex.Pattern
 
 
 def call(Map parameters) {
+    // debug
+    println "The parameters are \n ${parameters}"
+
     // Check if Ceph CI directory present
     def gitDir = parameters.get("gitDir")
     if (!gitDir || !fileExists(gitDir)) {
@@ -220,7 +223,6 @@ def call(Map parameters) {
 
         // Gather the vpc Name
         def vpcName = parameters.get("vpcName")
-        println parameters
         if ( ! vpcName ) {
             throw new RuntimeException(
                 "Ceph CI requires the VPC name to execute tests"
