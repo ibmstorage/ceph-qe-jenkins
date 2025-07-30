@@ -4,9 +4,6 @@ import java.util.regex.Pattern
 
 
 def call(Map parameters) {
-    // debug
-    println "The parameters are \n ${parameters}"
-
     // Check if Ceph CI directory present
     def gitDir = parameters.get("gitDir")
     if (!gitDir || !fileExists(gitDir)) {

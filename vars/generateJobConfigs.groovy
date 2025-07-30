@@ -83,7 +83,7 @@ def call(Map parameters) {
 
     // Get additional cephci arguments
     jobConfig.additionalArgs = []
-    if ( parameters.ADDITIONAL_ARGS ) {
+    if ( params.ADDITIONAL_ARGS ) {
         jobConfig.additionalArgs = params.ADDITIONAL_ARGS.split(",") as List
     }
 
@@ -97,11 +97,14 @@ def call(Map parameters) {
     if ( params.INVENTORY ) {
         jobConfig.inventory = params.INVENTORY
     } else if ( jobConfig.cloudType == "ibmc" ) {
-        jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
-        println "Inside the check statement - ${jobConfig.vpcName}"
         jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
     } else {
         abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")
+    }
+
+    // Get the VPC Name
+    if ( jobConfig.cloudType == "ibmc" ) {
+        jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
     }
 
     // Set base job directory
