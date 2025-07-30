@@ -39,7 +39,7 @@ def call(Map parameters) {
     dir("${gitDir}") {
         if (cloudType in ["ibmc"]) {
             // Read IBMC Credentials contents
-            withCredentials([file(credentialsId: "ibmc-api-creds", variable: "IBMC_API_CRED")]) {
+            withCredentials([file(credentialsId: "osp-cred", variable: "IBMC_API_CRED")]) {
                 def ibmcCredContent = readFile file: "${IBMC_API_CRED}"
                 writeFile file: ibmcCredFile, text: "${ibmcCredContent}"
             }

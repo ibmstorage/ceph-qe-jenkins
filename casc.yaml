@@ -1,5 +1,11 @@
 jenkins:
   systemMessage: "Controlled by Configuration as Code. Do not install or configure items manually as it would be lost."
+
+  # Add retries for Source code checkout
+  scmCheckoutRetryCount: 2
+  
+  # Enable execution server side exclusively for vault token
+  # It should not be blocked by an executor. No other job should use it.
   numExecutors: 0
   quietPeriod: 0
 
@@ -40,38 +46,38 @@ jenkins:
 
   slaveAgentPort: 50000
 
+  disabledAdministrativeMonitors:
+    - "jenkins.diagnostics.ControllerExecutorsNoAgents"
+    - "jenkins.security.s2m.MasterKillSwitchWarning"
+
+
+  labelAtoms:
+    - name: "agent-vm-02"
+    - name: "agents"
+
   nodes:
     - permanent:
         labelString:  "agent-vm-01 agents"
         launcher:
           ssh:
             credentialsId: "jenkinsAgentSSHKey"
-            host: "10.243.80.9"
-            launchTimeoutSeconds: 60
-            maxNumRetries: 3
+            host: "10.243.80.19"
             port: 22
-            retryWaitTime: 30
-            sshHostKeyVerificationStrategy:
-              manuallyTrustedKeyVerificationStrategy:
-                requireInitialManualTrust: false
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "agent-vm-01"
         nodeDescription: "Workflow executor"
         numExecutors: 5
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
+
     - permanent:
         labelString:  "agent-vm-02 agents"
         launcher:
           ssh:
             credentialsId: "jenkinsAgentSSHKey"
-            host: "10.243.80.10"
-            launchTimeoutSeconds: 60
-            maxNumRetries: 3
+            host: "10.243.80.20"
             port: 22
-            retryWaitTime: 30
-            sshHostKeyVerificationStrategy:
-              manuallyTrustedKeyVerificationStrategy:
-                requireInitialManualTrust: false
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "agent-vm-02"
         nodeDescription: "Workflow executor"
         numExecutors: 5
@@ -79,6 +85,8 @@ jenkins:
         retentionStrategy: "always"
 
 appearance:
+  prism:
+    theme: PRISM
   themeManager:
     disableUserThemes: true
     theme: darkSystem
@@ -87,36 +95,89 @@ credentials:
   system:
     domainCredentials:
       - credentials:
-          - vaultTokenCredential:
-              description: "Secrets Manager Vault Token"
-              id: "SMAccessToken"
+          - basicSSHUserPrivateKey:
+              description: "Ceph QE SA account - VM access"
+              id: "vmLoginAccessKey"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:/secrets/ceph_qe_sa_ssh_key}"
               scope: GLOBAL
-              token: "some dummy value. Needs to be dynamic"
+              username: cephuser
+              usernameSecret: false
+
+          - basicSSHUserPrivateKey:
+              description: "Ceph QE SA SVC account - VM access"
+              id: "vmLoginAccessKey2"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:/secrets/ceph_qe_sa_svc_ssh_key}"
+              scope: GLOBAL
+              username: cephuser
+              usernameSecret: false
+
+          - file:
+              description: "CephCI global credential file."
+              id: "osp-cred"
+              fileName: "osp-creds.yaml"
+              scope: GLOBAL
+              secretBytes: "${base64:${readFile:/secrets/global_creds}}"
+
+          - file:
+              description: "CephCI credential file"
+              id: "cephci-conf"
+              fileName: ".cephci.yaml"
+              scope: GLOBAL
+              secretBytes: "${base64:${readFile:/secrets/cephci_conf}}"
+
+          - string:
+              description: "Access Token - icr-stg"
+              id: "stg-icr-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/stg_icr_io_passwd}"
+
+          - string:
+              description: "Access Token - icr"
+              id: "icr-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/icr_io_passwd}"
+
           - usernamePassword:
               description: "Github IBM ceph-qe-sa PAT"
               id: "ceph-qe-sa-pat"
               scope: GLOBAL
-              username: "ceph-qe-sa@ibm.com"
-              password: "${GHI-PAT}"
-          - string:
-              description: "IBM Cloud SecretsManager Reader API Key"
-              id: "SMAPIKey"
+              username: "${readFile:/secrets/github_ibm_username}"
+              password: "${readFile:/secrets/github_ibm_pat}"
+
+          - usernamePassword:
+              description: "Red Hat CDN access details"
+              id: "rh-cdn-access"
               scope: GLOBAL
-              secret: "${SecretsManagerIAMKey}"
+              username: "${readFile:/secrets/rh_cdn_username}"
+              password: "${readFile:/secrets/rh_cdn_passwd}"
+
+          - usernamePassword:
+              description: "IBM Container Registry - Stage access"
+              id: "ibm-cp-stg-icr"
+              scope: GLOBAL
+              username: cp
+              password: "${readFile:/secrets/stg_icr_io_passwd}"
+
+          - usernamePassword:
+              description: "IBM Container Registry - Prod"
+              id: "ibm-cp-icr"
+              scope: GLOBAL
+              username: cp
+              password: "${readFile:/secrets/icr_io_passwd}"
+
           - basicSSHUserPrivateKey:
               description: "SSH Private key for agent access"
               id: "jenkinsAgentSSHKey"
               privateKeySource:
                 directEntry:
-                  privateKey: "${readFile:${JENKINS_SSH_KEY}}"
+                  privateKey: "${readFile:/secrets/agent_access_key}"
               scope: SYSTEM
               username: jenkins
               usernameSecret: true
-          - file:
-              scope: GLOBAL
-              id: "ibmc-api-creds"
-              fileName: "ibmc_api_creds"
-              secretBytes: "${readFile:${IBMC_API_CREDS}}"
 
 security:
   globalJobDslSecurityConfiguration:
@@ -153,14 +214,6 @@ unclassified:
                 remote: "https://github.ibm.com/ceph-qe-ng/jenkins.git"
                 credentialsId: "ceph-qe-sa-pat"
 
-  hashicorpVault:
-    configuration:
-      disableChildPoliciesOverride: false
-      engineVersion: 2
-      timeout: 60
-      vaultCredentialId: "SMAccessToken"
-      vaultUrl: "https://b4fc7484-5e05-41a3-a3bd-bcb72f6fc466.us-south.secrets-manager.appdomain.cloud"
-
   location:
     adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
     url: "https://149.81.216.83:8443/"
@@ -181,7 +234,7 @@ unclassified:
 tool:
   git:
     installations:
-      - name: git
+      - name: "Default"
         home: /usr/bin/git
 
 jobs:

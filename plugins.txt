@@ -13,9 +13,9 @@ dark-theme
 description-setter
 display-url-api
 email-ext
+extra-columns
 git
 github-oauth
-hashicorp-vault-plugin
 jackson2-api
 job-dsl
 junit
@@ -23,7 +23,6 @@ lockable-resources
 mailer
 matrix-auth
 metrics
-ownership
 parameterized-trigger
 parameterized-scheduler
 pipeline-model-extensions

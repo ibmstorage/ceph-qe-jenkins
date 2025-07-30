@@ -41,8 +41,7 @@ def call(Map parameters) {
     jobConfig.gitBranch = params.BRANCH ?: cephciConfigs.GIT_BRANCH
     jobConfig.logLevel = params.LOG_LEVEL ?: cephciConfigs.LOG_LEVEL
     jobConfig.cloudType = params.CLOUD_TYPE ?: cephciConfigs.CLOUD_TYPE
-    jobConfig.ibmcProfile = params.IBMC_PROFILE ?: cephciConfigs.IBMC_PROFILE
-    jobConfig.ospCred = params.OSP_CRED ?: cephciConfigs.OSP_CRED
+    jobConfig.vmFlavor = params.VM_FLAVOR ?: cephciConfigs.VM_FLAVOR
     jobConfig.python = cephciConfigs.PYTHON
     jobConfig.venvDir = cephciConfigs.VENV_DIR
 
@@ -95,6 +94,7 @@ def call(Map parameters) {
     if (params.INVENTORY) {
         jobConfig.inventory = params.INVENTORY
     } else if (jobConfig.cloudType == "ibmc") {
+        jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
         jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
     } else {
         abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")
@@ -108,7 +108,7 @@ def call(Map parameters) {
     jobConfig.logDir = [jobConfig.jobDir, cephciConfigs.LOG_DIR].join("/")
 
     // Check for IBMC Credential ID
-    jobConfig.ibmcCredFile = [jobConfig.gitDir, "ibmc-api-creds"].join("/")
+    jobConfig.ibmcCredFile = [jobConfig.gitDir, "osp-cred"].join("/")
 
     // Return the job configuration
     return jobConfig

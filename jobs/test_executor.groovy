@@ -3,18 +3,17 @@ def jobsConfiguration = []
 
 // Method to generate required job metadata
 def generate_jobs(data) {
-    def ospCreds = ["vpc-rgw", "vpc-nfsg", "vpc-dmfg", "vpc-cephci", "vpc-cephfs", "vpc-block", "ci-vpc-01"]
+    def vpc = ["vpc-block", "vpc-cephci", "vpc-cephfs", "vpc-dmfg", "vpc-nfsg", "vpc-rgw"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
-    def ibmcProfile = ["bx2-2x8", "bx2-4x16", "bx2-8x32", "bx2-16x64"]
+    def vmFlavor = ["bx2-2x8", "bx2-4x16", "bx2-8x32"]
 
     // Add the job configurations
     data.jobsConfiguration.add([
         "name": "${data.cephVersion}-test-executor",
         "displayName": "Ceph CI Test Executor - ${data.cephVersion}",
         "logLevel": logLevel,
-        "cloudType": "ibmc",
-        "ibmcProfile": ibmcProfile,
-        "ospCreds": ospCreds,
+        "vmFlavor": vmFlavor,
+        "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
         "release": data.release
@@ -76,14 +75,13 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("SUITE", "", "Ceph CI suite")
                 stringParam("GLOBAL_CONF", "", "Ceph CI global conf")
                 stringParam("INVENTORY", "", "Ceph CI Inventory file name")
-                choiceParam("IBMC_PROFILE", jobConfig.ibmcProfile, "IBM Cloud VPC profile")
+                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud virtual machine profile")
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
-                stringParam("CLOUD_TYPE", jobConfig.cloudType, "Cloud Platform to execute Tests")
-                choiceParam("OSP_CRED", jobConfig.ospCreds, "IBM Cloud VPC to create/destroy resources")
+                choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "", "Email Address")
             }
         }

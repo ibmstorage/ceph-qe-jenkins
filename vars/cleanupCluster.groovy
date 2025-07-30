@@ -43,12 +43,19 @@ def call(Map parameters) {
         )
     }
 
+    // Check for VPC Name
+    def vpcName = parameters.get("vpcName")
+    if ( ! vpcName ) {
+        throw new RuntimeException("Ceph CI cleanup stage requires VPC Name.")
+    }
+
     // Create arguments for run.py
     def cmd = [
         "${venvDir}/bin/python run.py",
         "--cloud ${cloudType}",
         "--osp-cred ${ibmcCredFile}",
-        "--cleanup ${instanceName}"
+        "--cleanup ${instanceName}",
+        "--custom-config ibmc_vpc=${vpcName}"
     ]
 
     // Add optional parameters

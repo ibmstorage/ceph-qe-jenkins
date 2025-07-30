@@ -1,9 +1,5 @@
 FROM docker.io/jenkins/jenkins:lts-jdk21
 
-# Build Arguments
-ARG GHI_TOKEN
-ARG SecretsManagerIAMKey
-
 # Copy the required files
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
 COPY --chown=jenkins:jenkins casc.yaml /usr/share/jenkins/casc.yaml
@@ -14,11 +10,10 @@ USER jenkins
 # Environment variables
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/casc.yaml"
+ENV JENKINS_JAVA_OPTIONS="-Xms512m -Xmx4g -Dorg.jenkinsci.main.modules.sshd.SSHD.idle-timeout=0 -Dhudson.slaves.ChannelPinger.pingIntervalSec=-1"
 
 # Install plugins
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --verbose
 
-# CephCI specific variables
-ENV GHI-PAT=${GHI_TOKEN}
-ENV JENKINS_SSH_KEY="/var/secrets/jenkins_agent.key"
-ENV SecretsManagerIAMKey=${SecretsManagerIAMKey}
+# Attach secrets as a volume to avoid leaking details to image
+VOLUME ["/secrets"]

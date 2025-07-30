@@ -2,6 +2,7 @@ package io.jenkins.plugins.casc
 
 def job = job('seed') {
     displayName('Ceph Qe Infra: Main Seed Job for DSL Jobs and Views')
+
     label ("agents")
 
     wrappers {

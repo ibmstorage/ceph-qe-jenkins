@@ -75,8 +75,8 @@ pipeline {
                         hotfixRepo: jobConfigs.hotfixRepo,
                         containerImage: jobConfigs.containerImage,
                         additionalArgs: jobConfigs.additionalArgs,
-                        ibmcProfile: jobConfigs.ibmcProfile,
-                        ospCred: jobConfigs.ospCred
+                        vmFlavor: jobConfigs.vmFlavor,
+                        vpcName: jobConfigs.vpcName
                     )
 
                     echo "Test execution completed successfully ..."
@@ -101,7 +101,8 @@ pipeline {
                     cloudType: jobConfigs.cloudType,
                     instanceName: jobConfigs.prefix,
                     ibmcCredFile: jobConfigs.ibmcCredFile,
-                    logLevel: jobConfigs.logLevel
+                    logLevel: jobConfigs.logLevel,
+                    vpcName: jobConfigs.vpcName
                 )
 
                 echo "Cleanup completed successfully ..."

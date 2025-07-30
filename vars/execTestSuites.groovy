@@ -86,20 +86,6 @@ def call(Map parameters) {
         )
     }
 
-    def ospCred = parameters.get("ospCred")
-    if (!ospCred) {
-        throw new RuntimeException(
-            "Ceph CI requires OSP credentials to execute tests"
-        )
-    }
-
-    def ibmcProfile = parameters.get("ibmcProfile")
-    if (!ibmcProfile) {
-        throw new RuntimeException(
-            "Ceph CI requires 'ibmcProfile' parameter to execute tests"
-        )
-    }
-
     // Create arguments for run.py
     def args = [
         "${venvDir}/bin/python run.py",
@@ -222,10 +208,29 @@ def call(Map parameters) {
     args += skipSosReport ? ["--skip-sos-report"] : []
 
     // Add IBM Cloud instance configs
-    args += [
-        "--custom-config ibmc_vpc=${ospCred}",
-        "--custom-config ibmc_profile=${ibmcProfile}"
-    ]
+    if ( cloudType == "ibmc" ) {
+
+        // Check the VM profile type
+        def vmFlavor = parameters.get("vmFlavor")
+        if (! vmFlavor ) {
+            throw new RuntimeException(
+                "Ceph CI requires 'vmFlavor' parameter to execute tests"
+            )
+        }
+
+        // Gather the vpc Name
+        def vpcName = parameters.get("vpcName")
+        if ( ! vpcName ) {
+            throw new RuntimeException(
+                "Ceph CI requires the VPC name to execute tests"
+            )
+        }
+
+        args += [
+            "--custom-config ibmc_vpc=${ospCred}",
+            "--custom-config ibmc_profile=${ibmcProfile}"
+        ]
+    }
 
     // Add exit status
     args += [
