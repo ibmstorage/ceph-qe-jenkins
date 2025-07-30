@@ -98,6 +98,7 @@ def call(Map parameters) {
         jobConfig.inventory = params.INVENTORY
     } else if ( jobConfig.cloudType == "ibmc" ) {
         jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
+        println "Inside the check statement - ${jobConfig.vpcName}"
         jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
     } else {
         abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")

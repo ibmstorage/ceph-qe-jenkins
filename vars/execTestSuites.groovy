@@ -212,7 +212,6 @@ def call(Map parameters) {
 
     // Add IBM Cloud instance configs
     if ( cloudType == "ibmc" ) {
-
         // Check the VM profile type
         def vmFlavor = parameters.get("vmFlavor")
         if (! vmFlavor ) {

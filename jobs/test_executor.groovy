@@ -27,7 +27,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "squid",
     buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9.6", "rhel-9.4"],
+    rhelVersion: ["rhel-9"],
     release: ["", "latest"]
 )
 
@@ -36,7 +36,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9.6"],
+    rhelVersion: ["rhel-9"],
     release: ["", "latest"]
 )
 
