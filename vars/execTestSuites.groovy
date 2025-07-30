@@ -220,6 +220,7 @@ def call(Map parameters) {
 
         // Gather the vpc Name
         def vpcName = parameters.get("vpcName")
+        println parameters
         if ( ! vpcName ) {
             throw new RuntimeException(
                 "Ceph CI requires the VPC name to execute tests"
@@ -227,8 +228,8 @@ def call(Map parameters) {
         }
 
         args += [
-            "--custom-config ibmc_vpc=${ospCred}",
-            "--custom-config ibmc_profile=${ibmcProfile}"
+            "--custom-config ibmc_vpc=${vpcName}",
+            "--custom-config ibmc_profile=${vmFlavor}"
         ]
     }
 

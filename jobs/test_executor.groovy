@@ -6,6 +6,7 @@ def generate_jobs(data) {
     def vpc = ["vpc-block", "vpc-cephci", "vpc-cephfs", "vpc-dmfg", "vpc-nfsg", "vpc-rgw"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
     def vmFlavor = ["bx2-2x8", "bx2-4x16", "bx2-8x32"]
+    def buildType = ["IBM", "RH"]
 
     // Add the job configurations
     data.jobsConfiguration.add([
@@ -68,7 +69,7 @@ for (jobConfig in jobsConfiguration) {
                 choiceParam("LOG_LEVEL", jobConfig.logLevel , "Ceph CI log level")
                 choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph Version")
                 choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL OS Version")
-                choiceParam("BUILD_TYPE", ["RH", "IBM"] , "RH or IBM build")
+                choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build")
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")
