@@ -44,7 +44,7 @@ jenkins:
             entries:
               - group: "ceph-qe-ng*ceph-qe-ibm"
 
-  slaveAgentPort: 50000
+  slaveAgentPort: -1
 
   disabledAdministrativeMonitors:
     - "jenkins.diagnostics.ControllerExecutorsNoAgents"
