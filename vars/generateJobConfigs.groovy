@@ -34,10 +34,10 @@ def call(Map parameters) {
         currentBuild.result = "ABORTED"
         error("Mandatory parameter 'PREFIX' is not provided")
     }
-    jobConfig.prefix = parameters.PREFIX
+    jobConfig.prefix = params.PREFIX
 
     // Get hotfix repo
-    jobConfig.hotfixRepo = parameters.HOTFIX_REPO
+    jobConfig.hotfixRepo = params.HOTFIX_REPO
 
     // Get Ceph CI git repo defaults
     jobConfig.gitUrl = params.CEPHCI_REPO ?: cephciConfigs.GIT_URL
