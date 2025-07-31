@@ -17,3 +17,6 @@ RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --verbose
 
 # Attach secrets as a volume to avoid leaking details to image
 VOLUME ["/secrets"]
+
+# sSHD port
+EXPOSE 50022

@@ -180,6 +180,8 @@ credentials:
               usernameSecret: true
 
 security:
+  sSHD:
+    port: 50022
   globalJobDslSecurityConfiguration:
     # Permit Job DSL to be run without the hassle of script security
     useScriptSecurity: false
