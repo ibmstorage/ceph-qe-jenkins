@@ -11,7 +11,6 @@ USER jenkins
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/casc.yaml"
 ENV JENKINS_JAVA_OPTIONS="-Xms512m -Xmx4g"
-ENV JENKINS_SLAVE_AGENT_PORT=50022
 
 # Install plugins
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --verbose

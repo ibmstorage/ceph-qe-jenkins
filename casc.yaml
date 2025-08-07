@@ -54,6 +54,21 @@ jenkins:
   labelAtoms:
     - name: "agents"
 
+  nodes:
+    - permanent:
+        labelString:  "agents"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: 10.243.80.4
+            port: 22022
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+        name: "agent-vm-01"
+        nodeDescription: "Workflow executor"
+        numExecutors: 1
+        remoteFS: "/home/jenkins/agent"
+        retentionStrategy: "always"
+
 appearance:
   consoleUrlProvider:
     providers:
@@ -96,14 +111,14 @@ credentials:
               id: "osp-cred"
               fileName: "osp-creds.yaml"
               scope: GLOBAL
-              secretBytes: "${base64:${readFile:/secrets/global_creds}}"
+              secretBytes: "${readFileBase64:/secrets/global_creds}"
 
           - file:
               description: "CephCI credential file"
               id: "cephci-conf"
               fileName: ".cephci.yaml"
               scope: GLOBAL
-              secretBytes: "${base64:${readFile:/secrets/cephci_conf}}"
+              secretBytes: "${readFileBase64:/secrets/cephci_conf}"
 
           - string:
               description: "Access Token - icr-stg"
