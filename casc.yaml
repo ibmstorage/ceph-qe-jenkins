@@ -44,7 +44,7 @@ jenkins:
             entries:
               - group: "ceph-qe-ng*ceph-qe-ibm"
 
-  slaveAgentPort: 50022
+  slaveAgentPort: -1
 
   disabledAdministrativeMonitors:
     - "jenkins.diagnostics.ControllerExecutorsNoAgents"
@@ -52,44 +52,20 @@ jenkins:
 
 
   labelAtoms:
-    - name: "agent-vm-02"
     - name: "agents"
 
-  nodes:
-    - permanent:
-        labelString:  "agent-vm-01 agents"
-        launcher:
-          ssh:
-            credentialsId: "jenkinsAgentSSHKey"
-            host: "10.243.80.19"
-            port: 22
-            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
-        name: "agent-vm-01"
-        nodeDescription: "Workflow executor"
-        numExecutors: 5
-        remoteFS: "/data/jenkins"
-        retentionStrategy: "always"
-
-    - permanent:
-        labelString:  "agent-vm-02 agents"
-        launcher:
-          ssh:
-            credentialsId: "jenkinsAgentSSHKey"
-            host: "10.243.80.20"
-            port: 22
-            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
-        name: "agent-vm-02"
-        nodeDescription: "Workflow executor"
-        numExecutors: 5
-        remoteFS: "/data/jenkins"
-        retentionStrategy: "always"
-
 appearance:
+  consoleUrlProvider:
+    providers:
+      - "pipelineGraphView"
+  pipelineGraphView:
+    showGraphOnBuildPage: true
+    showGraphOnJobPage: true
   prism:
     theme: PRISM
   themeManager:
-    disableUserThemes: true
-    theme: darkSystem
+    disableUserThemes: false
+    theme: "dark"
 
 credentials:
   system:
@@ -216,7 +192,7 @@ unclassified:
 
   location:
     adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
-    url: "https://149.81.216.83:8443/"
+    url: "https://149.81.216.83/"
 
   mailer:
     charset: "UTF-8"
@@ -231,11 +207,16 @@ unclassified:
   shell:
     shell: "bash"
 
+  timestamper:
+    allPipelines: false
+    elapsedTimeFormat: "'<b>'HH:mm:ss'</b>'"
+    systemTimeFormat: "'<b>'HH:mm:ss'</b>'"
+
 tool:
   git:
     installations:
       - name: "Default"
-        home: /usr/bin/git
+        home: "git"
 
 jobs:
   - file: /usr/share/jenkins/seed.groovy
