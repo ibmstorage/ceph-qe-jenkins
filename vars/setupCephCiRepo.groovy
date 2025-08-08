@@ -39,9 +39,7 @@ def call(Map parameters) {
     dir("${gitDir}") {
         // Write the platform access file
         withCredentials([file(credentialsId: "osp-cred", variable: "ospCred")]) {
-            sh([
-                "cp \$ospCred \$ibmcCredFile"
-            ])
+            sh("cp \$ospCred \$ibmcCredFile")
         }
 
         // Setup virtual environment
