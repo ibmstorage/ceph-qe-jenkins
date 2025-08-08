@@ -9,8 +9,7 @@ def call(Map parameters) {
     def execCmd = "sh -c"
     def yumAddRepo = "dnf config-manager --add-repo"
     def curlAddRepo = "curl -L -o /etc/yum.repos.d/upstream.repo"
-    def ibmLicense = "yum install --nogpgcheck -y ibm-storage-ceph-license && touch /usr/share/ibm-storage-ceph-license/accept"
-    def installCephCommon = "yum install ceph-common -q --nogpgcheck -y"
+    def infoCephCommon = "dnf repoquery ceph-common"
 
     // Define command arguments
     def cmdArgs = [podmanRun]
@@ -29,31 +28,26 @@ def call(Map parameters) {
 
     // Get ceph repo
     def rhsCephRepo = parameters.get("rhsCephRepo")
-    if (!rhsCephRepo){
+    if ( ! rhsCephRepo ) {
         throw new RuntimeException("Mandatory parameter 'rhsCephRepo' does not exists")
     }
 
     // Check for rhs ceph repo
     def buildType = parameters.get("buildType")
-    if (!buildType){
+    if ( ! buildType ) {
         throw new RuntimeException("Mandatory parameter 'buildType' does not exists")
     }
 
     // Define args for yum command based on build type
     def yumCmdArgs = []
-    if (buildType.toLowerCase() == "upstream") {
+    if ( buildType.toLowerCase() == "upstream" ) {
         yumCmdArgs = ["${curlAddRepo} ${rhsCephRepo}"]
     } else {
         yumCmdArgs = ["${yumAddRepo} ${rhsCephRepo}"]
     }
 
-    // Check for IBM build
-    if (buildType == "IBM") {
-        yumCmdArgs += [ibmLicense]
-    }
-
     // Add install package command
-    yumCmdArgs += [installCephCommon]
+    yumCmdArgs += [infoCephCommon]
 
     // Get package install comnmand
     yumCmdArgs = yumCmdArgs.join(" && ")
@@ -66,7 +60,7 @@ def call(Map parameters) {
 
     // Get ceph build version based on package installed provided
     def build = result  =~ /.*ceph-common-(\d):(.*).el.*/
-    if (!build.find()) {
+    if ( ! build.find() ) {
         throw new RuntimeException("Failed to get ceph version from url ${rhsCephRepo}")
     }
 

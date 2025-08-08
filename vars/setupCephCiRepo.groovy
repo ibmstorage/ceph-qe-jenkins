@@ -37,12 +37,11 @@ def call(Map parameters) {
     ])
 
     dir("${gitDir}") {
-        if (cloudType in ["ibmc"]) {
-            // Read IBMC Credentials contents
-            withCredentials([file(credentialsId: "osp-cred", variable: "IBMC_API_CRED")]) {
-                def ibmcCredContent = readFile file: "${IBMC_API_CRED}"
-                writeFile file: ibmcCredFile, text: "${ibmcCredContent}"
-            }
+        // Write the platform access file
+        withCredentials([file(credentialsId: "osp-cred", variable: "ospCred")]) {
+            sh([
+                "cp \$ospCred \$ibmcCredFile"
+            ])
         }
 
         // Setup virtual environment
