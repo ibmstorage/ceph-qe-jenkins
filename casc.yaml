@@ -56,7 +56,7 @@ jenkins:
 
   nodes:
     - permanent:
-        labelString:  "agents"
+        labelString: "agents"
         launcher:
           ssh:
             credentialsId: "jenkinsAgentSSHKey"
@@ -64,6 +64,19 @@ jenkins:
             port: 22022
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "agent-vm-01"
+        nodeDescription: "Workflow executor"
+        numExecutors: 1
+        remoteFS: "/home/jenkins/agent"
+        retentionStrategy: "always"
+    - permanent:
+        labelString: "agents"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: 10.243.80.4
+            port: 23022
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+        name: "agent-vm-02"
         nodeDescription: "Workflow executor"
         numExecutors: 1
         remoteFS: "/home/jenkins/agent"
