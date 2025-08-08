@@ -50,7 +50,6 @@ jenkins:
     - "jenkins.diagnostics.ControllerExecutorsNoAgents"
     - "jenkins.security.s2m.MasterKillSwitchWarning"
 
-
   labelAtoms:
     - name: "agents"
 
