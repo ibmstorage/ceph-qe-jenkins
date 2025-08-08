@@ -36,6 +36,15 @@ def call(Map parameters) {
         submoduleCfg: []
     ])
 
+    // Write the cephci credential file
+    withCredentials([file(credentialsId: "cephci-conf", variable: 'ciConf')]) {
+        dir('/home/jenkins') {
+            sh([
+                "cp \$ciConf .cephci.yaml"
+            ])
+        }
+    }
+
     dir("${gitDir}") {
         if (cloudType in ["ibmc"]) {
             // Read IBMC Credentials contents
