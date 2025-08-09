@@ -145,6 +145,13 @@ credentials:
               secret: "${readFile:/secrets/icr_io_passwd}"
 
           - usernamePassword:
+              description: "Brew Registry access"
+              id: "brew-access"
+              scope: GLOBAL
+              username: "${readFile:/secrets/brew_username}"
+              password: "${readFile:/secrets/brew_password}"
+
+          - usernamePassword:
               description: "Github IBM ceph-qe-sa PAT"
               id: "ceph-qe-sa-pat"
               scope: GLOBAL
