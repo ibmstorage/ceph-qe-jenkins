@@ -59,26 +59,26 @@ jenkins:
         launcher:
           ssh:
             credentialsId: "jenkinsAgentSSHKey"
-            host: 10.243.80.4
-            port: 22022
+            host: 10.243.80.24
+            port: 22
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
-        name: "agent-vm-01"
+        name: "infra-vm-jenkins-agent-01"
         nodeDescription: "Workflow executor"
-        numExecutors: 1
-        remoteFS: "/home/jenkins/agent"
+        numExecutors: 10
+        remoteFS: "/data/jenkins"
         retentionStrategy: "always"
     - permanent:
         labelString: "agents"
         launcher:
           ssh:
             credentialsId: "jenkinsAgentSSHKey"
-            host: 10.243.80.4
-            port: 23022
+            host: 10.243.80.25
+            port: 22
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
-        name: "agent-vm-02"
+        name: "infra-vm-jenkins-agent-02"
         nodeDescription: "Workflow executor"
-        numExecutors: 1
-        remoteFS: "/home/jenkins/agent"
+        numExecutors: 10
+        remoteFS: "/data/jenkins"
         retentionStrategy: "always"
 
 appearance:
@@ -103,7 +103,7 @@ credentials:
               id: "vmLoginAccessKey"
               privateKeySource:
                 directEntry:
-                  privateKey: "${readFile:/secrets/ceph_qe_sa_ssh_key}"
+                  privateKey: "${readFile:/home/jenkins/src/jenkins/secrets/ceph_qe_sa_ssh_key}"
               scope: GLOBAL
               username: cephuser
               usernameSecret: false
@@ -113,7 +113,7 @@ credentials:
               id: "vmLoginAccessKey2"
               privateKeySource:
                 directEntry:
-                  privateKey: "${readFile:/secrets/ceph_qe_sa_svc_ssh_key}"
+                  privateKey: "${readFile:/home/jenkins/src/jenkins/secrets/ceph_qe_sa_svc_ssh_key}"
               scope: GLOBAL
               username: cephuser
               usernameSecret: false
@@ -123,68 +123,68 @@ credentials:
               id: "osp-cred"
               fileName: "osp-creds.yaml"
               scope: GLOBAL
-              secretBytes: "${readFileBase64:/secrets/global_creds}"
+              secretBytes: "${readFileBase64:/home/jenkins/src/jenkins/secrets/global_creds}"
 
           - file:
               description: "CephCI credential file"
               id: "cephci-conf"
               fileName: ".cephci.yaml"
               scope: GLOBAL
-              secretBytes: "${readFileBase64:/secrets/cephci_conf}"
+              secretBytes: "${readFileBase64:/home/jenkins/src/jenkins/secrets/cephci_conf}"
 
           - string:
               description: "Access Token - icr-stg"
               id: "stg-icr-token"
               scope: GLOBAL
-              secret: "${readFile:/secrets/stg_icr_io_passwd}"
+              secret: "${readFile:/home/jenkins/src/jenkins/secrets/stg_icr_io_passwd}"
 
           - string:
               description: "Access Token - icr"
               id: "icr-token"
               scope: GLOBAL
-              secret: "${readFile:/secrets/icr_io_passwd}"
+              secret: "${readFile:/home/jenkins/src/jenkins/secrets/icr_io_passwd}"
 
           - usernamePassword:
               description: "Brew Registry access"
               id: "brew-access"
               scope: GLOBAL
-              username: "${readFile:/secrets/brew_username}"
-              password: "${readFile:/secrets/brew_password}"
+              username: "${readFile:/home/jenkins/src/jenkins/secrets/brew_username}"
+              password: "${readFile:/home/jenkins/src/jenkins/secrets/brew_password}"
 
           - usernamePassword:
               description: "Github IBM ceph-qe-sa PAT"
               id: "ceph-qe-sa-pat"
               scope: GLOBAL
-              username: "${readFile:/secrets/github_ibm_username}"
-              password: "${readFile:/secrets/github_ibm_pat}"
+              username: "${readFile:/home/jenkins/src/jenkins/secrets/github_ibm_username}"
+              password: "${readFile:/home/jenkins/src/jenkins/secrets/github_ibm_pat}"
 
           - usernamePassword:
               description: "Red Hat CDN access details"
               id: "rh-cdn-access"
               scope: GLOBAL
-              username: "${readFile:/secrets/rh_cdn_username}"
-              password: "${readFile:/secrets/rh_cdn_passwd}"
+              username: "${readFile:/home/jenkins/src/jenkins/secrets/rh_cdn_username}"
+              password: "${readFile:/home/jenkins/src/jenkins/secrets/rh_cdn_passwd}"
 
           - usernamePassword:
               description: "IBM Container Registry - Stage access"
               id: "ibm-cp-stg-icr"
               scope: GLOBAL
               username: cp
-              password: "${readFile:/secrets/stg_icr_io_passwd}"
+              password: "${readFile:/home/jenkins/src/jenkins/secrets/stg_icr_io_passwd}"
 
           - usernamePassword:
               description: "IBM Container Registry - Prod"
               id: "ibm-cp-icr"
               scope: GLOBAL
               username: cp
-              password: "${readFile:/secrets/icr_io_passwd}"
+              password: "${readFile:/home/jenkins/src/jenkins/secrets/icr_io_passwd}"
 
           - basicSSHUserPrivateKey:
               description: "SSH Private key for agent access"
               id: "jenkinsAgentSSHKey"
               privateKeySource:
                 directEntry:
-                  privateKey: "${readFile:/secrets/agent_access_key}"
+                  privateKey: "${readFile:/home/jenkins/src/jenkins/secrets/agent_access_key}"
               scope: SYSTEM
               username: jenkins
               usernameSecret: true
@@ -253,4 +253,4 @@ tool:
         home: "git"
 
 jobs:
-  - file: /usr/share/jenkins/seed.groovy
+  - file: /home/jenkins/src/jenkins/jobs/seed.groovy

@@ -9,7 +9,7 @@ class jobConfigs {
     static final String OSP_CRED_FILE = "osp-creds.yaml"
 
     // Default job path
-    static final String JOB_DIR_PATH = "/home/jenkins/ceph-builds"
+    static final String JOB_DIR_PATH = "/data/jenkins/ceph-builds"
 
     // Default result summary name
     static final String RESULTS_SUMMARY = "results.json"
