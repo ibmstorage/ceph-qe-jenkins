@@ -36,11 +36,9 @@ def call(Map parameters) {
         submoduleCfg: []
     ])
 
-    dir('/home/jenkins') {
-        // Write the global credentials file
-        withCredentials([file(credentialsId: "cephci-conf", variable: "ciConf")]) {
-            sh("cp \$ciConf .cephci.yaml")
-        }
+    // Write the global credentials file
+    withCredentials([file(credentialsId: "cephci-conf", variable: "ciConf")]) {
+        sh("cp \$ciConf /home/jenkins/.cephci.yaml")
     }
 
     dir("${gitDir}") {
