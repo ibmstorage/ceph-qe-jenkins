@@ -238,7 +238,7 @@ def call(Map parameters) {
 
     // Start cephci run
     dir(gitDir) {
-        sh(args.join(" "))
+        sh(returnStdout: true, script: args.join(" "))
 
         // Check result file, exit 1 in case no results are generated
         if (!fileExists("${logDir}/xunit.xml")) {
