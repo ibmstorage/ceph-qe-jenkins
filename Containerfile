@@ -1,4 +1,4 @@
-FROM docker.io/jenkins/jenkins:lts-jdk21
+FROM docker.io/jenkins/jenkins:lts-jdk17
 
 # Copy the required files
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
@@ -13,7 +13,7 @@ ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/casc.yaml"
 ENV JENKINS_JAVA_OPTIONS="-Xms512m -Xmx4g"
 
 # Install plugins
-RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --verbose
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt --verbose --latest true
 
 # Attach secrets as a volume to avoid leaking details to image
 VOLUME ["/secrets"]
