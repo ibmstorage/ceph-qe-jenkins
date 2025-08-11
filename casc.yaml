@@ -59,7 +59,7 @@ jenkins:
         launcher:
           ssh:
             credentialsId: "jenkinsAgentSSHKey"
-            host: 10.243.80.27
+            host: 10.243.80.29
             port: 22
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "infra-vm-jenkins-agent-01"
