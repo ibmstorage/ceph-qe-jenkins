@@ -1,4 +1,4 @@
-FROM docker.io/jenkins/jenkins:lts-jdk17
+FROM docker.io/jenkins/jenkins:lts-jdk21
 
 # Copy the required files
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
