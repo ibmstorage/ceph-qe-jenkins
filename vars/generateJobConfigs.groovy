@@ -107,6 +107,9 @@ def call(Map parameters) {
         jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
     }
 
+    // Get subscription manager execution
+    jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
+
     // Set base job directory
     jobConfig.jobDir = jobDir.join("/")
 

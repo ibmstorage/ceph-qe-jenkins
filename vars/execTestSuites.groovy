@@ -1,56 +1,53 @@
 // This script is used to execute test suites in a Ceph CI environment.
 
-import java.util.regex.Pattern
-
-
 def call(Map parameters) {
     // Check if Ceph CI directory present
     def gitDir = parameters.get("gitDir")
-    if (!gitDir || !fileExists(gitDir)) {
+    if ( ! gitDir || ! fileExists(gitDir) ) {
         throw new RuntimeException(
-            "Ceph CI directory '${gitDir}' does not exists"
+            "Ceph CI directory ${gitDir} does not exists"
         )
     }
 
     // Check if virtual environment directory present
     def venvDir = parameters.get("venvDir")
-    if (!venvDir || !fileExists("${gitDir}/${venvDir}")) {
+    if ( ! venvDir || ! fileExists("${gitDir}/${venvDir}") ) {
         throw new RuntimeException(
-            "Ceph CI virtual environment directory '${venvDir}' does not exists"
+            "Ceph CI virtual environment directory ${venvDir} does not exists"
         )
     }
 
     // Check for mandatory parameters
     def cloudType = parameters.get("cloudType")
-    if (!cloudType) {
+    if ( ! cloudType ) {
         throw new RuntimeException(
-            "Ceph CI requires 'cloudType' parameter to execute tests"
+            "Ceph CI requires cloudType parameter to execute tests"
         )
     }
 
     def instanceName = parameters.get("instanceName")
-    if (!instanceName) {
+    if ( ! instanceName ) {
         throw new RuntimeException(
             "CephCI requires 'instances-name' parameter to execute tests"
         )
     }
 
     def rhbuild = parameters.get("rhBuild")
-    if (!rhbuild) {
+    if ( ! rhbuild ) {
         throw new RuntimeException(
             "CephCI requires 'rhbuild' parameter to execute tests"
         )
     }
 
     def platform = parameters.get("platform")
-    if (!platform) {
+    if ( ! platform ) {
         throw new RuntimeException(
             "CephCI requires 'platform' parameter to execute tests"
         )
     }
 
     def globalConf = parameters.get("globalConf")
-    if (!globalConf) {
+    if ( ! globalConf ) {
         throw new RuntimeException(
             "CephCI requires 'globalConf' parameter to execute tests"
         )
@@ -58,14 +55,14 @@ def call(Map parameters) {
 
     // Create log and result directories
     def logDir = parameters.get("logDir")
-    if (!logDir) {
+    if ( ! logDir ) {
         throw new RuntimeException(
             "CephCI requires 'logDir' parameter to execute tests"
         )
     }
 
     def suite = parameters.get("suite")
-    if (!suite) {
+    if (! suite ) {
         throw new RuntimeException(
             "No test suite passed for execution"
         )
@@ -73,14 +70,14 @@ def call(Map parameters) {
 
     // Check for cloud credentials file
     def ibmcCredFile = parameters.get("ibmcCredFile")
-    if (!ibmcCredFile) {
+    if ( ! ibmcCredFile ) {
         throw new RuntimeException(
             "Ceph CI requires IBMC credential file to execute tests"
         )
     }
 
     def inventory = parameters.get("inventory")
-    if (!inventory) {
+    if ( ! inventory ) {
         throw new RuntimeException(
             "Ceph CI requires inventory file to execute tests"
         )
@@ -97,7 +94,8 @@ def call(Map parameters) {
         "--rhbuild ${rhbuild}",
         "--platform ${platform}",
         "--global-conf ${globalConf}",
-        "--suite ${suite}"
+        "--suite ${suite}",
+        "--skip-subscription"
     ]
 
     def logLevel = parameters.get("logLevel")
@@ -105,7 +103,7 @@ def call(Map parameters) {
 
     // Check for custom-config parameter
     def customConfig = parameters.get("customConfig")
-    if (customConfig) {
+    if ( customConfig ) {
         customConfig.each { val ->
             if (val) {
                 args += ["--custom-config ${val}"]
@@ -114,14 +112,14 @@ def call(Map parameters) {
     }
 
     // Check for custom-config parameter
-    if (parameters.tag == "callhome") {
+    if ( parameters.tag == "callhome" ) {
         def siTenantCredentials = parameters.get("siTenant")
         args += ["--custom-config-file ${siTenantCredentials}"]
     }
 
     // Check for IBM build type
     def buildType = parameters.get("buildType")
-    if (buildType.toLowerCase() == "ibm") {
+    if ( buildType.toLowerCase() == "ibm" ) {
         args += ["--custom-config ibm-build=True"]
     }
 
@@ -139,7 +137,7 @@ def call(Map parameters) {
     def hotfixRepo = parameters.get("hotfixRepo")
     args += hotfixRepo ? ["--hotfix-repo ${hotfixRepo}"] : []
 
-    if (!rhsCephRepo && !hotfixRepo) {
+    if ( ! rhsCephRepo && ! hotfixRepo ) {
         throw new RuntimeException(
             "Ceph CI requires 'rhsCephRepo' or 'hotfixRepo' " +
             "parameters to execute tests"
@@ -148,7 +146,7 @@ def call(Map parameters) {
 
     // Check for container image
     def containerImage = parameters.get("containerImage")
-    if (!containerImage) {
+    if ( ! containerImage ) {
         throw new RuntimeException(
             "Ceph CI requires container image to execute tests"
         )
@@ -156,7 +154,7 @@ def call(Map parameters) {
 
     // Get container registry, image name and tag
     def tag = containerImage =~ /(.*(.com|.io))\/(.*):(.*)/
-    if (!tag.find()) {
+    if ( ! tag.find() ) {
         throw new RuntimeException(
             "Failed to get image tag from URL: ${containerImage}"
         )
@@ -169,9 +167,9 @@ def call(Map parameters) {
 
     // Check for additional arguments
     def additionalArgs = parameters.get("additionalArgs")
-    if (additionalArgs) {
+    if ( additionalArgs ) {
         additionalArgs.each { val ->
-            if (val.contains("=")) {
+            if ( val.contains("=") ) {
                 def arg = val.split("=")
                 args += ["--${arg[0]} ${arg[1]}"]
             } else {
@@ -202,10 +200,6 @@ def call(Map parameters) {
 
     def skipSubscription = parameters.get("skipSubscription")
     args += skipSubscription ? ["--skip-subscription"] : []
-
-    // Check for sos reports
-    def skipSosReport = parameters.get("skipSosReport")
-    args += skipSosReport ? ["--skip-sos-report"] : []
 
     // Add IBM Cloud instance configs
     if ( cloudType == "ibmc" ) {
@@ -238,10 +232,11 @@ def call(Map parameters) {
 
     // Start cephci run
     dir(gitDir) {
-        sh(returnStdout: true, script: args.join(" "))
+        executeCmd = args.join(" ")
+        sh script: executeCmd
 
         // Check result file, exit 1 in case no results are generated
-        if (!fileExists("${logDir}/xunit.xml")) {
+        if ( ! fileExists("${logDir}/xunit.xml") ) {
             sh("exit 1")
         }
     }

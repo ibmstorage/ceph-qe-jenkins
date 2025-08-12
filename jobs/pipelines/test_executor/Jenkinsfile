@@ -76,7 +76,8 @@ pipeline {
                         containerImage: jobConfigs.containerImage,
                         additionalArgs: jobConfigs.additionalArgs,
                         vmFlavor: jobConfigs.vmFlavor,
-                        vpcName: jobConfigs.vpcName
+                        vpcName: jobConfigs.vpcName,
+                        skipSubscription: jobConfigs.skipSubscription
                     )
 
                     echo "Test execution completed successfully ..."

@@ -80,6 +80,7 @@ for (jobConfig in jobsConfiguration) {
                 choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud virtual machine profile")
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
+                booleanParam("SKIP_SUBSCRIPTION", true, "Uncheck to enable")
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")

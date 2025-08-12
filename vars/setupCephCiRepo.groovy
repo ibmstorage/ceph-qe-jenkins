@@ -1,6 +1,5 @@
 // This script is used to set up the Ceph CI repository and environment.
 
-
 def call(Map parameters) {
     // Get Ceph CI environment parameters
     def python = parameters.get("python")
