@@ -1,4 +1,4 @@
-FROM docker.io/jenkins/jenkins:lts-jdk21
+FROM docker.io/jenkins/jenkins:rhel-ubi9-jdk21
 
 # Copy the required files
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
