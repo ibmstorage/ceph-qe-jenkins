@@ -15,6 +15,7 @@ email-ext
 extra-columns
 git
 github-oauth
+groovy:497.v7b_061a_a_de65d
 jackson2-api
 job-dsl
 mailer
@@ -29,7 +30,7 @@ pipeline-groovy-lib
 pipeline-input-step
 pipeline-milestone-step
 pipeline-model-api
-pipeline-model-definition
+pipeline-model-definition:2.2258.v4e96d2b_da_f9b_
 pipeline-model-extensions
 pipeline-stage-step
 pipeline-stage-tags-metadata
@@ -51,7 +52,7 @@ token-macro
 workflow-aggregator
 workflow-api
 workflow-basic-steps
-workflow-cps
+workflow-cps:4177.vb_203fe395445
 workflow-durable-task-step
 workflow-job
 workflow-multibranch
