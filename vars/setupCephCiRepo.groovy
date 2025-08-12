@@ -38,13 +38,14 @@ def call(Map parameters) {
 
     // Write the global credentials file
     withCredentials([file(credentialsId: "cephci-conf", variable: "ciConf")]) {
-        sh("cp \$ciConf /home/jenkins/.cephci.yaml")
+        // Fixme: When credentials change then we have a problem.
+        sh("cp -n \$ciConf /home/jenkins/.cephci.yaml")
     }
 
     dir("${gitDir}") {
         // Write the platform access file
         withCredentials([file(credentialsId: "osp-cred", variable: "ospCred")]) {
-            sh("cp \$ospCred ${ibmcCredFile}")
+            sh("cp -n \$ospCred ${ibmcCredFile}")
         }
 
         // Setup virtual environment
