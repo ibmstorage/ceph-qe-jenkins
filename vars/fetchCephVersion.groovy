@@ -10,7 +10,7 @@ def call(Map parameters) {
     def execCmd = "sh -c"
     def yumAddRepo = "dnf config-manager --add-repo"
     def curlAddRepo = "curl -L -o /etc/yum.repos.d/upstream.repo"
-    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | cut -d '.' -f -3"
+    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | tail -n 1 | cut -d '.' -f -3"
 
     // Define command arguments
     def cmdArgs = [podmanRun]
@@ -51,9 +51,6 @@ def call(Map parameters) {
 
     // Add install package command
     yumCmdArgs += [infoCephCommon]
-
-    // Clean the cache and update
-    yumCmdArgs += ["dnf clean all", "dnf update -y"]
 
     // Get package install comnmand
     yumCmdArgs = yumCmdArgs.join(" && ")
