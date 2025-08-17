@@ -232,12 +232,12 @@ def call(Map parameters) {
 
     // Start cephci run
     dir(gitDir) {
-        def executeCmd = args.join(" ")
-        sh script: executeCmd
+        def cmdStr = args.join(" ")
+        sh cmdStr
 
         // Check result file, exit 1 in case no results are generated
         if ( ! fileExists("${logDir}/xunit.xml") ) {
-            sh script: "exit 1"
+            sh "exit 1"
         }
     }
 }
