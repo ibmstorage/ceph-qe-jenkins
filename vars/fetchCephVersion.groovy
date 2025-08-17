@@ -52,6 +52,9 @@ def call(Map parameters) {
     // Add install package command
     yumCmdArgs += [infoCephCommon]
 
+    // Clean the cache and update
+    ymCmdArgs += ["dnf clean all", "dnf update -y"]
+
     // Get package install comnmand
     yumCmdArgs = yumCmdArgs.join(" && ")
 
