@@ -1,18 +1,6 @@
 // Method to fetch ceph version using compose base url
 
 
-@NonCPS
-def getCephCommonVersion(String data) {
-    def build = data  =~ /.*ceph-common-(\d):(.*).el.*/
-    if ( ! build.find() ) {
-        throw new RuntimeException("Failed to get ceph version from url ${rhsCephRepo}")
-    }
-
-    def returnValue = build[0][2]
-    return returnValue
-}
-
-
 def call(Map parameters) {
     // Define required commands
     def podmanRun = "podman run --rm"
@@ -22,7 +10,7 @@ def call(Map parameters) {
     def execCmd = "sh -c"
     def yumAddRepo = "dnf config-manager --add-repo"
     def curlAddRepo = "curl -L -o /etc/yum.repos.d/upstream.repo"
-    def infoCephCommon = "dnf repoquery ceph-common"
+    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | cut -d '.' -f -3"
 
     // Define command arguments
     def cmdArgs = [podmanRun]
@@ -74,7 +62,5 @@ def call(Map parameters) {
     def cmdStr = cmdArgs.join(" ")
     def result = sh(returnStdout: true, script: cmdStr)
 
-    // Get ceph build version based on package installed provided
-    def returnValue = getCephCommonVersion(result)
-    return returnValue
+    return result
 }

@@ -95,8 +95,7 @@ def call(Map parameters) {
         "--rhbuild ${rhbuild}",
         "--platform ${platform}",
         "--global-conf ${globalConf}",
-        "--suite ${suite}",
-        "--skip-subscription"
+        "--suite ${suite}"
     ]
 
     def logLevel = parameters.get("logLevel")
@@ -234,7 +233,7 @@ def call(Map parameters) {
     // Start cephci run
     dir(gitDir) {
         def cmdStr = args.join(" ")
-        sh cmdStr
+        sh script: cmdStr
 
         // Check result file, exit 1 in case no results are generated
         if ( ! fileExists("${logDir}/xunit.xml") ) {
