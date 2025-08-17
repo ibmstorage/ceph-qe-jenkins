@@ -3,9 +3,10 @@
 
 def call(Map parameters) {
     // Define required commands
-    def podmanRun = "podman run -it --rm"
+    def podmanRun = "podman run --rm"
     def rhel8UbiImage = "registry.access.redhat.com/ubi8/ubi"
     def rhel9UbiImage = "registry.access.redhat.com/ubi9/ubi"
+    def rhel10UbiImage = "registry.access.redhat.com/ubi10/ubi"
     def execCmd = "sh -c"
     def yumAddRepo = "dnf config-manager --add-repo"
     def curlAddRepo = "curl -L -o /etc/yum.repos.d/upstream.repo"
@@ -16,11 +17,13 @@ def call(Map parameters) {
 
     // Get rhel version
     def platform = parameters.get("platform")
-    if (!platform) {
+    if ( ! platform ) {
         throw new RuntimeException("Mandatory parameter 'platform' does not exists")
-    } else if (platform.startsWith("rhel-9")) {
+    } else if ( platform.startsWith("rhel-10") ) {
+        cmdArgs += rhel10UbiImage
+    } else if ( platform.startsWith("rhel-9") ) {
         cmdArgs += rhel9UbiImage
-    } else if (platform.startsWith("rhel-8")) {
+    } else if ( platform.startsWith("rhel-8") ) {
         cmdArgs += rhel8UbiImage
     } else {
         throw new RuntimeException("Unsupported platform '${platform}'")
@@ -56,7 +59,8 @@ def call(Map parameters) {
     cmdArgs += ["${execCmd} \"${yumCmdArgs}\" || exit 0"]
 
     // Install repository on container
-    def result = sh(returnStdout: true, script: cmdArgs.join(" "))
+    def cmdStr = cmdArgs.join(" ")
+    def result = sh(returnStdout: true, script: cmdStr)
 
     // Get ceph build version based on package installed provided
     def build = result  =~ /.*ceph-common-(\d):(.*).el.*/
@@ -64,5 +68,7 @@ def call(Map parameters) {
         throw new RuntimeException("Failed to get ceph version from url ${rhsCephRepo}")
     }
 
-    return build[0][2]
+    def returnValue = build[0][2]
+
+    return returnValue
 }

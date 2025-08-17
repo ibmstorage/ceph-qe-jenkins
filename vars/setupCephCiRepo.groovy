@@ -48,10 +48,11 @@ def call(Map parameters) {
         }
 
         // Setup virtual environment
-        sh([
+        def cmdStr = [
             "${python} -m venv ${venvDir}",
             "${venvDir}/bin/python -m pip install --upgrade pip",
             "${venvDir}/bin/python -m pip install -r requirements.txt"
-        ].join(" && "))
+        ].join(" && ")
+        sh(script: cmdStr)
     }
 }

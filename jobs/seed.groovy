@@ -1,7 +1,7 @@
 package io.jenkins.plugins.casc
 
-def job = job('seed') {
-    displayName('Ceph Qe Infra: Main Seed Job for DSL Jobs and Views')
+def job = freeStyleJob('seed') {
+    displayName('Seed job for generating jobs and views.')
 
     label ("agents")
 

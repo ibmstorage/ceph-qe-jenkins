@@ -22,5 +22,6 @@ class cephciConfigs {
     static final Map IBMC_INVENTORY = [
         "rhel-8": "conf/inventory/ibm-eu-rhel-8.10.yaml",
         "rhel-9": "conf/inventory/ibm-eu-rhel-9.6.yaml"
+        "rhel-10": "conf/inventory/ibm-eu-rhel-10.0.yaml"
     ]
 }

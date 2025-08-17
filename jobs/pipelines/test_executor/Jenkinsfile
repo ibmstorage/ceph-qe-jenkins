@@ -80,7 +80,7 @@ pipeline {
                         skipSubscription: jobConfigs.skipSubscription
                     )
 
-                    echo "Test execution completed successfully ..."
+                    echo "Test execution completed successfully."
                 }
             }
         }

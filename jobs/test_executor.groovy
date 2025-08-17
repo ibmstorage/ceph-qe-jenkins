@@ -11,7 +11,7 @@ def generate_jobs(data) {
     // Add the job configurations
     data.jobsConfiguration.add([
         "name": "${data.cephVersion}-test-executor",
-        "displayName": "Ceph CI Test Executor - ${data.cephVersion}",
+        "displayName": "${data.cephVersion} - Manual Test Suite Execution",
         "logLevel": logLevel,
         "vmFlavor": vmFlavor,
         "vpc": vpc,
@@ -36,7 +36,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
+    rhelVersion: ["rhel-9", "rhel-10"],
     release: ["", "latest"]
 )
 
@@ -64,7 +64,7 @@ for (jobConfig in jobsConfiguration) {
 
             // Add the required parameters for the job
             parameters {
-                stringParam("PREFIX", "ci", "Prefix for instance name")
+                stringParam("PREFIX", "mte", "Prefix for instance name")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
                 stringParam("BRANCH", "main", "Ceph CI git branch")
                 choiceParam("LOG_LEVEL", jobConfig.logLevel , "Ceph CI log level")

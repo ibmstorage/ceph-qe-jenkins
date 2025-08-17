@@ -183,7 +183,7 @@ def call(Map parameters) {
     args += xunitResults ? ["--xunit-results"] : []
 
     // Check for store parameter
-    def store = parameters.get("store", true)
+    def store = parameters.get("store", false)
     args += store ? ["--store"] : []
 
     // Check for reuse parameter
@@ -232,12 +232,12 @@ def call(Map parameters) {
 
     // Start cephci run
     dir(gitDir) {
-        executeCmd = args.join(" ")
+        def executeCmd = args.join(" ")
         sh script: executeCmd
 
         // Check result file, exit 1 in case no results are generated
         if ( ! fileExists("${logDir}/xunit.xml") ) {
-            sh("exit 1")
+            sh script: "exit 1"
         }
     }
 }

@@ -1,10 +1,9 @@
 // This script is used to clean up a Ceph cluster in a cloud environment.
 
-
 def call(Map parameters) {
     // Check if Ceph CI directory present
     def gitDir = parameters.get("gitDir")
-    if (!gitDir || !fileExists(gitDir)) {
+    if ( ! gitDir || ! fileExists(gitDir) ) {
         throw new RuntimeException(
             "Ceph CI directory '${gitDir}' does not exists"
         )
@@ -12,7 +11,7 @@ def call(Map parameters) {
 
     // Check if virtual environment directory present
     def venvDir = parameters.get("venvDir")
-    if (!venvDir || !fileExists("${gitDir}/${venvDir}")) {
+    if ( ! venvDir || ! fileExists("${gitDir}/${venvDir}") ) {
         throw new RuntimeException(
             "Ceph CI virtual environment directory '${venvDir}' " +
             "does not exists"
@@ -21,7 +20,7 @@ def call(Map parameters) {
 
     // Check for mandatory parameters
     def cloudType = parameters.get("cloudType")
-    if (!cloudType) {
+    if ( ! cloudType ) {
         throw new RuntimeException(
             "Ceph CI requires 'cloudType' parameter to execute tests"
         )
@@ -29,7 +28,7 @@ def call(Map parameters) {
 
     // Check for mandatory parameters
     def instanceName = parameters.get("instanceName")
-    if (!instanceName) {
+    if ( ! instanceName ) {
         throw new RuntimeException(
             "CephCI requires 'instances-name' parameter to execute tests"
         )
@@ -37,7 +36,7 @@ def call(Map parameters) {
 
     // Check for cloud credentials
     def ibmcCredFile = parameters.get("ibmcCredFile")
-    if (!ibmcCredFile) {
+    if ( ! ibmcCredFile ) {
         throw new RuntimeException(
             "Ceph CI requires IBMC credential file to execute tests"
         )
@@ -60,7 +59,7 @@ def call(Map parameters) {
 
     // Add optional parameters
     def logLevel = parameters.get("logLevel")
-    if (logLevel) {
+    if ( logLevel ) {
         cmd += ["--log-level ${logLevel}"]
     }
 
@@ -71,6 +70,7 @@ def call(Map parameters) {
 
     // Start cephci run
     dir(gitDir) {
-        sh(cmd.join(" "))
+        def executeCmd = cmd.join(" ")
+        sh executeCmd
     }
 }
