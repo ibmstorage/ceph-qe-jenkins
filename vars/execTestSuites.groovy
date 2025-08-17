@@ -160,9 +160,9 @@ def call(Map parameters) {
         )
     }
     args += [
-        "--docker-registry ${tag[0][1]}",
-        "--docker-image ${tag[0][3]}",
-        "--docker-tag ${tag[0][4]}"
+        "--docker-registry " + tag[0][1],
+        "--docker-image " + tag[0][3],
+        "--docker-tag " + tag[0][4]
     ]
 
     // Check for additional arguments
