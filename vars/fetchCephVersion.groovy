@@ -8,9 +8,9 @@ def call(Map parameters) {
     def rhel9UbiImage = "registry.access.redhat.com/ubi9/ubi"
     def rhel10UbiImage = "registry.access.redhat.com/ubi10/ubi"
     def execCmd = "sh -c"
-    def yumAddRepo = "dnf config-manager --add-repo"
+    def yumAddRepo = "dnf config-manager -q --add-repo"
     def curlAddRepo = "curl -L -o /etc/yum.repos.d/upstream.repo"
-    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | tail -n 1 | cut -d '.' -f -3"
+    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | cut -d '.' -f -3"
 
     // Define command arguments
     def cmdArgs = [podmanRun]
