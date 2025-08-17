@@ -1,6 +1,6 @@
 // Method to fetch ceph version using compose base url
 
-@NonCPS
+
 def call(Map parameters) {
     // Define required commands
     def podmanRun = "podman run --rm"

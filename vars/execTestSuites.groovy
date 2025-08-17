@@ -1,5 +1,6 @@
 // This script is used to execute test suites in a Ceph CI environment.
 
+@NonCPS
 def call(Map parameters) {
     // Check if Ceph CI directory present
     def gitDir = parameters.get("gitDir")
