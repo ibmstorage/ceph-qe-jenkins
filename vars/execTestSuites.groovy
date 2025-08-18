@@ -145,7 +145,7 @@ def call(Map parameters) {
     }
 
     // Check for container image
-    def containerImage = parameters.get("containerImage")
+    def containerImage = parameters.get("containerImage").trim()
     if ( ! containerImage ) {
         throw new RuntimeException(
             "Ceph CI requires container image to execute tests"
@@ -153,7 +153,7 @@ def call(Map parameters) {
     }
 
     // We cannot use matcher due serialization issues
-    def containerImageList = containerImage.taokenize('/')
+    def containerImageList = containerImage.tokenize('/')
     def registry = containerImageList.first()
     def (imageName, imageTag) = containerImageList.last().tokenize(':')
 
