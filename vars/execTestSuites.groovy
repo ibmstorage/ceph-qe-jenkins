@@ -159,7 +159,7 @@ def call(Map parameters) {
 
     // Get the rest of the elements
     containerImageList.pop()  // Removes the Container Registry
-    containerImageList.remoteLast()  // Removes the image name with tag
+    containerImageList.removeLast()  // Removes the image name with tag
     def fullPathToImage = containerImageList.join("/")
 
     args += [
