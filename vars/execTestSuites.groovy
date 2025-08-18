@@ -154,13 +154,13 @@ def call(Map parameters) {
 
     // We cannot use matcher due serialization issues
     def containerImageList = containerImage.tokenize('/')
-    def registry = containerImageList.first()
-    def (imageName, imageTag) = containerImageList.last().tokenize(':')
-
-    // Get the rest of the elements
-    containerImageList.pop()  // Removes the Container Registry
-    containerImageList.removeLast()  // Removes the image name with tag
+    def registry = containerImageList.pop()
+    def imageNameAndTag = containerImageList.removeLast()
+    def (imageName, imageTag) = imageNameAndTag.tokenize(':')
     def fullPathToImage = containerImageList.join("/")
+
+    println("Registry: ${registry}\nImageName: ${imageName}\nTag: ${imageTag}")
+    println("This is what is stored in ${fullPathToImage}")
 
     args += [
         "--docker-registry ${registry}",
@@ -236,7 +236,7 @@ def call(Map parameters) {
     // Start cephci run
     dir(gitDir) {
         def cmdStr = args.join(" ")
-        sh script: cmdStr
+        // sh script: cmdStr
 
         // Check result file, exit 1 in case no results are generated
         if ( ! fileExists("${logDir}/xunit.xml") ) {
