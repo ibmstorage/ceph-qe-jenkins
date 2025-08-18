@@ -152,17 +152,20 @@ def call(Map parameters) {
         )
     }
 
-    // Get container registry, image name and tag
-    def tag = containerImage =~ /(.*(.com|.io))\/(.*):(.*)/
-    if ( ! tag.find() ) {
-        throw new RuntimeException(
-            "Failed to get image tag from URL: ${containerImage}"
-        )
-    }
+    // We cannot use matcher due serialization issues
+    def containerImageList = containerImage.taokenize('/')
+    def registry = containerImageList.first()
+    def (imageName, imageTag) = containerImageList.last().tokenize(':')
+
+    // Get the rest of the elements
+    containerImageList.pop()  // Removes the Container Registry
+    containerImageList.remoteLast()  // Removes the image name with tag
+    def fullPathToImage = containerImageList.join("/")
+
     args += [
-        "--docker-registry " + tag[0][1],
-        "--docker-image " + tag[0][3],
-        "--docker-tag " + tag[0][4]
+        "--docker-registry ${registry}",
+        "--docker-image ${fullPathToImage}/${imageName}",
+        "--docker-tag ${imageTag}"
     ]
 
     // Check for additional arguments
