@@ -159,9 +159,6 @@ def call(Map parameters) {
     def (imageName, imageTag) = imageNameAndTag.tokenize(':')
     def fullPathToImage = containerImageList.join("/")
 
-    println("Registry: ${registry}\nImageName: ${imageName}\nTag: ${imageTag}")
-    println("This is what is stored in ${fullPathToImage}")
-
     args += [
         "--docker-registry ${registry}",
         "--docker-image ${fullPathToImage}/${imageName}",
@@ -236,7 +233,7 @@ def call(Map parameters) {
     // Start cephci run
     dir(gitDir) {
         def cmdStr = args.join(" ")
-        // sh script: cmdStr
+        sh script: cmdStr
 
         // Check result file, exit 1 in case no results are generated
         if ( ! fileExists("${logDir}/xunit.xml") ) {
