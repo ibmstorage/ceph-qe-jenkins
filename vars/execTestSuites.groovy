@@ -154,8 +154,8 @@ def call(Map parameters) {
 
     // We cannot use matcher due serialization issues
     def containerImageList = containerImage.tokenize('/')
-    def registry = containerImageList.pop()
-    def imageNameAndTag = containerImageList.removeLast()
+    def registry = containerImageList.tail()
+    def imageNameAndTag = containerImageList.pop()
     def (imageName, imageTag) = imageNameAndTag.tokenize(':')
     def fullPathToImage = containerImageList.join("/")
 
