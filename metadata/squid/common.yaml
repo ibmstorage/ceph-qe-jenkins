@@ -1,0 +1,12 @@
+bvt:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Build Verfification Test"
+      suite: suites/squid/smoke/bvt.yaml
+      global-conf: conf/squid/common/3node-1client.yaml
+      platform:
+        - rhel-9
+      tags:
+        - bvt
