@@ -79,9 +79,6 @@ pipeline {
                         // Debug
                         echo "Executing suite: ${suite.suite} with config: ${suite.global_conf}"
 
-                        // Replace blank spaces with `_`
-                        suite.name = suite.name.replace(" ", "_")
-
                         // Create stages based on test suite
                         testSuitesMap[suite.name] = {
                             stage(suite.name) {

@@ -68,7 +68,8 @@ def get_testsuite(
 
     # Create testsuites with details
     return {
-        "name": test.get("name", ""),
+        "name": test.get("name", "").replace(
+                " ", "_").replace(".", "_").replace("-", "_"),
         "suite": test.get("suite", ""),
         "global_conf": test.get("global-conf", ""),
         "vm_size": test.get("vm-size", ""),
