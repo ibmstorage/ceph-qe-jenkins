@@ -4,10 +4,6 @@ class jobConfigs {
     // Default prefix configs
     static final int PREFIX_LENGTH = 6
 
-    // Set OSP credentials default
-    static final String IBMC_CRED_PREFIX = "ibmc-cred"
-    static final String OSP_CRED_FILE = "osp-creds.yaml"
-
     // Default job path
     static final String JOB_DIR_PATH = "/data/jenkins/ceph-builds"
 
