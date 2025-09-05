@@ -152,8 +152,25 @@ pipeline {
     post {
         always {
             script {
+                // Debug
+                echo "Send results to ${params.EMAIL_ADDRESS}"
+
                 // Always run this block
-                echo "This will always run, regardless of the build result."
+                publishTestResults(
+                    cephVersion: jobConfigs.cephVersion,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
+                    platform: jobConfigs.platform,
+                    cloudType: jobConfigs.cloudType,
+                    logDir: jobConfigs.logDir,
+                    resultsDir: jobConfigs.resultsDir,
+                    resultsSummary: jobConfigs.resultsSummary,
+                    artifacts: jobConfigs.artifacts,
+                    emailBody: jobConfigs.emailBody,
+                    emailAddr: params.EMAIL_ADDRESS
+                )
             }
         }
 
