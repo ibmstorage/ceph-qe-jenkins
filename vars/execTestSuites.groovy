@@ -194,7 +194,7 @@ def call(Map parameters) {
     def addRepo = parameters.get("addRepo")
     args += addRepo ? ["--add-repo ${addRepo}"] : []
 
-    // Check for repm parameters
+    // Check for rpm parameters
     def skipEnablingRhelRpms = parameters.get("skipEnablingRhelRpms")
     args += skipEnablingRhelRpms ? ["--skip-enabling-rhel-rpms"] : []
 
@@ -224,6 +224,9 @@ def call(Map parameters) {
             "--custom-config ibmc_profile=${vmFlavor}"
         ]
     }
+
+    // Check for sos report
+    args += parameters.skipSosReport ? ["--skip-sos-report"] : []
 
     // Add exit status
     args += [
