@@ -1,0 +1,10 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-2 RBD Regression Image Migration"
+      suite: suites/squid/rbd/tier-2_rbd_regression_Image_migration.yaml
+      global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      platform:
+        - rhel-9

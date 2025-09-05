@@ -1,0 +1,10 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-2 RADOS Test OSD Rebalance"
+      suite: suites/squid/rados/tier-2_rados_test-osd-rebalance.yaml
+      global-conf: conf/squid/rados/11-node-cluster.yaml
+      platform:
+        - rhel-9

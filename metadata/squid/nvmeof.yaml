@@ -1,0 +1,11 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "NVMeOF Functional Regression Tests"
+      suite: suites/squid/nvmeof/tier-2_nvmeof_functional_Regression.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
+      vm-flavor: bx2-4x16
+      platform:
+        - rhel-9

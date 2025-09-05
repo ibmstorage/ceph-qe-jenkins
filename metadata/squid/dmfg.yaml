@@ -1,0 +1,10 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+      - name: "Tier-1 CephAdm Ansible Wrapper Bootstrap With Registry Details"
+        suite: suites/squid/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
+        global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+        platform:
+          - rhel-9

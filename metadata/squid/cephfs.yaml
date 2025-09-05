@@ -1,0 +1,10 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Regression Suite 1"
+      suite: suites/squid/cephfs/regression_suite_1.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9

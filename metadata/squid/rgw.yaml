@@ -1,0 +1,10 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-1 RGW MS ECPOOL Regression Tests"
+      suite: suites/squid/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
+      global-conf: conf/squid/rgw/ms-ec-profile-4+2-cluster.yaml
+      platform:
+        - rhel-9
