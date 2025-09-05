@@ -84,7 +84,7 @@
             </tr>
             {% for item in Results %}
                 <tr style="text-align: center; {% if item.total == 0 %}background-color: #ECECC3; {% elif item.status == 'FAIL' %}background-color: #FCD0D0;{% else %}background-color: #DDFFDD;{% endif %}">
-                    <td><b><a href="{{Log}}/{{item.name}}">{{item.name}}</a></b></td>
+                    <td><b>{{item.name}}</b></td>
                     <td style="text-align: center">{{item.time}} min</td>
                     <td style="text-align: center">{{item.total}}</td>
                     <td style="text-align: center">{{item.passed}}</td>
