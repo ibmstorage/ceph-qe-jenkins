@@ -48,9 +48,6 @@ def call(Map parameters) {
     jobConfig.python = cephciConfigs.PYTHON
     jobConfig.venvDir = cephciConfigs.VENV_DIR
 
-    // Update job directory based on cloud type
-    jobDir += [jobConfig.cloudType]
-
     // Update dir paths based on build type
     jobConfig.buildType = params.BUILD_TYPE
     jobDir += [jobConfig.buildType]
