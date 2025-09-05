@@ -1,13 +1,5 @@
 // Import shared library
-// @Library("ceph-qe-libs@main")_
-
-library identifier: "custom-lib@email-notification", retriever: modernSCM([
-    $class: "GitSCMSource",
-    remote: "https://github.ibm.com/Vaibhav-Sukhadev-Mahajan/jenkins.git",
-    credentialsId: "ceph-qe-sa-pat"
-])
-
-
+@Library("ceph-qe-libs@main")_
 
 // Set job parameters
 def job = "bvt"
