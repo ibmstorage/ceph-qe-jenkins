@@ -54,7 +54,7 @@ def call(Map parameters) {
     ].join(" "))
 
     // Create test artifacts Content
-    def testResult = readFile file: "${jobConfigs.RESULTS_SUMMARY}"
+    def testResult = readFile file: "${resultsSummary}"
     def artifactsContent = """{
         "BuildType": "${buildType}",
         "Release": "${rhBuild}",
@@ -67,11 +67,11 @@ def call(Map parameters) {
         "jobName": "${env.JOB_NAME}",
         "Results": ${testResult}
     }"""
-    writeJSON file: "${jobConfigs.ARTIFACTS}", json: artifactsContent
+    writeJSON file: "${artifacts}", json: artifactsContent
 
     // Create email through jinja
     sh([
-        "jinja -d ${jobConfigs.ARTIFACTS}",
+        "jinja -d ${artifacts}",
         "templates/${jobConfigs.EMAIL_TEMPLATE}",
         "-o ${emailBody}"
     ].join(" "))
