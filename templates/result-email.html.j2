@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        table.full-table{
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+        td, th {
+            border: 1px solid #050505;
+            text-align: left;
+            padding: 8px;
+        }
+        p { margin:0 }
+        table, th, td {
+            border: 1px solid #050505;
+            border-collapse: collapse;
+        }
+        caption {
+            font-size: 150%;
+            font-weight: bold;
+        }
+        .indent-underline {
+            text-indent: 85px;
+            text-decoration: underline;
+        }
+        .underline {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <br>
+    <table style="width:1000px">
+        <caption style="background-color: #A5A5A5; border: 1px solid black; height: 40px; align-items: center; justify-content: center;">TEST ARTIFACTS</caption>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Build Type</b></td>
+                <td>{{BuildType}}</td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Ceph Version</b></td>
+                <td>{{CephVersion}}</td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Release</b></td>
+                <td>{{Release}}</td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>RHEL Version</b></td>
+                <td>{{RhelVersion}}</td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Cloud</b></td>
+                <td>{{CloudType}}</td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Job</b></td>
+                <td><a href="{{Job}}">{{jobName}}</a></td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Repo</b></td>
+                <td><a href="{{Repo}}">{{Repo.split('/').pop()}}</a></td>
+            </tr>
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Container</b></td>
+                <td>{{Container}}</td>
+            </tr>
+    </table>
+    {% if Results %}
+        <br>
+        <table style="width:1000px">
+            <caption style="background-color: #A5A5A5; border: 1px solid black; height: 40px; align-items: center; justify-content: center;">TEST SUMMARY</caption>
+            <tr>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>Test Suite</b></th>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>TIME</b></th>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>TOTAL</b></th>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>PASSED</b></th>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>FAILED</b></th>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>SKIPPED</b></th>
+                <th style="text-align: center; background-color: #D4D7D4;"><b>COMMENTS</b></th>
+            </tr>
+            {% for item in Results %}
+                <tr style="text-align: center; {% if item.total == 0 %}background-color: #ECECC3; {% elif item.status == 'FAIL' %}background-color: #FCD0D0;{% else %}background-color: #DDFFDD;{% endif %}">
+                    <td><b><a href="{{Log}}/{{item.name}}">{{item.name}}</a></b></td>
+                    <td style="text-align: center">{{item.time}} min</td>
+                    <td style="text-align: center">{{item.total}}</td>
+                    <td style="text-align: center">{{item.passed}}</td>
+                    <td style="text-align: center">{{item.failed}}</td>
+                    <td style="text-align: center">{{item.skipped}}</td>
+                    <td style="text-align: center">{{item.comments}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html>

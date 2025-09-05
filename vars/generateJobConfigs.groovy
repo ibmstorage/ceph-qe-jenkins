@@ -114,6 +114,12 @@ def call(Map parameters) {
     jobConfig.gitDir = [jobConfig.jobDir, cephciConfigs.GIT_DIR].join("/")
     jobConfig.logDir = [jobConfig.jobDir, cephciConfigs.LOG_DIR].join("/")
 
+    // Set job config directories
+    jobConfig.resultsDir = [jobConfig.jobDir, jobConfigs.RESULTS_DIR].join("/")
+    jobConfig.resultsSummary = [jobConfig.jobDir, jobConfigs.RESULTS_SUMMARY].join("/")
+    jobConfig.artifacts = [jobConfig.jobDir, jobConfigs.ARTIFACTS].join("/")
+    jobConfig.emailBody = [jobConfig.jobDir, jobConfigs.EMAIL_BODY].join("/")
+
     // Check for IBMC Credential ID
     jobConfig.ibmcCredFile = [jobConfig.gitDir, "osp-cred"].join("/")
 
