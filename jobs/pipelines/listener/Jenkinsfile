@@ -1,0 +1,65 @@
+// Import shared library
+// @Library("ceph-qe-libs@main")_
+
+library identifier: "custom-lib@listener", retriever: modernSCM([
+    $class: "GitSCMSource",
+    remote: "https://github.ibm.com/Vaibhav-Sukhadev-Mahajan/jenkins.git",
+    credentialsId: "ceph-qe-sa-pat"
+])
+
+// Global variables section
+def buildInfo = [:]
+def buildTag = "nightly"
+
+
+// Pipeline definition
+pipeline {
+    options {
+        // Set build archieve policy
+        buildDiscarder(logRotator(numToKeepStr: "30", daysToKeepStr: "30"))
+
+        // Disable parallel execution
+        disableConcurrentBuilds()
+    }
+
+    agent {
+        // Use agent label
+        label "agents"
+    }
+
+    stages {
+        // Validate build details
+        stage("Validate Params") {
+            steps {
+                script {
+                    if (!params.TEST_KONFLUX_STRING_PARAM) {
+                        currentBuild.result = "ABORTED"
+                        error("Mandatory parameter 'TEST_KONFLUX_STRING_PARAM' not provided")
+                    }
+                }
+            }
+        }
+
+        // Validate builds
+        stage("Validate Builds") {
+            steps {
+                script {
+                    buildInfo = validateKonfluxBuilds(
+                        buildMessage: params.TEST_KONFLUX_STRING_PARAM
+                    )
+                }
+            }
+        }
+
+        // Update builds to repo
+        stage("Update Recipe") {
+            steps {
+                script {
+                    writeToManifest(
+                        buildInfo: buildInfo, buildTag: buildTag
+                    )
+                }
+            }
+        }
+    }
+}

@@ -188,6 +188,7 @@ security:
     usageStatisticsEnabled: true
   scriptApproval:
     approvedSignatures:
+      - method groovy.lang.GroovyObject invokeMethod java.lang.String java.lang.Object
       - method java.io.File getName
       - new java.lang.RuntimeException java.lang.String
       - method org.jsoup.Connection get
