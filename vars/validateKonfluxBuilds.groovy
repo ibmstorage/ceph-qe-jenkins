@@ -4,6 +4,7 @@
 def call(Map parameters) {
     // Set build config
     def buildInfo = [:]
+    buildInfo.type = ""
 
     // Get mandatory parameter
     def buildMessage = parameters.get("buildMessage")
@@ -42,14 +43,35 @@ def call(Map parameters) {
     if (buildMessage.get("components")) {
         buildInfo.images = [:]
         buildMessage.components.each { component ->
+            // Check for build type
+            if (!buildInfo.type) {
+                if (component.containerImage.contains("ibm-ceph")) {
+                    buildInfo.type = "ibm"
+                }
+                else if (
+                    component.containerImage.contains("rh-osbs") ||
+                    component.containerImage.contains("rhceph-dev")
+                ) {
+                    buildInfo.type = "redhat"
+                }
+                else {
+                    currentBuild.result = "ABORTED"
+                    error("Unsuported ceph base image ${component.containerImage}")
+                }
+
+                // Debug
+                echo "Recieved build info for ${buildInfo.type} build"
+            }
+
+            // Update image key based on build recieved
             if(component.name.startsWith("ceph")) {
                 buildInfo.images."ceph-base" = component.containerImage
 
                 // Check for build platform
-                if(component.name.contains("rhel9")) {
+                if(component.containerImage.contains("rhel9")) {
                     buildInfo.platform = "rhel-9"
                 }
-                else if (component.name.contains("rhel10")) {
+                else if (component.containerImage.contains("rhel10")) {
                     buildInfo.platform = "rhel-10"
                 }
                 else {
@@ -60,31 +82,6 @@ def call(Map parameters) {
 
                 // Debug
                 echo "Recieved build info for platform ${buildInfo.platform}"
-
-                // Check for build type
-                if(
-                    component.name.startsWith("cp.icr.io") ||
-                    component.name.startsWith("cp.stg.icr.io")
-                ) {
-                    buildInfo.type = "ibm"
-                }
-                else if (
-                    component.name.startsWith("quay.io") ||
-                    component.name.startsWith("registry-proxy.engineering.redhat.com")
-                ) {
-                    buildInfo.type = "redhat"
-                }
-                else {
-                    throw new RuntimeException(
-                        "Unsuported ceph base image repository ${component.name}"
-                    )
-                }
-
-                // Debug
-                echo "Recieved build info for ${buildInfo.type} build"
-
-                // Set recipe path
-                buildInfo.recipe = "${buildInfo.type}/${buildInfo.recipe}"
             }
             else if(component.name.startsWith("prometheus")) {
                 buildInfo.images.prometheus_image = component.containerImage
@@ -144,6 +141,21 @@ def call(Map parameters) {
     if (buildMessage.artifacts) {
         buildInfo.repositories = [:]
         buildMessage.artifacts.each { platform, repo ->
+            // Check for build type
+            if (!buildInfo.type) {
+                if (repo.contains("IBM-CEPH")) {
+                    buildInfo.type = "ibm"
+                }
+                else if (repo.contains("RHCEPH")) {
+                    buildInfo.type = "redhat"
+                }
+                else {
+                    currentBuild.result = "ABORTED"
+                    error("Unsuported repository ${repo}")
+                }
+            }
+
+            // Check for platform
             if(platform == "rhel9") {
                 buildInfo.repositories."rhel-9" = repo
             }
@@ -165,6 +177,9 @@ def call(Map parameters) {
         // Debug
         echo "Recieved build info for version ${buildInfo.version}"
     }
+
+    // Set recipe file
+    buildInfo.recipe = "${buildInfo.type}/${buildInfo.recipe}"
 
     // Return build info
     return buildInfo

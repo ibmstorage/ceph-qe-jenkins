@@ -11,10 +11,10 @@ def job = pipelineJob("ceph-build-konflux-listener") {
             scm {
                 git {
                     remote {
-                        url("https://github.ibm.com/Vaibhav-Sukhadev-Mahajan/jenkins.git")
+                        url("https://github.ibm.com/ceph-qe-ng/jenkins.git")
                         credentials("ceph-qe-sa-pat")
                     }
-                    branch("listener")
+                    branch("*/main")
                 }
             }
             scriptPath("jobs/pipelines/listener/Jenkinsfile")

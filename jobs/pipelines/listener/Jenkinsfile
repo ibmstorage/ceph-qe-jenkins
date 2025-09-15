@@ -1,15 +1,11 @@
 // Import shared library
-// @Library("ceph-qe-libs@main")_
+@Library("ceph-qe-libs@main")_
 
-library identifier: "custom-lib@listener", retriever: modernSCM([
-    $class: "GitSCMSource",
-    remote: "https://github.ibm.com/Vaibhav-Sukhadev-Mahajan/jenkins.git",
-    credentialsId: "ceph-qe-sa-pat"
-])
 
 // Global variables section
 def buildInfo = [:]
 def buildTag = "nightly"
+def job = "listener"
 
 
 // Pipeline definition
@@ -44,6 +40,7 @@ pipeline {
         stage("Validate Builds") {
             steps {
                 script {
+                    // Get build info from message
                     buildInfo = validateKonfluxBuilds(
                         buildMessage: params.TEST_KONFLUX_STRING_PARAM
                     )
@@ -55,9 +52,7 @@ pipeline {
         stage("Update Recipe") {
             steps {
                 script {
-                    writeToManifest(
-                        buildInfo: buildInfo, buildTag: buildTag
-                    )
+                    writeToManifest(buildInfo: buildInfo, buildTag: buildTag, job: job)
                 }
             }
         }

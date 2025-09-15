@@ -1,5 +1,6 @@
 // Method to read builds from manifest
 
+import main.groovy.cephJobLib.jobConfigs
 import main.groovy.cephJobLib.manifestConfigs
 
 
@@ -20,6 +21,20 @@ def call(Map parameters) {
         )
     }
 
+    // Get job directory
+    def job = parameters.get("job")
+    def jobDir = parameters.get("jobDir")
+    if (!jobDir) {
+        if (!job) {
+            throw new RuntimeException(
+                "Either job or jobDir parameter must be provided"
+            )
+        }
+        jobDir = [
+            jobConfigs.JOB_DIR_PATH, job, env.BUILD_NUMBER, manifestConfigs.MANIFEST_DIR
+        ].join("/")
+    }
+
     // Checkout manifest repo to agent
     checkout([
         $class: "GitSCM",
@@ -32,7 +47,7 @@ def call(Map parameters) {
         extensions: [
             [
                 $class: "RelativeTargetDirectory",
-                relativeTargetDir: "${manifestConfigs.MANIFEST_DIR}"
+                relativeTargetDir: "${jobDir}"
             ],
             [
                 $class: "CloneOption",
@@ -45,11 +60,18 @@ def call(Map parameters) {
         ]
     ])
 
+    // Check if recipe file exists
+    if (!fileExists("${jobDir}/${recipe}")) {
+        echo "Recipe file ${recipe} does not exist, creating a new one"
+        writeFile file: "${jobDir}/${recipe}", text: ""
+        return [:]
+    }
+
     // Debug
     echo "Reading build content from recipe ${recipe}"
 
-    // Get recipe file contents
-    def recipeContent = readYaml file: "${manifestConfigs.MANIFEST_DIR}/${recipe}"
+    // Read recipe file
+    def recipeContent = readYaml file: "${jobDir}/${recipe}"
 
     // Return content
     return recipeContent
