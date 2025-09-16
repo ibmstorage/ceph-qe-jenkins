@@ -67,6 +67,32 @@ jenkins:
         numExecutors: 10
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
+    - permanent:
+        labelString: "infra"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: 10.243.80.46
+            port: 22
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+        name: "infra-vm-jenkins-agent-02"
+        nodeDescription: "Workflow executor for infra jobs only."
+        numExecutors: 5
+        remoteFS: "/data/jenkins"
+        retentionStrategy: "always"
+    - permanent:
+        labelString: "agents"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: 10.243.80.47
+            port: 22
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+        name: "infra-vm-jenkins-agent-03"
+        nodeDescription: "Workflow executor"
+        numExecutors: 10
+        remoteFS: "/data/jenkins"
+        retentionStrategy: "always"
 
 appearance:
   consoleUrlProvider:
