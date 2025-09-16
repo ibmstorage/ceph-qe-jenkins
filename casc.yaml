@@ -43,6 +43,7 @@ jenkins:
               - "Run/Replay"
             entries:
               - group: "ceph-qe-ng*ceph-qe-ibm"
+              - group: "ceph-qe-ng*build-team"
 
   slaveAgentPort: -1
 
