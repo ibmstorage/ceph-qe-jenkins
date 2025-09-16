@@ -44,6 +44,7 @@ role-strategy
 script-security
 ssh-credentials
 ssh-slaves
+ssh-steps
 test-results-analyzer
 timestamper
 theme-manager
