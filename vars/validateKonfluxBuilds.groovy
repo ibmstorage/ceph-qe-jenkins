@@ -8,7 +8,7 @@ def call(Map parameters) {
 
     // Get mandatory parameter
     def buildMessage = parameters.get("buildMessage")
-    if (!buildMessage) {
+    if ( ! buildMessage ) {
         throw new RuntimeException(
             "Mandatory buildMessage parameter not provided"
         )
@@ -19,38 +19,34 @@ def call(Map parameters) {
 
     // Check for mandatory configs
     def application = buildMessage.get("application")
-    if (!application) {
+    if ( ! application ) {
         throw new RuntimeException(
-            "Mandatory build parameter application not provided"
+            "application - a primary key used to process the data is missing."
         )
     }
 
     // Set recipe based on application
-    if (application == "ceph-8-0") {
-        buildInfo.recipe = "8.0.yaml"
-    } else if(application == "ceph-8-1") {
-        buildInfo.recipe = "8.1.yaml"
-    } else if(application == "ceph-9-0") {
-        buildInfo.recipe = "9.0.yaml"
-    } else {
-       throw new RuntimeException("Unsuported application ${application}")
-    }
+    def versionArray = application.split("-")
+    versionArray.removeAt(0)  // Removes ceph
+    versionArray.push('yaml')  // this helps to include the file extension.
+    buildInfo.recipe = versionArray.join(".") 
 
     // Debug
     echo "Recieved build info for application ${application}"
+    echo "The recipe file selected is ${buildInfo.recipe}"
 
     // Set components
-    if (buildMessage.get("components")) {
+    if ( buildMessage.get("components") ) {
         buildInfo.images = [:]
         buildMessage.components.each { component ->
             // Check for build type
-            if (!buildInfo.type) {
-                if (component.containerImage.contains("ibm-ceph")) {
+            if ( ! buildInfo.type ) {
+                if ( component.containerImage.contains("ibm-ceph") ) {
                     buildInfo.type = "ibm"
                 }
                 else if (
                     component.containerImage.contains("rh-osbs") ||
-                    component.containerImage.contains("rhceph-dev")
+                    component.containerImage.contains("rhceph")
                 ) {
                     buildInfo.type = "redhat"
                 }
@@ -64,72 +60,65 @@ def call(Map parameters) {
             }
 
             // Update image key based on build recieved
-            if(component.name.startsWith("ceph")) {
+            if ( component.name.startsWith("ceph") ||
+                 component.name.startsWith("rhceph")
+            ) {
                 buildInfo.images."ceph-base" = component.containerImage
 
-                // Check for build platform
-                if(component.containerImage.contains("rhel9")) {
-                    buildInfo.platform = "rhel-9"
-                }
-                else if (component.containerImage.contains("rhel10")) {
-                    buildInfo.platform = "rhel-10"
-                }
-                else {
-                    throw new RuntimeException(
-                        "Unsuported ceph base image ${component}"
-                    )
-                }
-
-                // Debug
+                // Setting the build platform to RHEL-9
+                buildInfo.platform = "rhel-9"
                 echo "Recieved build info for platform ${buildInfo.platform}"
             }
-            else if(component.name.startsWith("prometheus")) {
+            else if( component.name.startsWith("prometheus" ) ) {
                 buildInfo.images.prometheus_image = component.containerImage
             }
-            else if (component.name.startsWith("prometheus-node-exporter")) {
+            else if ( component.name.startsWith("prometheus-node-exporter") ) {
                 buildInfo.images.node_exporter_image = component.containerImage
             }
-            else if (component.name.startsWith("grafana")) {
+            else if ( component.name.startsWith("grafana") ) {
                 buildInfo.images.grafana_image = component.containerImage
             }
-            else if (component.name.startsWith("prometheus-alertmanager")) {
+            else if ( component.name.startsWith("prometheus-alertmanager") ) {
                 buildInfo.images.alertmanager_image = component.containerImage
             }
-            else if (component.name.startsWith("haproxy")) {
+            else if ( component.name.startsWith("haproxy") ) {
                 buildInfo.images.haproxy_image = component.containerImage
             }
-            else if (component.name.startsWith("keepalived")) {
+            else if ( component.name.startsWith("keepalived") ) {
                 buildInfo.images.keepalived_image = component.containerImage
             }
-            else if (component.name.startsWith("snmp-notifier")) {
+            else if ( component.name.startsWith("snmp-notifier") ) {
                 buildInfo.images.snmp_gateway_image = component.containerImage
             }
-            else if (component.name.startsWith("logging-loki")) {
+            else if ( component.name.startsWith("logging-loki") ) {
                 buildInfo.images.loki_image = component.containerImage
             }
-            else if (component.name.startsWith("promtail")) {
+            else if ( component.name.startsWith("promtail") ) {
                 buildInfo.images.promtail_image = component.containerImage
             }
-            else if (component.name.startsWith("nvmeof")) {
-                buildInfo.images.nvmeof_image = component.containerImage
-            }
-            else if (component.name.startsWith("nvmeof-cli")) {
+            else if ( component.name.startsWith("nvmeof-cli") ) {
                 buildInfo.images.nvmeof_cli_image = component.containerImage
             }
-            else if (component.name.startsWith("samba-server")) {
+            else if ( component.name.startsWith("nvmeof") ) {
+                buildInfo.images.nvmeof_cli_image = component.containerImage
+            }
+            else if ( component.name.startsWith("samba-server") ) {
                 buildInfo.images.samba_image = component.containerImage
             }
-            else if (component.name.startsWith("samba-metrics")) {
+            else if ( component.name.startsWith("samba-metrics") ) {
                 buildInfo.images.samba_metrics_image = component.containerImage
             }
-            else if (component.name.startsWith("oauth2-proxy")) {
+            else if ( component.name.startsWith("oauth2-proxy") ) {
                 buildInfo.images.oauth2_proxy_image = component.containerImage
             }
-            else if (component.name.startsWith("nginx")) {
+            else if ( component.name.startsWith("nginx") ) {
                 buildInfo.images.nginx_image = component.containerImage
             }
+            else if ( component.name.startsWith("alloy") ) {
+                buildInfo.images.alloy_image = component.containerImage
+            }
             else {
-                print("Unsupported image ${component.name}")
+                print("Got an unknown image ${component.name}")
             }
         }
 
@@ -138,15 +127,15 @@ def call(Map parameters) {
     }
 
     // Set repositories
-    if (buildMessage.artifacts) {
+    if ( buildMessage.artifacts ) {
         buildInfo.repositories = [:]
         buildMessage.artifacts.each { platform, repo ->
             // Check for build type
-            if (!buildInfo.type) {
-                if (repo.contains("IBM-CEPH")) {
+            if ( ! buildInfo.type ) {
+                if ( repo.contains("IBM-CEPH") ) {
                     buildInfo.type = "ibm"
                 }
-                else if (repo.contains("RHCEPH")) {
+                else if ( repo.contains("RHCEPH") ) {
                     buildInfo.type = "redhat"
                 }
                 else {
@@ -156,10 +145,10 @@ def call(Map parameters) {
             }
 
             // Check for platform
-            if(platform == "rhel9") {
+            if ( platform == "rhel9" ) {
                 buildInfo.repositories."rhel-9" = repo
             }
-            else if (platform == "rhel10") {
+            else if ( platform == "rhel10" ) {
                 buildInfo.repositories."rhel-10" = repo
             }
             else {
