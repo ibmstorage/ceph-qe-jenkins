@@ -20,7 +20,7 @@ pipeline {
 
     agent {
         // Use agent label
-        label "agents"
+        label "infra"
     }
 
     stages {
@@ -28,7 +28,7 @@ pipeline {
         stage("Validate Params") {
             steps {
                 script {
-                    if (!params.TEST_KONFLUX_STRING_PARAM) {
+                    if ( ! params.TEST_KONFLUX_STRING_PARAM ) {
                         currentBuild.result = "ABORTED"
                         error("Mandatory parameter 'TEST_KONFLUX_STRING_PARAM' not provided")
                     }
