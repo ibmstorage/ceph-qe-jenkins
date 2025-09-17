@@ -26,7 +26,7 @@ def call(Map parameters) {
     }
 
     // Set recipe based on application
-    def versionArray = application.split("-")
+    def versionArray = application.tokenize("-")
     versionArray.removeAt(0)  // Removes ceph
     versionArray.push('yaml')  // this helps to include the file extension.
     buildInfo.recipe = versionArray.join(".") 
