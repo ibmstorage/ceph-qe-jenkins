@@ -3,7 +3,7 @@ package io.jenkins.plugins.casc
 def job = freeStyleJob('seed') {
     displayName('Seed job for generating jobs and views.')
 
-    label ("agents")
+    label ("infra")
 
     wrappers {
         preBuildCleanup()
