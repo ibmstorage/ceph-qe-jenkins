@@ -8,3 +8,14 @@ regression:
       global-conf: conf/squid/nfs/1admin-7node-3client.yaml
       platform:
         - rhel-9
+    - name: "Tier-1 NFS Ganesha"
+      suite: suites/squid/nfs/tier1-nfs-ganesha.yaml
+      global-conf: conf/squid/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 NFS Ganesha v4.2"
+      suite: suites/squid/nfs/tier1-nfs-ganesha-v4-2.yaml
+      global-conf: conf/squid/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-9
+
