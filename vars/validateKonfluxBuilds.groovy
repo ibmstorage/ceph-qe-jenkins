@@ -5,6 +5,7 @@ def call(Map parameters) {
     // Set build config
     def buildInfo = [:]
     buildInfo.type = ""
+    buildInfo.buildVersion = ""
 
     // Get mandatory parameter
     def buildMessage = parameters.get("buildMessage")
@@ -27,9 +28,18 @@ def call(Map parameters) {
 
     // Set recipe based on application
     def versionArray = application.tokenize("-")
-    versionArray.removeAt(0)  // Removes ceph
-    versionArray.push('yaml')  // this helps to include the file extension.
-    buildInfo.recipe = versionArray.join(".") 
+
+    // Removes ceph
+    versionArray.removeAt(0)
+
+    // Set build version
+    buildInfo.buildVersion = versionArray.join(".")
+
+    // this helps to include the file extension.
+    versionArray.push('yaml')
+
+    // Set recipe file name
+    buildInfo.recipe = versionArray.join(".")
 
     // Debug
     echo "Recieved build info for application ${application}"

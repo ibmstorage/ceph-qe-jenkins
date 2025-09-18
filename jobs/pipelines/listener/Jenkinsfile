@@ -1,11 +1,12 @@
 // Import shared library
 @Library("ceph-qe-libs@main")_
 
-
 // Global variables section
 def buildInfo = [:]
 def buildTag = "nightly"
 def job = "listener"
+def buildType = ""
+def buildVersion = ""
 
 
 // Pipeline definition
@@ -30,7 +31,10 @@ pipeline {
                 script {
                     if ( ! params.TEST_KONFLUX_STRING_PARAM ) {
                         currentBuild.result = "ABORTED"
-                        error("Mandatory parameter 'TEST_KONFLUX_STRING_PARAM' not provided")
+                        error(
+                            "Mandatory parameter " +
+                            "'TEST_KONFLUX_STRING_PARAM' not provided"
+                        )
                     }
                 }
             }
@@ -44,15 +48,81 @@ pipeline {
                     buildInfo = validateKonfluxBuilds(
                         buildMessage: params.TEST_KONFLUX_STRING_PARAM
                     )
+
+                    // Set build type & version
+                    buildType = buildInfo.type.toUpperCase()
+                    buildVersion = buildInfo.buildVersion
                 }
             }
         }
 
         // Update builds to repo
-        stage("Update Recipe") {
+        stage("Update Manifest") {
             steps {
                 script {
-                    writeToManifest(buildInfo: buildInfo, buildTag: buildTag, job: job)
+                    writeToManifest(
+                        buildInfo: buildInfo, buildTag: buildTag, job: job
+                    )
+                }
+            }
+        }
+
+        // Trigger BVT pipeline
+        stage("Trigger BVT") {
+            when {
+                expression {
+                    buildInfo.version
+                }
+            }
+
+            steps {
+                script {
+                    // Check for ceph version
+                    def jobName = ""
+                    def platform = ""
+                    if (buildInfo.version.startsWith("19")) {
+                        jobName = "squid-bvt-ci"
+                        platform = "rhel-9"
+                    } else if (buildInfo.version.startsWith("20")) {
+                        jobName = "tentacle-bvt-ci"
+                        platform = "rhel-10"
+                    } else {
+                        currentBuild.result = "ABORTED"
+                        error("Unsupported Ceph version ${buildInfo.version}")
+                    }
+
+                    // Set Custom Configs & RHCS Ceph Repo
+                    def customConfigs = ""
+                    def cephBase = ""
+                    buildInfo.images.each { image, url ->
+                        if (image == "ceph-base") {
+                            cephBase = url
+                        } else {
+                            customConfigs += "${image}=${url},"
+                        }
+                    }
+
+                    // Trigger BVT job
+                    build ([
+                        wait: false,
+                        job: jobName,
+                        parameters: [
+                            string(
+                                name: "BUILD_VERSION", value: buildVersion
+                            ),
+                            string(name: "RHEL_VERSION", value: platform),
+                            string(name: "BUILD_TYPE", value: buildType),
+                            string(
+                                name: "REPO",
+                                value: buildInfo.repositories."${platform}"
+                            ),
+                            string(name: "CONTAINER_IMAGE", value: cephBase),
+                            string(
+                                name: "CUSTOM_CONFIG", value: customConfigs
+                            )
+                        ]
+                    ])
+
                 }
             }
         }

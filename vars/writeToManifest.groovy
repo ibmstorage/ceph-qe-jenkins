@@ -87,6 +87,7 @@ def call(Map parameters) {
     buildInfo.remove("recipe")
     buildInfo.remove("platform")
     buildInfo.remove("type")
+    buildInfo.remove("buildVersion")
 
     // Write build info to recipe
     writeYaml file: recipe, data: recipeContent, overwrite: true
