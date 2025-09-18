@@ -193,6 +193,13 @@ credentials:
               username: cp
               password: "${readFile:/secrets/icr_io_passwd}"
 
+          - usernamePassword:
+              description: "IBM Cloud SendGrid API Key"
+              id: "send-grid-api"
+              scope: GLOBAL
+              username: apikey
+              password: "${readFile:/secrets/sendgrid_api_key}"
+
           - basicSSHUserPrivateKey:
               description: "SSH Private key for agent access"
               id: "jenkinsAgentSSHKey"
@@ -225,8 +232,27 @@ security:
 
 unclassified:
   email-ext:
+    charset: "UTF-8"
+    defaultRecipients: "ibm-ceph-qe-devops-alerts-dg@wwpdl.vnet.ibm.com"
+    defaultSuffix: "@ibm.com"
+    defaultTriggerIds:
+      - "hudson.plugins.emailext.plugins.trigger.FailureTrigger"
     mailAccount:
-      smtpHost: "smtp.corp.ibm.com"
+      credentialsId: "send-grid-api"
+      smtpHost: "smtp.sendgrid.net"
+      smtpPort: 587
+
+  mailer:
+    authentication:
+      password: "{AQAAABAAAABQcwb7g70iM9JtbQ+8DA13cKtxrMkV7K2gO/yP0nOxO7SGMHRoqmvQ31PnJ6vnil+lgZ/ajaq6+Ldzz+H1pHX17DLl353Fv9I2JIF3J2wJ2qWQagJXZXUCzr5kqifVOBZ2}"
+      username: "apikey"
+    charset: "UTF-8"
+    defaultSuffix: "@ibm.com"
+    replyToAddress: "ceph-qe-sa@ibm.com"
+    smtpHost: "smtp.sendgrid.net"
+    smtpPort: "587"
+    useSsl: false
+    useTls: true
 
   globalLibraries:
     libraries:
@@ -240,14 +266,8 @@ unclassified:
                 credentialsId: "ceph-qe-sa-pat"
 
   location:
-    adminAddress: "Ceph Qe Infra <ceph-qe-infra@ibm.com>"
+    adminAddress: "ceph-qe-sa@ibm.com"
     url: "https://149.81.216.83/"
-
-  mailer:
-    charset: "UTF-8"
-    defaultSuffix: "@ibm.com"
-    smtpHost: "smtp.corp.ibm.com"
-    useSsl: false
 
   scmGit:
     globalConfigEmail: "ceph-qe-sa@ibm.com"
