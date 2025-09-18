@@ -33,7 +33,7 @@ def call(Map parameters) {
     }
 
     // Get recipe file content
-    recipeContent = readFromManifest(parameters)
+    recipeContent = readFromManifest(recipe: buildInfo.recipe)
 
     // Initialize tag map if not present
     if (!recipeContent."${buildTag}") {

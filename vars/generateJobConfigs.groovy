@@ -14,21 +14,6 @@ def call(Map parameters) {
     // Set default values for job configuration
     def jobDir = [jobConfigs.JOB_DIR_PATH]
 
-    // Note don't confuse params with parameters, params is Jenkins system
-    // variable holding the Job parameters.
-
-    // Check for repository and container image
-    if ( ! params.REPO || ! params.CONTAINER_IMAGE ) {
-        currentBuild.result = "ABORTED"
-        error("Mandatory parameters 'REPO' & 'CONTAINER_IMAGE' are not provided")
-    }
-
-    // Get ceph downstream repo
-    jobConfig.rhsCephRepo = params.REPO
-
-    // Get container image
-    jobConfig.containerImage = params.CONTAINER_IMAGE
-
     // Get prefix for resources
     if ( ! params.PREFIX ) {
         currentBuild.result = "ABORTED"
@@ -59,9 +44,6 @@ def call(Map parameters) {
     // Get RHEL version
     jobConfig.platform = params.RHEL_VERSION
     jobDir += [jobConfig.platform]
-
-    // Fetch ceph version
-    jobConfig.cephVersion = fetchCephVersion(jobConfig)
 
     // Update job path with ceph version & build number
     jobDir += [jobConfig.job, jobConfig.cephVersion, env.BUILD_NUMBER]
@@ -109,6 +91,45 @@ def call(Map parameters) {
 
     // Set base job directory
     jobConfig.jobDir = jobDir.join("/")
+
+    // Check for repository and container image
+    if ( params.RELEASE ) {
+        // Set recipe path
+        def recipe = "${params.BUILD_TYPE.toLowerCase()}/${jobConfig.rhBuild}.yaml"
+
+        // Read recipe file from manifest repo
+        recipeContent = readFromManifest(recipe: recipe, jobDir: jobConfig.jobDir)
+
+        // Check if recipe content is valid
+        if ( ! recipeContent ) {
+            currentBuild.result = "ABORTED"
+            error("No recipe found for the provided recipe: ${recipe}")
+        }
+
+        // Check if release is valid
+        if ( ! recipeContent."${params.RELEASE}" ) {
+            currentBuild.result = "ABORTED"
+            error("No build info found for the provided release: ${params.RELEASE}")
+        }
+
+        // Get ceph downstream repo & container image
+        jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${jobConfig.platform}"
+        jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
+    } else if ( params.REPO && params.CONTAINER_IMAGE ) {
+        // Get ceph downstream repo & container image
+        jobConfig.rhsCephRepo = params.REPO
+        jobConfig.containerImage = params.CONTAINER_IMAGE
+    } else {
+        // Abort if mandatory parameters are not provided
+        currentBuild.result = "ABORTED"
+        error("Mandatory parameters 'REPO' & 'CONTAINER_IMAGE' are not provided")
+    }
+
+    println("Ceph downstream repo: ${jobConfig.rhsCephRepo}")
+    println("Container image: ${jobConfig.containerImage}")
+
+    // Fetch ceph version
+    jobConfig.cephVersion = fetchCephVersion(jobConfig)
 
     // Set cephci config directory
     jobConfig.gitDir = [jobConfig.jobDir, cephciConfigs.GIT_DIR].join("/")
