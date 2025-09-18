@@ -200,6 +200,13 @@ credentials:
               username: apikey
               password: "${readFile:/secrets/sendgrid_api_key}"
 
+          - usernamePassword:
+              description: "Red Hat Data Router API Key"
+              id: "oidc-sa"
+              scope: GLOBAL
+              username: cephqe-jenkins-oidc-sa
+              password: "${readFile:/secrets/rh_datarouter_key}"
+
           - basicSSHUserPrivateKey:
               description: "SSH Private key for agent access"
               id: "jenkinsAgentSSHKey"
