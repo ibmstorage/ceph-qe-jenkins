@@ -7,6 +7,12 @@ def generate_jobs(data) {
     def vmFlavor = ["bx2-2x8", "bx2-4x16", "bx2-8x32"]
     def buildType = ["IBM", "RH"]
 
+    // Set releases for Ceph versions
+    def release = ["", "nightly", "stable"]
+    if (data.cephVersion.toLowerCase() == "squid") {
+        release += ["released", "z0", "z1", "z2", "z3", "z4"]
+    }
+
     // Add the job configurations
     data.jobsConfiguration.add([
         "name": "${data.cephVersion.toLowerCase()}-${data.fg.toLowerCase()}-regression-ci",
@@ -17,6 +23,7 @@ def generate_jobs(data) {
         "vpc": data.vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
+        "release": release,
         "buildType": buildType
     ])
 }
@@ -193,6 +200,7 @@ for (jobConfig in jobsConfiguration) {
                 choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph Version")
                 choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL OS Version")
                 choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build")
+                choiceParam("RELEASE", jobConfig.release, "Release type")
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")

@@ -8,6 +8,12 @@ def generate_jobs(data) {
     def vmFlavor = ["bx2-2x8", "bx2-4x16", "bx2-8x32"]
     def buildType = ["IBM", "RH"]
 
+    // Set releases for Ceph versions
+    def release = ["", "nightly", "stable"]
+    if (data.cephVersion.toLowerCase() == "squid") {
+        release += ["released", "z0", "z1", "z2", "z3", "z4"]
+    }
+
     // Add the job configurations
     data.jobsConfiguration.add([
         "name": "${data.cephVersion}-bvt-ci",
@@ -17,7 +23,7 @@ def generate_jobs(data) {
         "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
-        "release": data.release,
+        "release": release,
         "buildType": buildType
     ])
 }
@@ -27,8 +33,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "squid",
     buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
-    release: ["", "latest"]
+    rhelVersion: ["rhel-9"]
 )
 
 // Create jobs specific to Ceph - Tentacle
@@ -36,8 +41,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9", "rhel-10"],
-    release: ["", "latest"]
+    rhelVersion: ["rhel-9", "rhel-10"]
 )
 
 // Create job for each configuration created
@@ -71,6 +75,7 @@ for (jobConfig in jobsConfiguration) {
                 choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph Version")
                 choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL OS Version")
                 choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build")
+                choiceParam("RELEASE", jobConfig.release, "Release type")
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")

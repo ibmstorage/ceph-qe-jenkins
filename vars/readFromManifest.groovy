@@ -5,19 +5,11 @@ import main.groovy.cephJobLib.manifestConfigs
 
 
 def call(Map parameters) {
-    // Check for mandatory build parameters
-    def buildInfo = parameters.buildInfo
-    if (!buildInfo) {
-        throw new RuntimeException(
-            "Mandatory parameter buildInfo not provided"
-        )
-    }
-
     // Get recipe file path
-    def recipe = buildInfo.recipe
+    def recipe = parameters.get("recipe")
     if (!recipe) {
         throw new RuntimeException(
-            "Recipe file missing from build info"
+            "Mandatory parameter 'recipe' is not provided"
         )
     }
 
