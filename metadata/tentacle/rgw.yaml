@@ -1,0 +1,95 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier1 RGW MS ecpool regression test" # 169 mins, 20 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
+      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Tier2 RGW 3way MS" # 238 mins, 28 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_3_way_multisite.yaml
+      global-conf: conf/tentacle/rgw/3-way-ms-ec-profile-2+2@4nodes.yaml
+      platform:
+        - rhel-9
+    - name: "Tier2 RGW regression test" # 198 mins, 0 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_regression_test.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW MS regression tests" # 193 mins, 8 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_regression_test.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 rgw multisite scenarios" # 231 mins, 39 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_multisite_scenarios.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+    - name: "Tier4 RGW regression tests" # 251 mins, 49 secs
+      suite: suites/tentacle/rgw/tier-4-rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW MS failover failback" # 160 mins, 20 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_failover_failback.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW regression extended" # 300 mins, 37 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_regression_extended.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      vm-flavor: bx2-4x16
+      platform:
+        - rhel-9
+    - name: "Tier-3 archivezone colocated datazone" # 95 mins, 43 secs
+      suite: suites/tentacle/rgw/tier-3_archive_zone_colocate_data_zone.yaml
+      global-conf: conf/tentacle/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 SSL RGW ecpool" # 111 mins, 34 secs
+      suite: suites/tentacle/rgw/tier-2_ssl_rgw_ecpool_test.yaml
+      global-conf: conf/tentacle/rgw/ec-profile-4+2-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW ingress multirealm" # 70 mins, 35 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ingress_multi_realm.yaml
+      global-conf: conf/tentacle/rgw/tier-1_rgw_multirealm.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 SSL RGW regression" # 217 mins, 1 secs
+      suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_test.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW sanity with d3n enabled" # 105 mins, 13 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-2 RGW sts aswi" # 73 mins, 18 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_sts_aswi.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 RGW sw qat" # 39 mins, 37 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_sw_qat.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
