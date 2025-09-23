@@ -33,4 +33,88 @@ regression:
       global-conf: conf/squid/cephfs/tier-0_fs.yaml
       platform:
         - rhel-9
-
+weekly:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test cephfs top"
+      suite: suites/squid/cephfs/tier-3_cephfs_test_cephfs-top.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Recovery"
+      suite: suites/squid/cephfs/tier-4_cephfs_recovery.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs CG Quiesce"
+      suite: suites/squid/cephfs/tier-1_cephfs_cg_quiesce_systemic.yaml
+      global-conf: conf/squid/cephfs/tier-1_cephfs_cg_quiesce.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Metrics"
+      suite: suites/squid/cephfs/tier-2_cephfs_test-metrics.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test cephfs performance"
+      suite: suites/squid/cephfs/tier-3_cephfs_test_performance.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs MDS Pinning"
+      suite: suites/squid/cephfs/tier-2_cephfs_test_mds_pinning.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Scale"
+      suite: suites/squid/cephfs/tier-3_cephfs_scale.yaml
+      global-conf: conf/squid/cephfs/tier-0_fs.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Bugs"
+      suite: suites/squid/cephfs/tier-3_cephfs_bugs.yaml
+      global-conf: conf/squid/cephfs/tier-3_cephfs_4clients_4osd.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Mirror HA"
+      suite: suites/squid/cephfs/tier-2_cephfs_mirror_ha.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_mirror_ha.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Generic"
+      suite: suites/squid/cephfs/tier-2_cephfs_generic.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs System"
+      suite: suites/squid/cephfs/tier-4_cephfs_system.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Ops"
+      suite: suites/squid/cephfs/tier-3_cephfs.yaml
+      global-conf: conf/squid/cephfs/tier-3_cephfs_4clients_4osd.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Mirror Metrics"
+      suite: suites/squid/cephfs/tier-2_cephfs_mirror_metrics.yaml
+      global-conf: conf/squid/cephfs/tier-1_cephfs_mirror.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Mirror HA Metrics"
+      suite: suites/squid/cephfs/tier-2_cephfs_mirror_ha_metrics.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_mirror_ha.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Multi MDS"
+      suite: suites/squid/cephfs/tier-2_cephfs_test-multi-mds.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_8mds-cluster.yaml
+      platform:
+        - rhel-9
+    - name: "Test cephfs Kernel"
+      suite: suites/squid/cephfs/tier-1_fs_kernel_pipeline.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+      platform:
+        - rhel-9

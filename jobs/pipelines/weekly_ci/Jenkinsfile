@@ -1,0 +1,183 @@
+// Import shared library
+@Library("ceph-qe-libs@main")_
+
+// Set job parameters
+def job = "weekly"
+def jobConfigs = [:]
+
+// Set suite parameters
+def suites = [:]
+def testSuitesMap = [:]
+def skipSosReport = true
+
+
+// Pipeline definition
+pipeline {
+    options {
+        // Set build archieve policy
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+    }
+
+    agent {
+        // Use agent label
+        label "agents"
+    }
+
+    stages {
+        stage("Validate") {
+            steps {
+                script {
+                    // Validate mandatory parameters
+                    jobConfigs = generateJobConfigs(job: job)
+
+                    // Debug
+                    echo "Parameters validated successfully ..."
+                }
+            }
+        }
+
+        stage("Setup") {
+            steps {
+                script {
+                    // Setup Ceph CI repository and virtual environment
+                    setupCephCiRepo(
+                        python: jobConfigs.python,
+                        venvDir: jobConfigs.venvDir,
+                        gitUrl: jobConfigs.gitUrl,
+                        gitDir: jobConfigs.gitDir,
+                        gitBranch: jobConfigs.gitBranch,
+                        cloudType: jobConfigs.cloudType,
+                        ibmcCredFile: jobConfigs.ibmcCredFile
+                    )
+
+                    // Debug
+                    echo "Ceph CI repository setup completed successfully ..."
+                }
+            }
+        }
+
+        stage("Fetch Suites") {
+            steps {
+                script {
+                    // Get suites for given FG & Component
+                    suites = fetchTestSuites(
+                        rhBuild: jobConfigs.rhBuild,
+                        fg: params.FG,
+                        job: job,
+                        platform: jobConfigs.platform,
+                        cloudType: jobConfigs.cloudType,
+                        buildType: jobConfigs.buildType
+                    )
+                }
+            }
+        }
+
+        stage("Get Stages") {
+            steps {
+                script {
+                    // Iterate over suite list
+                    suites.weekly.suites.each { suite ->
+                        // Debug
+                        echo "Executing suite: ${suite.suite} with config: ${suite.global_conf}"
+
+                        // Create stages based on test suite
+                        testSuitesMap[suite.name] = {
+                            stage(suite.name) {
+                                // Set log directory
+                                def logDir = [jobConfigs.logDir, suite.name].join("/")
+
+                                try {
+                                    // Execute the test job
+                                    execTestSuites(
+                                        gitDir: jobConfigs.gitDir,
+                                        venvDir: jobConfigs.venvDir,
+                                        instanceName: jobConfigs.prefix,
+                                        cloudType: jobConfigs.cloudType,
+                                        rhBuild: jobConfigs.rhBuild,
+                                        platform: jobConfigs.platform,
+                                        logDir: logDir,
+                                        globalConf: suite.global_conf,
+                                        suite: suite.suite,
+                                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                                        inventory: jobConfigs.inventory,
+                                        logLevel: jobConfigs.logLevel,
+                                        customConfig: jobConfigs.customConfig,
+                                        buildType: jobConfigs.buildType,
+                                        enableFipsMode: jobConfigs.enableFipsMode,
+                                        enableFirewall: jobConfigs.enableFirewall,
+                                        rhsCephRepo: jobConfigs.rhsCephRepo,
+                                        hotfixRepo: jobConfigs.hotfixRepo,
+                                        containerImage: jobConfigs.containerImage,
+                                        additionalArgs: jobConfigs.additionalArgs,
+                                        vmFlavor: jobConfigs.vmFlavor,
+                                        skipSosReport: skipSosReport,
+                                        vpcName: jobConfigs.vpcName
+                                    )
+
+                                    // Debug
+                                    echo "Test execution for ${suite.name} completed successfully."
+                                } catch (Exception e) {
+                                    // Debug
+                                    echo "Test execution failed: ${e.message}"
+                                } finally {
+                                    // Cleanup configs generated
+                                    cleanupCluster(
+                                        gitDir: jobConfigs.gitDir,
+                                        venvDir: jobConfigs.venvDir,
+                                        cloudType: jobConfigs.cloudType,
+                                        instanceName: jobConfigs.prefix,
+                                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                                        logLevel: jobConfigs.logLevel,
+                                        vpcName: jobConfigs.vpcName
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Execute Suites") {
+            steps {
+                script {
+                    // Execute all the test suites in parallel
+                    parallel testSuitesMap
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Debug
+                echo "Send results to ${params.EMAIL_ADDRESS}"
+
+                // Always run this block
+                publishTestResults(
+                    cephVersion: jobConfigs.cephVersion,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
+                    platform: jobConfigs.platform,
+                    cloudType: jobConfigs.cloudType,
+                    logDir: jobConfigs.logDir,
+                    resultsDir: jobConfigs.resultsDir,
+                    resultsSummary: jobConfigs.resultsSummary,
+                    artifacts: jobConfigs.artifacts,
+                    emailBody: jobConfigs.emailBody,
+                    emailAddr: params.EMAIL_ADDRESS
+                )
+            }
+        }
+
+        cleanup {
+            script {
+                // cleanup logic
+                echo "Cleanup completed successfully ..."
+            }
+        }
+    }
+}
