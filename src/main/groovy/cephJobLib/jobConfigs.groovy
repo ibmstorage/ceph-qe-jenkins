@@ -5,7 +5,7 @@ class jobConfigs {
     static final String PYTHON = "python3"
 
     // Default prefix configs
-    static final int PREFIX_LENGTH = 6
+    static final int PREFIX_LENGTH = 4
 
     // Default job path
     static final String JOB_DIR_PATH = "/data/jenkins/ceph-builds"

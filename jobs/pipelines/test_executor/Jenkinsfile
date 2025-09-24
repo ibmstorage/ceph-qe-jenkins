@@ -3,6 +3,7 @@
 
 def job = "executor"
 def jobConfigs = [:]
+def prefix = ""
 
 
 pipeline {
@@ -53,11 +54,14 @@ pipeline {
         stage("Execute") {
             steps {
                 script {
+                    // Generate a random prefix for resources
+                    prefix = "${jobConfigs.prefix}-${generatePrefixString()}"
+
                     // Execute the test job
                     execTestSuites(
                         gitDir: jobConfigs.gitDir,
                         venvDir: jobConfigs.venvDir,
-                        instanceName: jobConfigs.prefix,
+                        instanceName: prefix,
                         cloudType: jobConfigs.cloudType,
                         rhBuild: jobConfigs.rhBuild,
                         platform: jobConfigs.platform,
@@ -100,7 +104,7 @@ pipeline {
                     gitDir: jobConfigs.gitDir,
                     venvDir: jobConfigs.venvDir,
                     cloudType: jobConfigs.cloudType,
-                    instanceName: jobConfigs.prefix,
+                    instanceName: prefix,
                     ibmcCredFile: jobConfigs.ibmcCredFile,
                     logLevel: jobConfigs.logLevel,
                     vpcName: jobConfigs.vpcName

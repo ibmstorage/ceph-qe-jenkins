@@ -236,6 +236,7 @@ security:
       - method org.yaml.snakeyaml.Yaml dump java.lang.Object
       - staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods findAll java.lang.String java.lang.String
       - staticMethod org.jsoup.Jsoup connect java.lang.String
+      - staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods removeAt
 
 unclassified:
   email-ext:
