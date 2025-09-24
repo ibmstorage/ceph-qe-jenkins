@@ -9,6 +9,7 @@ def jobConfigs = [:]
 def suites = [:]
 def testSuitesMap = [:]
 def skipSosReport = true
+def skipSubscription = true
 
 
 // Pipeline definition
@@ -114,7 +115,8 @@ pipeline {
                                         additionalArgs: jobConfigs.additionalArgs,
                                         vmFlavor: jobConfigs.vmFlavor,
                                         skipSosReport: skipSosReport,
-                                        vpcName: jobConfigs.vpcName
+                                        vpcName: jobConfigs.vpcName,
+                                        skipSubscription: skipSubscription
                                     )
 
                                     // Debug

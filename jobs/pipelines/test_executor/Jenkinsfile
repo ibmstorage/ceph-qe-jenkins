@@ -4,6 +4,7 @@
 def job = "executor"
 def jobConfigs = [:]
 def prefix = ""
+def skipSubscription = true
 
 
 pipeline {
@@ -81,7 +82,7 @@ pipeline {
                         additionalArgs: jobConfigs.additionalArgs,
                         vmFlavor: jobConfigs.vmFlavor,
                         vpcName: jobConfigs.vpcName,
-                        skipSubscription: jobConfigs.skipSubscription
+                        skipSubscription: skipSubscription
                     )
 
                     echo "Test execution completed successfully."
