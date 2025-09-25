@@ -12,5 +12,5 @@ def call() {
     def str = (1..jobConfigs.PREFIX_LENGTH).collect { alphabet[ ran.nextInt( alphabet.length() ) ] }.join('')
 
     // Return the generated string
-    return str
+    return str.toLowerCase()
 }
