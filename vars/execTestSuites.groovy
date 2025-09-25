@@ -159,6 +159,9 @@ def call(Map parameters) {
     def (imageName, imageTag) = imageNameAndTag.tokenize(':')
     def fullPathToImage = containerImageList.join("/")
 
+    // Remove sha256 from tag if exists
+    imageName = imageName.replace("@sha256", "")
+
     args += [
         "--docker-registry ${registry}",
         "--docker-image ${fullPathToImage}/${imageName}",
