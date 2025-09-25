@@ -1,10 +1,107 @@
 regression:
-  metadata:
-    cloud:
-      - ibmc
-  suites:
-    - name: "Tier-2 RBD Regression Image Migration"
-      suite: suites/squid/rbd/tier-2_rbd_regression_Image_migration.yaml
-      global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
-      platform:
-        - rhel-9
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "Tier-2 rbd regression Image migration"
+        suite: suites/squid/rbd/tier-2_rbd_regression_Image_migration.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror image operations"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_image_operations.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd migration external ceph"
+        suite: suites/squid/rbd/tier-2_rbd_migration_external_ceph.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd encryption"
+        suite: suites/squid/rbd/tier-2_rbd_encryption.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd group mirror"
+        suite: suites/squid/rbd/tier-2_rbd_group_mirror.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+        version:
+          - 8.1
+      - name: "tier-2 default namespace mirroring"
+        suite: suites/squid/rbd/tier-2_default_namespace_mirroring.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+        version:
+          - 8.1
+      - name: "tier-2 rbd regression"
+        suite: suites/squid/rbd/tier-2_rbd_regression.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror snapshot regression"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_snapshot_regression.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror failover recovery"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_failover_recovery.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd namespace"
+        suite: suites/squid/rbd/tier-2_rbd_namespace.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd group"
+        suite: suites/squid/rbd/tier-2_rbd_group.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 non default namespace mirroring"
+        suite: suites/squid/rbd/tier-2_non_default_namespace_mirroring.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+        version:
+          - 8.1
+
+weekly:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "tier-3 snap mirroring"
+        suite: suites/squid/rbd/tier-3_snap_mirroring.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd cache scenarios"
+        suite: suites/squid/rbd/tier-2_rbd_cache_scenarios.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 rbd mirror encrypted image"
+        suite: suites/squid/rbd/tier-3_rbd_mirror_encrypted_image.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror failback"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_failback.yaml
+        global-conf: conf/squid/rbd/3_clusters_5_node.yaml
+      - name: "tier-2 rbd mirror scale osd"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_scale_osd.yaml
+        global-conf: conf/squid/rbd/rbd_mirror_large.yaml
+      - name: "tier-2 rbd mirror recreate secondary cluster"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_recreate_secondary_cluster.yaml
+        global-conf: conf/squid/rbd/3_clusters_5_node.yaml
+      - name: "tier-4 rbd negative scenarios"
+        suite: suites/squid/rbd/tier-4_rbd_negative_scenarios.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd rest"
+        suite: suites/squid/rbd/tier-2_rbd_rest.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 rbd mirror secondary ful"
+        suite: suites/squid/rbd/tier-3_rbd_mirror_secondary_full.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror metrics"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_metrics.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-3 journal mirroring"
+        suite: suites/squid/rbd/tier-3_journal_mirroring.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-3 rbd migration"
+        suite: suites/squid/rbd/tier-3_rbd_migration.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 namespace mirroring scale"
+        suite: suites/squid/rbd/tier-3_namespace_mirroring_scale.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd trash"
+        suite: suites/squid/rbd/tier-2_rbd_trash.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd trash purge"
+        suite: suites/squid/rbd/tier-2_rbd_trash_purge.yaml
+        global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror image trash purge"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_image_trash_purge.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror scale"
+        suite: suites/squid/rbd/tier-2_rbd_group_mirror_scale.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+        version:
+          - 8.1
+          
