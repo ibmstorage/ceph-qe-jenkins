@@ -7,83 +7,97 @@ regression:
       suite: suites/squid/rados/tier-2_rados_test-drain-customer-issue.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-      platform:
-         - rhel-9
     - name: "RADOS Test - OSD Rebalance"
       suite: suites/squid/rados/tier-2_rados_test-osd-rebalance.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-      platform:
-        - rhel-9
     - name: "RADOS Test - EC Pool Recovery"
       suite: suites/squid/rados/tier-2_rados_ec-pool_recovery.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-      platform:
-        - rhel-9
     - name: "RADOS Test - 8+6 MSR EC Pools"
       suite: suites/squid/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
-      platform:
-        - rhel-9
     - name: "RADOS Test - EC Pool OSD Rebalance"
       suite: suites/squid/rados/tier-2_rados_test-ecpool-osd-rebalance.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-      platform:
-        - rhel-9
     - name: "RADOS Test - Trim"
       suite: suites/squid/rados/tier-2_rados_trim_tests.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-      platform:
-        - rhel-9
     - name: "RADOS Test - Mon DB Trimming"
       suite: suites/squid/rados/tier-2_rados_test-mon-db-trimming.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-      platform:
-        - rhel-9
     - name: "RADOS Test - Bugfixes"
       suite: suites/squid/rados/tier-2_rados_test-bugfixes.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-      platform:
-        - rhel-9
     - name: "RADOS Test - CBT and COT"
       suite: suites/squid/rados/tier-2_rados_test_cot_cbt.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
       # VM count: 13
-      platform:
-        - rhel-9
     - name: "RADOS Test - PG Split and Merge"
       suite: suites/squid/rados/tier-2_rados_test-pg-split-merge.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-      platform:
-        - rhel-9
     - name: "RADOS Test - OMAP"
       suite: suites/squid/rados/tier-2_rados_test_omap.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-      platform:
-        - rhel-9
     - name: "RADOS Test - Scrub Tests"
       suite: suites/squid/rados/tier-3_rados_test-4-node-scrub-tests.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
-      platform:
-        - rhel-9
     - name: "RADOS Test - Location Stretch Mode"
       suite: suites/squid/rados/tier-3_rados_test-location-stretch-mode.yaml
       global-conf: conf/squid/rados/13-node-cluster-4-clients.yaml
       # VM count: 17
-      platform:
-        - rhel-9
     - name: "RADOS Test - Parameters"
       suite: suites/squid/rados/tier-2_rados_test_parameters.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-      platform:
-        - rhel-9
+weekly:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name:
+      suite: suites/squid/rados/tier-2_rados_test-pool-functionalities.yaml
+      global-conf: conf/squid/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name:
+      suite: suites/squid/rados/tier-2_rados_test_bluestore.yaml
+      global-conf: conf/squid/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name:
+      suite: suites/squid/rados/tier-3_rados_cidr_blocklisting.yaml
+      global-conf: conf/squid/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+    - name:
+      suite: suites/squid/rados/tier-4_rados_test-pool-osd-recovery.yaml
+      global-conf: conf/squid/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name:
+      suite: suites/squid/rados/tier-3_rados_test-3-AZ-Cluster.yaml
+      global-conf: conf/squid/rados/3AZ-cluster-rhos-1.yaml
+      # VM count: 10
+    - name:
+      suite: suites/squid/rados/tier-2_rados_test-scrubbing.yaml
+      global-conf: conf/squid/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name:
+      suite: suites/squid/rados/tier-4_rados_tests.yaml
+      global-conf: conf/squid/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name:
+      suite: suites/squid/rados/tier-2_rados_test-brownfield.yaml
+      global-conf: conf/squid/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name:
+      suite: suites/squid/rados/tier-3_rados_test-4-node-ecpools.yaml
+      global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+
