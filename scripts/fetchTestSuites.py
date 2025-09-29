@@ -38,7 +38,11 @@ def get_testsuite(
 ):
     """Get testsuite and global config"""
     # Check for platform in test config
-    if platform not in test.get("platform"):
+    if (
+        platform
+        and test.get("platform")
+        and platform not in test.get("platform")
+    ):
         return None
 
     # Check for version
