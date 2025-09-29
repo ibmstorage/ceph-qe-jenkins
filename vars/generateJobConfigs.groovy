@@ -1,6 +1,7 @@
 // Method to generate job configurations for QE test executor
 
 import main.groovy.cephJobLib.cephciConfigs
+import main.groovy.cephJobLib.ibmcConfigs
 import main.groovy.cephJobLib.jobConfigs
 
 
@@ -45,9 +46,6 @@ def call(Map parameters) {
     jobConfig.platform = params.RHEL_VERSION
     jobDir += [jobConfig.platform]
 
-    // Update job path with ceph version & build number
-    jobDir += [jobConfig.job, jobConfig.cephVersion, env.BUILD_NUMBER]
-
     // Get FIPS config
     jobConfig.enableFipsMode = params.ENABLE_FIPS_MODE
 
@@ -89,16 +87,17 @@ def call(Map parameters) {
     // Get subscription manager execution
     jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
 
-    // Set base job directory
-    jobConfig.jobDir = jobDir.join("/")
-
     // Check for repository and container image
     if ( params.RELEASE ) {
         // Set recipe path
-        def recipe = "${params.BUILD_TYPE.toLowerCase()}/${jobConfig.rhBuild}.yaml"
+        def recipe = "${jobConfig.buildType.toLowerCase()}"
+        if (jobConfig.buildType == "RH") {
+            recipe = "redhat"
+        }
+        recipe += "/${jobConfig.rhBuild}.yaml"
 
         // Read recipe file from manifest repo
-        recipeContent = readFromManifest(recipe: recipe, jobDir: jobConfig.jobDir)
+        recipeContent = readFromManifest(recipe: recipe, job: jobConfig.job)
 
         // Check if recipe content is valid
         if ( ! recipeContent ) {
@@ -113,23 +112,51 @@ def call(Map parameters) {
         }
 
         // Get ceph downstream repo & container image
-        jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${jobConfig.platform}"
+        if (jobConfig.buildType == "RH") {
+            jobConfig.rhsCephRepo = "${ibmcConfigs.IBM_COMPOSE_URL}/redhat"
+            if (jobConfig.rhBuild.startsWith("8")) {
+                jobConfig.rhsCephRepo += "/8"
+            } else if (jobConfig.rhBuild.startsWith("9")) {
+                jobConfig.rhsCephRepo += "/9"
+            }
+
+            if (jobConfig.platform == "rhel-9") {
+                jobConfig.rhsCephRepo += "/rhel9"
+            } else if (jobConfig.platform == "rhel-10") {
+                jobConfig.rhsCephRepo += "/rhel10"
+            }
+        } else if (jobConfig.buildType == "IBM") {
+            jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${jobConfig.platform}"
+        }
+
+        // Fetch ceph version
+        jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
+        jobConfig.rhsCephRepo += "/${jobConfig.cephVersion}"
+
+        // Set container image
         jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
     } else if ( params.REPO && params.CONTAINER_IMAGE ) {
         // Get ceph downstream repo & container image
         jobConfig.rhsCephRepo = params.REPO
         jobConfig.containerImage = params.CONTAINER_IMAGE
+
+        // Fetch ceph version
+        jobConfig.cephVersion = fetchCephVersion(jobConfig)
     } else {
         // Abort if mandatory parameters are not provided
         currentBuild.result = "ABORTED"
         error("Mandatory parameters 'REPO' & 'CONTAINER_IMAGE' are not provided")
     }
 
+    // Debug info
     println("Ceph downstream repo: ${jobConfig.rhsCephRepo}")
     println("Container image: ${jobConfig.containerImage}")
 
-    // Fetch ceph version
-    jobConfig.cephVersion = fetchCephVersion(jobConfig)
+    // Update job path with ceph version & build number
+    jobDir += [jobConfig.job, jobConfig.cephVersion, env.BUILD_NUMBER]
+
+    // Set base job directory
+    jobConfig.jobDir = jobDir.join("/")
 
     // Set cephci config directory
     jobConfig.gitDir = [jobConfig.jobDir, cephciConfigs.GIT_DIR].join("/")

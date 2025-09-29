@@ -9,6 +9,7 @@ class jobConfigs {
 
     // Default job path
     static final String JOB_DIR_PATH = "/data/jenkins/ceph-builds"
+    static final String MANIFEST_DIR_PATH = "/data/jenkins/ceph-builds/manifest"
 
     // Default result summary name
     static final String RESULTS_SUMMARY = "results.json"

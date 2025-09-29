@@ -27,7 +27,7 @@ def call(Map parameters) {
             )
         }
         jobDir = [
-            jobConfigs.JOB_DIR_PATH, job, env.BUILD_NUMBER, manifestConfigs.MANIFEST_DIR
+            jobConfigs.MANIFEST_DIR_PATH, job, env.BUILD_NUMBER, manifestConfigs.MANIFEST_DIR
         ].join("/")
         parameters.jobDir = jobDir
     }
