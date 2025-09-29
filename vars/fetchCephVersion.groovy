@@ -41,6 +41,11 @@ def call(Map parameters) {
         throw new RuntimeException("Mandatory parameter 'buildType' does not exists")
     }
 
+    // Check for repo file
+    if (!rhsCephRepo.endsWith(".repo")) {
+        rhsCephRepo += "/Tools"
+    }
+
     // Define args for yum command based on build type
     def yumCmdArgs = []
     if ( buildType.toLowerCase() == "upstream" ) {
