@@ -85,6 +85,7 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
+                booleanParam("UPDATE_BVT_RESULTS", false, "Update BVT results to manifest")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "", "Email Address")
             }

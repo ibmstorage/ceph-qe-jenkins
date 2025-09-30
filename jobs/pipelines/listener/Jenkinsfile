@@ -119,7 +119,8 @@ pipeline {
                             string(name: "CONTAINER_IMAGE", value: cephBase),
                             string(
                                 name: "CUSTOM_CONFIG", value: customConfigs
-                            )
+                            ),
+                            booleanParam(name: "UPDATE_BVT_RESULTS", value: true)
                         ]
                     ])
 
