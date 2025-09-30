@@ -67,6 +67,19 @@ pipeline {
             }
         }
 
+        // Sync container images
+        stage("Sync Container Images") {
+            steps {
+                script {
+                    // Sync all container images
+                    buildInfo.images.each { image, url ->
+                        echo "Syncing image ${image}: ${url}"
+                        syncContainerImage(containerImage: url)
+                    }
+                }
+            }
+        }
+
         // Trigger BVT pipeline
         stage("Trigger BVT") {
             when {
