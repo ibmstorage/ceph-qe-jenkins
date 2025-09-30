@@ -152,8 +152,17 @@ def call(Map parameters) {
     println("Ceph downstream repo: ${jobConfig.rhsCephRepo}")
     println("Container image: ${jobConfig.containerImage}")
 
-    // Update job path with ceph version & build number
-    jobDir += [jobConfig.job, jobConfig.cephVersion, env.BUILD_NUMBER]
+    // Update job path with ceph version
+    jobDir += [jobConfig.job, jobConfig.cephVersion]
+
+    // Update path with FG for regression & weekly jobs
+    if (params.FG) {
+        jobConfig.fg = params.FG
+        jobDir += [jobConfig.fg]
+    }
+
+    // Update job path with build number
+    jobDir += [env.BUILD_NUMBER]
 
     // Set base job directory
     jobConfig.jobDir = jobDir.join("/")
