@@ -6,13 +6,19 @@ def generate_jobs(data) {
     def logLevel = ["DEBUG", "INFO", "ERROR"]
     def vmFlavor = ["bx2-2x8", "bx2-4x16", "bx2-8x32"]
     def buildType = ["IBM", "RH"]
+    def rhelVersion = []
+    def buildVersion = []
 
-    // Set releases for Ceph versions
-    def release = ["", "nightly", "stable", "regression"]
+    // Set release specific variables
+    def release = ["", "nightly", "stable"]
     if (data.cephVersion.toLowerCase() == "squid") {
         release += ["released", "z0", "z1", "z2", "z3", "z4"]
+        rhelVersion = ["rhel-9"]
+        buildVersion = ["8.1", "8.0"]
+    } else if (data.cephVersion.toLowerCase() == "tentacle") {
+        rhelVersion = ["rhel-10", "rhel-9"]
+        buildVersion = ["9.0"]
     }
-
     // Add the job configurations
     data.jobsConfiguration.add([
         "name": "${data.cephVersion.toLowerCase()}-${data.fg.toLowerCase()}-weekly-ci",
@@ -21,8 +27,8 @@ def generate_jobs(data) {
         "logLevel": logLevel,
         "vmFlavor": vmFlavor,
         "vpc": data.vpc,
-        "buildVersion": data.buildVersion,
-        "rhelVersion": data.rhelVersion,
+        "buildVersion": buildVersion,
+        "rhelVersion": rhelVersion,
         "release": release,
         "buildType": buildType
     ])
@@ -32,8 +38,6 @@ def generate_jobs(data) {
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "DMFG",
     vpc: ["vpc-dmfg"]
 )
@@ -42,8 +46,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "CephFS",
     vpc: ["vpc-cephfs"]
 )
@@ -52,8 +54,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "RADOS",
     vpc: ["vpc-cephfs"]
 )
@@ -62,8 +62,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "NFS-Ganesha",
     vpc: ["vpc-nfsg"]
 )
@@ -72,8 +70,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "RBD",
     vpc: ["vpc-block"]
 )
@@ -82,8 +78,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "NvmeOF",
     vpc: ["vpc-block"]
 )
@@ -92,8 +86,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
-    buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"],
     fg: "RGW",
     vpc: ["vpc-rgw"]
 )
@@ -102,8 +94,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "DMFG",
     vpc: ["vpc-dmfg"]
 )
@@ -112,8 +102,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "CephFS",
     vpc: ["vpc-cephfs"]
 )
@@ -122,8 +110,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "RADOS",
     vpc: ["vpc-cephfs"]
 )
@@ -132,8 +118,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "NFS-Ganesha",
     vpc: ["vpc-nfsg"]
 )
@@ -142,8 +126,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "RBD",
     vpc: ["vpc-block"]
 )
@@ -152,8 +134,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "NvmeOF",
     vpc: ["vpc-block"]
 )
@@ -162,8 +142,6 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
-    buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9"],
     fg: "RGW",
     vpc: ["vpc-rgw"]
 )

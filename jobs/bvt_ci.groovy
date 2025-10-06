@@ -41,7 +41,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.0"],
-    rhelVersion: ["rhel-9", "rhel-10"]
+    rhelVersion: ["rhel-10", "rhel-9"]
 )
 
 // Create job for each configuration created
