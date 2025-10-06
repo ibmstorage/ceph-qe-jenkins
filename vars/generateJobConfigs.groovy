@@ -3,6 +3,7 @@
 import main.groovy.cephJobLib.cephciConfigs
 import main.groovy.cephJobLib.ibmcConfigs
 import main.groovy.cephJobLib.jobConfigs
+import main.groovy.cephJobLib.manifestConfigs
 
 
 def call(Map parameters) {
@@ -111,23 +112,16 @@ def call(Map parameters) {
             error("No build info found for the provided release: ${params.RELEASE}")
         }
 
-        // Get ceph downstream repo & container image
+        // Get repo data center
+        def repoDc = ""
         if (jobConfig.buildType == "RH") {
-            jobConfig.rhsCephRepo = "${ibmcConfigs.IBM_COMPOSE_URL}/redhat"
-            if (jobConfig.rhBuild.startsWith("8")) {
-                jobConfig.rhsCephRepo += "/8"
-            } else if (jobConfig.rhBuild.startsWith("9")) {
-                jobConfig.rhsCephRepo += "/9"
-            }
-
-            if (jobConfig.platform == "rhel-9") {
-                jobConfig.rhsCephRepo += "/rhel9"
-            } else if (jobConfig.platform == "rhel-10") {
-                jobConfig.rhsCephRepo += "/rhel10"
-            }
+            repoDc = "eu-de"
         } else if (jobConfig.buildType == "IBM") {
-            jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${jobConfig.platform}"
+            repoDc = manifestConfigs.DEFAULT_DC
         }
+
+        // Get ceph downstream repo based on DC & platform
+        jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDc}"."${jobConfig.platform}"
 
         // Fetch ceph version
         jobConfig.cephVersion = recipeContent."${params.RELEASE}".version

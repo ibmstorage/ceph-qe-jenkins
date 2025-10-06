@@ -73,7 +73,7 @@ def call(Map parameters) {
         buildInfo.repositories.each { platform, repo ->
             // Debug
             echo "Updating build repository ${repo} for ${platform}"
-            recipeContent."${buildTag}".repositories."${platform}" = "${repo}"
+            recipeContent."${buildTag}".repositories."${manifestConfigs.DEFAULT_DC}"."${platform}" = "${repo}"
         }
 
         // Update commit message
