@@ -125,7 +125,6 @@ def call(Map parameters) {
 
         // Fetch ceph version
         jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
-        jobConfig.rhsCephRepo += "/${jobConfig.cephVersion}"
 
         // Set container image
         jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
