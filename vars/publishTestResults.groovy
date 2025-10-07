@@ -2,6 +2,7 @@
 
 import main.groovy.cephJobLib.jobConfigs
 import main.groovy.cephJobLib.ibmcConfigs
+import main.groovy.cephJobLib.rpConfigs
 
 
 def call(Map parameters) {
@@ -40,6 +41,12 @@ def call(Map parameters) {
     rhsCephRepo = parameters.get("rhsCephRepo")
     containerImage = parameters.get("containerImage")
     cephVersion = parameters.get("cephVersion")
+
+    // Get launcher details
+    def rpLaunchName = parameters.get("rpLaunchName")
+    def rpLaunchDesc = parameters.get("rpLaunchDesc")
+    def rpLaunchAttributes = parameters.get("rpLaunchAttributes")
+    def rpProjectName = parameters.get("rpProjectName")
     if (!rhsCephRepo || !containerImage || !cephVersion) {
         throw new RuntimeException(
             "Mandatory ceph package parameters are not provided"
@@ -53,6 +60,14 @@ def call(Map parameters) {
         "--results-dir ${resultsDir} --results-summary ${resultsSummary}"
     ].join(" "))
 
+    // Post results to report portal
+    def rpLaunchUrl = rpConfigs.HOST_URL
+    try {
+        rpLaunchUrl = updateReportPortal(parameters)
+    } catch(Exception ex) {
+        print("Failed to update report portal ${ex}")        
+    }
+
     // Create test artifacts Content
     def testResult = readFile file: "${resultsSummary}"
     def artifactsContent = """{
@@ -65,7 +80,8 @@ def call(Map parameters) {
         "Repo": "${rhsCephRepo}",
         "Container": "${containerImage}",
         "jobName": "${env.JOB_NAME}",
-        "Results": ${testResult}
+        "ReportPortal": "${rpLaunchUrl}",
+        "Results": ${testResult},        
     }"""
     writeJSON file: "${artifacts}", json: artifactsContent
 

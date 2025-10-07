@@ -10,7 +10,7 @@ def call(Map parameters) {
     def execCmd = "sh -c"
     def yumAddRepo = "dnf config-manager -q --add-repo"
     def curlAddRepo = "curl --fail -sS -L -o /etc/yum.repos.d/upstream.repo"
-    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | cut -d '.' -f -3"
+    def infoCephCommon = "dnf repoquery -q --qf '%{version}-%{release}' ceph-common | cut -d '.' -f -3 | tail -n 1"
 
     // Define command arguments
     def cmdArgs = [podmanRun]

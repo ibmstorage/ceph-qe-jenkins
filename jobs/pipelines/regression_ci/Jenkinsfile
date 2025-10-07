@@ -173,7 +173,12 @@ pipeline {
                     resultsSummary: jobConfigs.resultsSummary,
                     artifacts: jobConfigs.artifacts,
                     emailBody: jobConfigs.emailBody,
-                    emailAddr: params.EMAIL_ADDRESS
+                    emailAddr: params.EMAIL_ADDRESS,
+                    rpLaunchUrl: jobConfigs.rpLaunchUrl,
+                    rpLaunchName: jobConfigs.rpLaunchName,
+                    rpLaunchDesc: jobConfigs.rpLaunchDesc,
+                    rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
+                    rpProjectName: jobConfigs.rpProjectName
                 )
             }
         }

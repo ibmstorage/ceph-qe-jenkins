@@ -12,7 +12,7 @@ LOG_FORMAT = "%(asctime)s (%(name)s) [%(levelname)s] - %(message)s"
 LOG = None
 
 doc = """
-This script generates report protal payload directory
+This script generates report portal payload directory
 
     Usage:
         updateResultsDir.py --logs <PATH>

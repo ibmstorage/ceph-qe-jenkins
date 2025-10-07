@@ -3,6 +3,7 @@
 import main.groovy.cephJobLib.cephciConfigs
 import main.groovy.cephJobLib.ibmcConfigs
 import main.groovy.cephJobLib.jobConfigs
+import main.groovy.cephJobLib.rpConfigs
 import main.groovy.cephJobLib.manifestConfigs
 
 
@@ -38,14 +39,17 @@ def call(Map parameters) {
     // Update dir paths based on build type
     jobConfig.buildType = params.BUILD_TYPE
     jobDir += [jobConfig.buildType]
+    jobConfig.rpLaunchName = "[${jobConfig.buildType}]"
 
     // Update dir paths based on build version
     jobConfig.rhBuild = params.BUILD_VERSION
     jobDir += [jobConfig.rhBuild]
+    jobConfig.rpLaunchName += "[${jobConfig.rhBuild}]"
 
     // Get RHEL version
     jobConfig.platform = params.RHEL_VERSION
     jobDir += [jobConfig.platform]
+    jobConfig.rpLaunchName += "[${jobConfig.platform}]"
 
     // Get FIPS config
     jobConfig.enableFipsMode = params.ENABLE_FIPS_MODE
@@ -144,6 +148,7 @@ def call(Map parameters) {
     // Debug info
     println("Ceph downstream repo: ${jobConfig.rhsCephRepo}")
     println("Container image: ${jobConfig.containerImage}")
+    println("Ceph version: ${jobConfig.cephVersion}")
 
     // Update job path with ceph version
     jobDir += [jobConfig.job, jobConfig.cephVersion]
@@ -152,6 +157,7 @@ def call(Map parameters) {
     if (params.FG) {
         jobConfig.fg = params.FG
         jobDir += [jobConfig.fg]
+        jobConfig.rpLaunchName += "[${jobConfig.fg}]"
     }
 
     // Update job path with build number
@@ -172,6 +178,34 @@ def call(Map parameters) {
 
     // Check for IBMC Credential ID
     jobConfig.ibmcCredFile = [jobConfig.gitDir, "osp-cred"].join("/")
+
+    // Set report portal configs
+    jobConfig.rpLaunchName += " ${jobConfig.job} Test Run"
+
+    // Update launch description with JOB_URL
+    jobConfig.rpLaunchDesc  = "JOB_URL: ${env.BUILD_URL}\\n"
+
+    // Set project name & url based on build type
+    if (jobConfig.buildType.toLowerCase() == "ibm"){
+        jobConfig.rpProjectName = rpConfigs.IBM_PROJECT_NAME
+        jobConfig.rpLaunchUrl = rpConfigs.IBM_LANUCH_URL
+    } else if (jobConfig.buildType.toLowerCase() == "upstream") {
+        jobConfig.rpProjectName = rpConfigs.UPSTREAM_PROJECT_NAME
+        jobConfig.rpLaunchUrl = rpConfigs.UPSTREAM_LANUCH_URL
+    } else if (jobConfig.buildType.toLowerCase() == "rh") {
+        jobConfig.rpProjectName = rpConfigs.RHCS_PROJECT_NAME
+        jobConfig.rpLaunchUrl = rpConfigs.RHCS_LANUCH_URL
+    } 
+
+    // Launch attributes
+    jobConfig.rpLaunchAttributes = """[
+        {"key": "BUILD_TYPE", "value": "${jobConfig.buildType}"},
+        {"key": "CEPH_VERSION", "value": "${jobConfig.cephVersion}"},
+        {"key": "RELEASE", "value": "${jobConfig.rhBuild}"},
+        {"key": "PLATFORM", "value": "${jobConfig.cloudType}"},
+        {"key": "RHEL", "value": "${jobConfig.platform}"},
+        {"key": "TAG", "value": "${jobConfig.tag}"}
+    ]"""
 
     // Return the job configuration
     return jobConfig
