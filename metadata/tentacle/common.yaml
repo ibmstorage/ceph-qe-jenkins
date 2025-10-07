@@ -6,7 +6,5 @@ bvt:
     - name: "Build Verfification Test"
       suite: suites/tentacle/smoke/bvt.yaml
       global-conf: conf/tentacle/common/3node-1client.yaml
-      platform:
-        - rhel-9
       tags:
         - bvt
