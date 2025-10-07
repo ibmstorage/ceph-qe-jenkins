@@ -158,10 +158,10 @@ for (jobConfig in jobsConfiguration) {
                 scm {
                     git {
                         remote {
-                            url("https://github.ibm.com/K-Amarnath-Reddy/jenkins.git")
+                            url("https://github.ibm.com/ceph-qe-ng/jenkins.git")
                             credentials("ceph-qe-sa-pat")
                         }
-                        branch("*/weekly_jenkins")
+                        branch("*/main")
                     }
                 }
                 scriptPath("jobs/pipelines/weekly_ci/Jenkinsfile")
