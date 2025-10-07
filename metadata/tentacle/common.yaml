@@ -8,3 +8,31 @@ bvt:
       global-conf: conf/tentacle/common/3node-1client.yaml
       tags:
         - bvt
+
+sanity:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
+      suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
+    - name: "Basic E2E-Test with FIPS mode enabled"
+      suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_fips.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
+      custom-config:
+        enable-fips-mode: true
+    - name: "HA test - 2 NVMe Gateway High availability Sanity"
+      suite: suites/tentacle/nvmeof/tier-1_nvmeof_ha_sanity.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+    - name: "tier-1 rbd"
+      suite: suites/tentacle/rbd/tier-1_rbd.yaml
+      global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
+    - name: "iscsi sanity"
+      suite: suites/tentacle/iscsi/iscsi_sanity.yaml
+      global-conf: conf/tentacle/iscsi/ceph_iscsi_functional.yaml
+      build:
+        - ibm
+    - name: "tier-1 rbd_mirror"
+      suite: suites/tentacle/rbd/tier-1_rbd_mirror.yaml
+      global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
