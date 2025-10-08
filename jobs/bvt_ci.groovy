@@ -9,7 +9,7 @@ def generate_jobs(data) {
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
-    def release = ["", "nightly", "stable"]
+    def release = ["stable", "nightly"]
     if (data.cephVersion.toLowerCase() == "squid") {
         release += ["released", "z0", "z1", "z2", "z3", "z4"]
     }

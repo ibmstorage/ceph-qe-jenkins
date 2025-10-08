@@ -10,7 +10,7 @@ def generate_jobs(data) {
     def buildVersion = []
 
     // Set release specific variables
-    def release = ["", "nightly", "stable"]
+    def release = ["stable", "nightly"]
     if (data.cephVersion.toLowerCase() == "squid") {
         release += ["released", "z0", "z1", "z2", "z3", "z4"]
         rhelVersion = ["rhel-9"]

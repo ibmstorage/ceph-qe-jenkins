@@ -93,7 +93,14 @@ def call(Map parameters) {
     jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
 
     // Check for repository and container image
-    if ( params.RELEASE ) {
+    if ( params.REPO && params.CONTAINER_IMAGE ) {
+        // Get ceph downstream repo & container image
+        jobConfig.rhsCephRepo = params.REPO
+        jobConfig.containerImage = params.CONTAINER_IMAGE
+
+        // Fetch ceph version
+        jobConfig.cephVersion = fetchCephVersion(jobConfig)
+    } else if ( params.RELEASE ) {
         // Set recipe path
         def recipe = "${jobConfig.buildType.toLowerCase()}"
         if (jobConfig.buildType == "RH") {
@@ -132,17 +139,10 @@ def call(Map parameters) {
 
         // Set container image
         jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
-    } else if ( params.REPO && params.CONTAINER_IMAGE ) {
-        // Get ceph downstream repo & container image
-        jobConfig.rhsCephRepo = params.REPO
-        jobConfig.containerImage = params.CONTAINER_IMAGE
-
-        // Fetch ceph version
-        jobConfig.cephVersion = fetchCephVersion(jobConfig)
     } else {
         // Abort if mandatory parameters are not provided
         currentBuild.result = "ABORTED"
-        error("Mandatory parameters 'REPO' & 'CONTAINER_IMAGE' are not provided")
+        error("Unable to get parameters 'REPO' & 'CONTAINER_IMAGE'")
     }
 
     // Debug info

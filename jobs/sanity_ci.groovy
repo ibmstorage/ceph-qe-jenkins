@@ -9,7 +9,7 @@ def generate_jobs(data) {
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
-    def release = ["", "nightly", "stable"]
+    def release = ["stable", "nightly"]
     if (data.cephVersion.toLowerCase() == "squid") {
         release += ["released", "z0", "z1", "z2", "z3", "z4"]
     }
@@ -24,7 +24,8 @@ def generate_jobs(data) {
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
         "release": release,
-        "buildType": buildType
+        "buildType": buildType,
+        "cronExpr": data.cronExpr
     ])
 }
 
@@ -33,7 +34,8 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "squid",
     buildVersion: ["8.1", "8.0"],
-    rhelVersion: ["rhel-9"]
+    rhelVersion: ["rhel-9"],
+    cronExpr: ""
 )
 
 // Create jobs specific to Ceph - Tentacle
@@ -41,7 +43,8 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.0"],
-    rhelVersion: ["rhel-10", "rhel-9"]
+    rhelVersion: ["rhel-10", "rhel-9"],
+    cronExpr: "30 3 * * *"
 )
 
 // Create job for each configuration created
@@ -87,6 +90,11 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "", "Email Address")
+            }
+
+            // Add trigger for cron job
+            triggers {
+                cron(jobConfig.cronExpr)
             }
         }
     }
