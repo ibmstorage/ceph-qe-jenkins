@@ -62,7 +62,7 @@
             </tr>
             <tr>
                 <td style="background-color: #D4D7D4;"><b>Repo</b></td>
-                <td><a href="{{Repo}}">{{Repo.split('/').pop()}}</a></td>
+                <td><a href="{{Repo}}">{{(Repo.strip('/')).split('/').pop()}}</a></td>
             </tr>
             <tr>
                 <td style="background-color: #D4D7D4;"><b>Container</b></td>
