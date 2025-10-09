@@ -84,7 +84,7 @@ pipeline {
         stage("Trigger BVT") {
             when {
                 expression {
-                    buildInfo.version
+                    buildInfo.images."ceph-base"
                 }
             }
 
