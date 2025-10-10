@@ -83,12 +83,6 @@ def call(Map parameters) {
     // Debug
     echo "Updating build content to ${recipe}"
 
-    // Remove unnecessary keys from buildInfo
-    buildInfo.remove("recipe")
-    buildInfo.remove("platform")
-    buildInfo.remove("type")
-    buildInfo.remove("buildVersion")
-
     // Write build info to recipe
     writeYaml file: recipe, data: recipeContent, overwrite: true
 

@@ -19,15 +19,15 @@ def call(Map parameters) {
     buildMessage = readJSON text: buildMessage
 
     // Check for mandatory configs
-    def application = buildMessage.get("application")
-    if ( ! application ) {
+    buildInfo.application = buildMessage.get("application")
+    if ( ! buildInfo.application ) {
         throw new RuntimeException(
             "application - a primary key used to process the data is missing."
         )
     }
 
     // Set recipe based on application
-    def versionArray = application.tokenize("-")
+    def versionArray = buildInfo.application.tokenize("-")
 
     // Removes ceph
     versionArray.removeAt(0)
@@ -42,7 +42,7 @@ def call(Map parameters) {
     buildInfo.recipe = versionArray.join(".")
 
     // Debug
-    echo "Recieved build info for application ${application}"
+    echo "Recieved build info for application ${buildInfo.application}"
     echo "The recipe file selected is ${buildInfo.recipe}"
 
     // Set components

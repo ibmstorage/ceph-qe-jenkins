@@ -5,6 +5,7 @@
 def buildInfo = [:]
 def buildTag = "nightly"
 def job = "listener"
+def repoDc = "eu-de"
 def buildType = ""
 def buildVersion = ""
 
@@ -93,15 +94,19 @@ pipeline {
                     // Check for ceph version
                     def jobName = ""
                     def platform = ""
-                    if (buildInfo.version.startsWith("19")) {
+                    if (buildInfo.application == "ceph-8-1") {
                         jobName = "squid-bvt-ci"
                         platform = "rhel-9"
-                    } else if (buildInfo.version.startsWith("20")) {
+                    } else if (buildInfo.application == "ceph-9-0") {
                         jobName = "tentacle-bvt-ci"
                         platform = "rhel-10"
                     } else {
                         currentBuild.result = "ABORTED"
-                        error("Unsupported Ceph version ${buildInfo.version}")
+                        error("Unsupported Ceph version ${buildInfo.application}")
+                    }
+
+                    if (buildType.toLowerCase() == "redhat") {
+                        buildType = "RH"
                     }
 
                     // Set Custom Configs & RHCS Ceph Repo
@@ -115,6 +120,9 @@ pipeline {
                         }
                     }
 
+                    // read manifest to get compose
+                    repoBuild = readFromManifest(recipe: buildInfo.recipe, job: job)
+
                     // Trigger BVT job
                     build ([
                         wait: false,
@@ -127,7 +135,7 @@ pipeline {
                             string(name: "BUILD_TYPE", value: buildType),
                             string(
                                 name: "REPO",
-                                value: buildInfo.repositories."${platform}"
+                                value: repoBuild."${buildTag}".repositories."${repoDc}"."${platform}"
                             ),
                             string(name: "CONTAINER_IMAGE", value: cephBase),
                             string(
