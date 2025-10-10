@@ -47,7 +47,9 @@ sanity:
       vm-flavor: bx2-4x16
       platform:
         - rhel-9
-    - name: "Basic E2E-Test with FIPS mode enabled"
+      build:
+        - ibm
+    - name: "NVMe Basic E2E-Test with FIPS mode enabled"
       suite: suites/squid/nvmeof/tier-2_nvmeof_e2e_fips.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
       custom-config:
@@ -55,12 +57,16 @@ sanity:
       vm-flavor: bx2-4x16
       platform:
         - rhel-9
+      build:
+        - ibm
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/squid/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
       vm-flavor: bx2-4x16
       platform:
         - rhel-9
+      build:
+        - ibm
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/squid/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml

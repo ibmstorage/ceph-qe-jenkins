@@ -17,14 +17,20 @@ sanity:
     - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
+      build:
+         - ibm
     - name: "Basic E2E-Test with FIPS mode enabled"
       suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_fips.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
       custom-config:
         enable-fips-mode: true
+      build:
+         - ibm
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      build:
+         - ibm
     - name: "tier-1 rbd"
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
       global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
@@ -51,4 +57,3 @@ sanity:
     - name: "Tier-2 rgw upgrade 9xsanity to 9xlatest"
       suite: suites/tentacle/rgw/tier-2_rgw_upgrade_9xsanity_to_9xlatest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-
