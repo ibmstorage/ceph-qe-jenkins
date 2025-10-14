@@ -87,7 +87,7 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 booleanParam("UPDATE_BVT_RESULTS", false, "Update BVT results to manifest")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
-                stringParam("EMAIL_ADDRESS", "", "Email Address")
+                stringParam("EMAIL_ADDRESS", "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com", "Email Address")
             }
         }
     }
