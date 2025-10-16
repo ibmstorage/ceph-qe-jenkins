@@ -20,18 +20,32 @@ def generate_jobs(data) {
         buildVersion = ["9.0"]
     }
 
+    // Add cephci repo details
+    def cephciRepo = "https://github.com/red-hat-storage/cephci.git"
+    def cephciBranch = "main"
+    def buildDescription = "IBM or RH build"
+    if (fg == "callhome") {
+        cephciRepo = "https://github.ibm.com/ceph-qe-ng/cephci.git"
+        cephciBranch = "callhome"
+        buildType = ["IBM"]
+        buildDescription = "IBM build"
+    }
+
     // Add the job configurations
     data.jobsConfiguration.add([
         "name": "${data.cephVersion.toLowerCase()}-${data.fg.toLowerCase()}-regression-ci",
         "displayName": "${data.cephVersion} - ${data.fg} - Regression Test Pipeline",
         "fg": [data.fg.toLowerCase()],
+        "cephciRepo": cephciRepo,
+        "cephciBranch": cephciBranch,
         "logLevel": logLevel,
         "vmFlavor": vmFlavor,
         "vpc": data.vpc,
         "buildVersion": buildVersion,
         "rhelVersion": rhelVersion,
         "release": release,
-        "buildType": buildType
+        "buildType": buildType,
+        "buildDescription": buildDescription
     ])
 }
 
@@ -40,6 +54,21 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
     fg: "DMFG",
+    vpc: ["vpc-dmfg"]
+)
+
+// Create jobs specific to Ceph - Squid - callhome
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Squid",
+    fg: "callhome",
+    vpc: ["vpc-dmfg"]
+)
+// Create jobs specific to Ceph - Squid - smb
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Squid",
+    fg: "smb",
     vpc: ["vpc-dmfg"]
 )
 
@@ -96,6 +125,22 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
     fg: "DMFG",
+    vpc: ["vpc-dmfg"]
+)
+
+// Create jobs specific to Ceph - Tentacle - callhome
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Tentacle",
+    fg: "callhome",
+    vpc: ["vpc-dmfg"]
+)
+
+// Create jobs specific to Ceph - Tentacle - smb
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Tentacle",
+    fg: "smb",
     vpc: ["vpc-dmfg"]
 )
 
@@ -173,12 +218,12 @@ for (jobConfig in jobsConfiguration) {
             parameters {
                 stringParam("PREFIX", "${jobConfig.fg[0]}-regression", "Prefix for instance name")
                 choiceParam("FG", jobConfig.fg, "Ceph Component")
-                stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
-                stringParam("BRANCH", "main", "Ceph CI git branch")
+                stringParam("CEPHCI_REPO", jobConfig.cephciRepo, "CephCI git/gitlab repo")
+                stringParam("BRANCH", jobConfig.cephciBranch, "CephCI git/gitlab branch")
                 choiceParam("LOG_LEVEL", jobConfig.logLevel , "Ceph CI log level")
                 choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph Version")
                 choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL OS Version")
-                choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build")
+                choiceParam("BUILD_TYPE", jobConfig.buildType , jobConfig.buildDescription)
                 choiceParam("RELEASE", jobConfig.release, "Release type")
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
