@@ -69,3 +69,8 @@ sanity:
     - name: "Tier-0 NFS Ganesha v4"
       suite: suites/squid/nfs/tier0-nfs-ganesha-vers-4-2.yaml
       global-conf: conf/squid/nfs/1admin-7node-3client.yaml
+    - name: "SMB Sanity Tier-0 Test Cases"
+      suite: suites/tentacle/smb/tier-0-smb.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      build:
+        - ibm
