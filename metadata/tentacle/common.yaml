@@ -57,3 +57,15 @@ sanity:
     - name: "Tier-2 rgw upgrade 9xsanity to 9xlatest"
       suite: suites/tentacle/rgw/tier-2_rgw_upgrade_9xsanity_to_9xlatest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 CephFS Test"
+      suite: suites/squid/cephfs/tier-0_fs.yaml
+      global-conf: conf/squid/cephfs/tier-0_fs.yaml
+    - name: "Tier-0 NFS Ganesha"
+      suite: suites/squid/nfs/tier0-nfs-ganesha.yaml
+      global-conf: conf/squid/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v3"
+      suite: suites/squid/nfs/tier0-nfs-ganesha-v3.yaml
+      global-conf: conf/squid/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v4"
+      suite: suites/squid/nfs/tier0-nfs-ganesha-vers-4-2.yaml
+      global-conf: conf/squid/nfs/1admin-7node-3client.yaml
