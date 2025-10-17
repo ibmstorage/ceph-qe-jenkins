@@ -24,7 +24,7 @@ def generate_jobs(data) {
     def cephciRepo = "https://github.com/red-hat-storage/cephci.git"
     def cephciBranch = "main"
     def buildDescription = "IBM or RH build"
-    if (fg == "callhome") {
+    if (data.fg == "callhome") {
         cephciRepo = "https://github.ibm.com/ceph-qe-ng/cephci.git"
         cephciBranch = "callhome"
         buildType = ["IBM"]
