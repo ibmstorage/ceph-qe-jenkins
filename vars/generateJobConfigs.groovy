@@ -139,6 +139,30 @@ def call(Map parameters) {
 
         // Set container image
         jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
+
+        // -----------------------------------------------------------------------------
+        // Configure custom container images
+        //
+        // The images defined in the job’s custom configuration take precedence
+        // over those specified in the release manifest.
+        //
+        // Precedence order:
+        //   1) Job configuration (highest priority)
+        //   2) Manifest defaults (fallback)
+        // -----------------------------------------------------------------------------
+        recipeContent."${params.RELEASE}".images.each { image, url ->
+            if (image == "ceph-base") {
+                return
+            }
+
+            def exists = jobConfig.customConfig.any { it.startsWith("${image}=") }
+            if (!exists) {
+                jobConfig.customConfig << "${image}=${url}"
+                println("Added custom-config for ${image} from qe-ceph-manifest")
+            }
+
+        }
+
     } else {
         // Abort if mandatory parameters are not provided
         currentBuild.result = "ABORTED"
