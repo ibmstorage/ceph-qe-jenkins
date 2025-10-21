@@ -80,39 +80,39 @@ weekly:
     cloud:
       - ibmc
   suites:
-    - name:
+    - name: "RADOS Test - Pool Functionalities"
       suite: suites/squid/rados/tier-2_rados_test-pool-functionalities.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-    - name:
+    - name: "RADOS Test - Bluestore"
       suite: suites/squid/rados/tier-2_rados_test_bluestore.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-    - name:
+    - name: "RADOS Test - CIDR Blocklisting"
       suite: suites/squid/rados/tier-3_rados_cidr_blocklisting.yaml
       global-conf: conf/squid/rados/13-node-cluster-4-clients.yaml
       # VM count: 17
-    - name:
+    - name: "RADOS Test - OSD Recovery"
       suite: suites/squid/rados/tier-4_rados_test-pool-osd-recovery.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
       # VM count: 13
-    - name:
+    - name: "RADOS Test - 3 AZ Cluster"
       suite: suites/squid/rados/tier-3_rados_test-3-AZ-Cluster.yaml
       global-conf: conf/squid/rados/3AZ-cluster-rhos-1.yaml
       # VM count: 10
-    - name:
+    - name: "RADOS Test - Scrubbing"
       suite: suites/squid/rados/tier-2_rados_test-scrubbing.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-    - name:
+    - name: "RADOS Tier4 tests"
       suite: suites/squid/rados/tier-4_rados_tests.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
       # VM count: 13
-    - name:
+    - name: "RADOS - Brownfield tests"
       suite: suites/squid/rados/tier-2_rados_test-brownfield.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
-    - name:
+    - name: "RADOS Test - 4 node EC Pools"
       suite: suites/squid/rados/tier-3_rados_test-4-node-ecpools.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
