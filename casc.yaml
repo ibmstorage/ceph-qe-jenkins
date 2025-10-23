@@ -146,6 +146,25 @@ credentials:
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/cephci_conf}"
 
+          - file:
+              description: "Red Hat Google Platform - Service Account"
+              id: "gcp-service-account"
+              fileName: "gcp_service_account.json"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/gcp_service_account"
+
+          - string:
+              description: "Google Sheet ID for recording IBM test results."
+              id: "gsheet-id-ibm"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/gsheet_id_ibm}"
+
+          - string:
+              description: "Google Sheet ID for storing Red hat test results."
+              id: "gsheet-id-redhat"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/gsheet_id_redhat}"
+
           - string:
               description: "Access Token - icr-stg"
               id: "stg-icr-token"
