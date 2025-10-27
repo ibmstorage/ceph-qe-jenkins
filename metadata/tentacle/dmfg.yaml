@@ -33,9 +33,6 @@ regression:
     - name: "Test DMFG Tier-1 SSL Dashboard Port"
       suite: suites/tentacle/cephadm/tier1-ssl-dashboard-port.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
-    - name: "Test DMFG Tier-1 Ceph-Volume Sanity"
-      suite: suites/tentacle/ceph_volume/tier1-ceph-volume-sanity.yaml
-      global-conf: conf/tentacle/ceph_volume/1admin-4node-1client-ceph-volume.yaml
     - name: "Test DMFG Tier-1 Node-exporter Operations"
       suite: suites/tentacle/cephadm/tier1_node_exporter_operation.yaml
       global-conf: conf/tentacle/cephadm/2admin-5node-1client-cluster.yaml
@@ -60,15 +57,23 @@ regression:
     - name: "Test DMFG Tier-2 OSD Scenarios"
       suite: suites/tentacle/cephadm/tier2-osd-scenarios.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
-    - name: "Test DMFG Tier-2 Ceph-Volume Redeploy"
-      suite: suites/tentacle/ceph_volume/tier2-ceph-volume-redeploy.yaml
-      global-conf: conf/tentacle/ceph_volume/1admin-1client-5node-single-volume.yaml
-    - name: "Test DMFG Tier-2 Ceph-Volume Non-collocated"
-      suite: suites/tentacle/ceph_volume/tier2-ceph-volume-non-collocated.yaml
-      global-conf: conf/tentacle/ceph_volume/1admin-1client-5node-single-volume.yaml
-    - name: "Test DMFG Tier-2 Ceph-Volume lvm"
-      suite: suites/tentacle/ceph_volume/tier2-ceph-volume-lvm.yaml
-      global-conf: conf/tentacle/ceph_volume/2admin-5node-1client.yaml
+
+    ## IBMC cloud provider support is not yet implemented.
+    ## Therefore, ceph-volume test suites that depend on it are temporarily commented out.
+    ## These suites will be re-enabled once IBMC support is added.
+
+    # - name: "Test DMFG Tier-1 Ceph-Volume Sanity"
+    #   suite: suites/tentacle/ceph_volume/tier1-ceph-volume-sanity.yaml
+    #   global-conf: conf/tentacle/ceph_volume/1admin-4node-1client-ceph-volume.yaml
+    # - name: "Test DMFG Tier-2 Ceph-Volume Redeploy"
+    #   suite: suites/tentacle/ceph_volume/tier2-ceph-volume-redeploy.yaml
+    #   global-conf: conf/tentacle/ceph_volume/1admin-1client-5node-single-volume.yaml
+    # - name: "Test DMFG Tier-2 Ceph-Volume Non-collocated"
+    #   suite: suites/tentacle/ceph_volume/tier2-ceph-volume-non-collocated.yaml
+    #   global-conf: conf/tentacle/ceph_volume/1admin-1client-5node-single-volume.yaml
+    # - name: "Test DMFG Tier-2 Ceph-Volume lvm"
+    #   suite: suites/tentacle/ceph_volume/tier2-ceph-volume-lvm.yaml
+    #   global-conf: conf/tentacle/ceph_volume/2admin-5node-1client.yaml
     - name: "Test DMFG Tier-4 Service Operations"
       suite: suites/tentacle/cephadm/tier4-service-operations.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
