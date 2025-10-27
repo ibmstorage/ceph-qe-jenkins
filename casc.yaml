@@ -151,7 +151,7 @@ credentials:
               id: "gcp-service-account"
               fileName: "gcp_service_account.json"
               scope: GLOBAL
-              secretBytes: "${readFileBase64:/secrets/gcp_service_account"
+              secretBytes: "${readFileBase64:/secrets/gcp_service_account}"
 
           - string:
               description: "Google Sheet ID for recording IBM test results."
