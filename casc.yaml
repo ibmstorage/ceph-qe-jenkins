@@ -39,6 +39,7 @@ jenkins:
               - "Job/Build"
               - "Job/Discover"
               - "Job/Read"
+              - "Job/Cancel"
               - "Run/Update"
               - "Run/Replay"
             entries:
