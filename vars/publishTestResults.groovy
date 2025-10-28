@@ -73,14 +73,21 @@ def call(Map parameters) {
 
     // Post results to Google Sheet
     def gsheetId = null
-    if (buildType == "IBM") {
-        gsheetId = withCredentials([string(credentialsId: 'gsheet-id-ibm', variable: 'GSHEET_ID')]) {
+    def product = buildType.toLowerCase()
+    def release = rhBuild
+    
+    // Build dynamic credential ID: gsheet-id-{product}-{release}
+    def credId = "gsheet-id-${product}-${release}"
+    
+    try {
+        gsheetId = withCredentials([string(credentialsId: credId, variable: 'GSHEET_ID')]) {
             return GSHEET_ID
         }
-    } else {
-        gsheetId = withCredentials([string(credentialsId: 'gsheet-id-redhat', variable: 'GSHEET_ID')]) {
-            return GSHEET_ID
-        }
+        echo "Successfully retrieved Google Sheet ID for ${product}-${release}"
+    } catch(Exception ex) {
+        echo "Warning: Could not find Google Sheet credentials for '${credId}': ${ex.message}"
+        echo "Skipping Google Sheet update for this build."
+        gsheetId = null
     }
 
     if (gsheetId) {
@@ -96,8 +103,6 @@ def call(Map parameters) {
                 "--gsheet ${gsheetId}"
             ].join(" "))
         }
-    } else {
-        echo "No Google Sheet ID found for buildType=${buildType}. Skipping GSheet update."
     }
 
     // Create test artifacts Content

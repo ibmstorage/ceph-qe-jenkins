@@ -146,7 +146,7 @@ def parse_testcases(xml_root):
         suite_name = suite.get("name", "")
 
         # Determine component from testcase name
-        component = "UNKNOWN"
+        component = "BVT"
         for comp in components:
             if comp.lower() in suite_name.lower():
                 component = comp.upper()
@@ -224,7 +224,7 @@ def _auto_resize_columns(worksheet):
 
 def _apply_status_color_formatting(worksheet):
     """
-    Apply color formatting to all 'Status' columns in the worksheet.
+    Apply color formatting to version columns in the worksheet.
     - Green for 'Passed'
     - Red for 'Failed'
     - White (default) for anything else
@@ -238,11 +238,19 @@ def _apply_status_color_formatting(worksheet):
     header = values[0]
     num_rows = len(values)
 
-    # Identify all Status columns
-    status_cols = [idx for idx, col in enumerate(header) if col.strip().startswith("Status")]
+    # Identify version columns (these contain status values)
+    # Version columns are those that don't start with standard headers
+    standard_headers = ["Test Suite Name", "Test Case Name", "Component", "polarion-testcase-id"]
+    version_cols = []
     
-    if not status_cols:
-        return  # No status columns to format
+    for idx, col in enumerate(header):
+        col_stripped = col.strip()
+        # If column doesn't match standard headers, it's likely a version column
+        if col_stripped not in standard_headers and not col_stripped.startswith("Status") and not col_stripped.startswith("Time"):
+            version_cols.append(idx)
+    
+    if not version_cols:
+        return  # No version columns to format
 
     # Use Google Sheets API directly for efficient conditional formatting
     try:
@@ -271,7 +279,7 @@ def _apply_status_color_formatting(worksheet):
         
         # Add conditional formatting rules for better performance
         # This creates a single batch request with all rules
-        for col_idx in status_cols:
+        for col_idx in version_cols:
             
             # Green formatting rule for "passed"
             requests.append({
@@ -389,13 +397,11 @@ def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, va
 
     Behavior:
     - For value_type == "Time":
-        * Adds both Status and Time columns (with recent version on left and older versions moving to right).
-        * Removes older Status columns (only when sheet_name suggests a timings sheet).
-        * Applies color formatting to the new Status column (Passed/Failed).
+        * Adds only Time column with Ceph version as header (no Status column).
+        * No color formatting applied (timings sheet).
     - For value_type == "Status":
-        * Adds only Status column for the Ceph version.
-        * Does NOT remove or reorder any columns.
-        * Applies color formatting to the new Status column (Passed/Failed).
+        * Adds only Status column with Ceph version as header.
+        * Applies color formatting to the new version column (Passed/Failed).
     """
     worksheet = get_or_create_worksheet(spreadsheet_obj, sheet_name)
     
@@ -416,21 +422,9 @@ def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, va
             header_set.add(col)
 
     # Determine column names and data keys
-    time_col_name = f"Time (seconds) ({ceph_version})"
-    status_col_name = f"Status ({ceph_version})"
-    dynamic_cols = [status_col_name, time_col_name] if value_type == "Time" else [status_col_name]
-
-    # Remove old Status columns for Timings sheet (optimized with reverse iteration)
-    if value_type == "Time" and "timings" in sheet_name.lower():
-        old_status_cols = [c for c in header if c.startswith("Status") and c != status_col_name]
-        if old_status_cols:
-            # Use reverse iteration to avoid index shifting issues
-            for old_col in reversed(old_status_cols):
-                old_idx = header.index(old_col)
-                header.pop(old_idx)
-                for row in existing_rows:
-                    if len(row) > old_idx:
-                        row.pop(old_idx)
+    # Both Status and Timings sheets use only Ceph version number as header
+    version_col_name = ceph_version
+    dynamic_cols = [version_col_name]
 
     # Insert new columns (optimized: create header indices map)
     insert_base_idx = len(required_headers)
@@ -484,8 +478,7 @@ def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, va
             sheet_row_map[key] = row
 
     # Pre-calculate column indices for performance
-    time_col_idx = header.index(time_col_name) if time_col_name in header else -1
-    status_col_idx = header.index(status_col_name) if status_col_name in header else -1
+    version_col_idx = header.index(version_col_name) if version_col_name in header else -1
     header_len = len(header)
 
     # Merge new data (optimized with pre-calculated indices)
@@ -501,35 +494,25 @@ def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, va
                 col_idx = header.index(col_name)
                 new_row[col_idx] = entry[col_name]
         
-        # For Timings and Status sheets, explicitly populate Status and Time columns
+        # Populate data based on sheet type
         if value_type == "Time":
-            # Timings sheet: populate both Status and Time columns
-            if status_col_idx >= 0:
-                new_row[status_col_idx] = entry.get("Status", "")
-            if time_col_idx >= 0:
-                new_row[time_col_idx] = entry.get("Time (seconds)", "")
-            
-            # Debug output
-            if status_col_idx >= 0 and time_col_idx >= 0:
-                if not new_row[status_col_idx] and new_row[time_col_idx]:
-                    print(f"Warning: '{entry.get('Test Case Name')}' has Time '{new_row[time_col_idx]}' but no Status")
+            # Timings sheet: populate only Time column (no Status column)
+            if version_col_idx >= 0:
+                new_row[version_col_idx] = entry.get("Time (seconds)", "")
         elif value_type == "Status":
             # Status sheet: populate Status column
-            if status_col_idx >= 0:
-                new_row[status_col_idx] = entry.get("Status", "")
+            if version_col_idx >= 0:
+                new_row[version_col_idx] = entry.get("Status", "")
 
         # Merge with existing data if key exists
         if key in sheet_row_map:
             existing = sheet_row_map[key]
-            # Merge: For Time and Status sheets, overwrite Status columns completely with new data
+            # Merge: For Time and Status sheets, overwrite version columns completely with new data
             # For other sheets, prefer new data if present
             merged = []
             for i in range(header_len):
-                # For Timings sheet Status/Time columns, always use new data (even if empty)
-                if value_type == "Time" and i in [time_col_idx, status_col_idx]:
-                    merged.append(new_row[i])
-                # For Status sheet Status column, always use new data (even if empty)
-                elif value_type == "Status" and i == status_col_idx:
+                # For version column, always use new data (even if empty)
+                if i == version_col_idx:
                     merged.append(new_row[i])
                 else:
                     # For other columns, prefer new data if present, else keep existing
@@ -548,7 +531,9 @@ def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, va
         time.sleep(2)
 
     _auto_resize_columns(worksheet)
-    _apply_status_color_formatting(worksheet)
+    # Only apply color formatting to Status sheets (not Timings sheets)
+    if value_type == "Status":
+        _apply_status_color_formatting(worksheet)
     print(f"Worksheet '{sheet_name}' updated successfully...")
 
 def parse_xml_attributes(root, filename, ceph_version):
