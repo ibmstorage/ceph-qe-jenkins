@@ -74,7 +74,7 @@ def call(Map parameters) {
     // Post results to Google Sheet
     def gsheetId = null
     def product = buildType.toLowerCase()
-    def release = rhBuild
+    def release = rhBuild.replace(".", "")
     
     // Build dynamic credential ID: gsheet-id-{product}-{release}
     def credId = "gsheet-id-${product}-${release}"
