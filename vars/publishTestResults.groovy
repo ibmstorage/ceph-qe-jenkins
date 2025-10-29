@@ -53,6 +53,9 @@ def call(Map parameters) {
         )
     }
 
+    // Install Python requirements
+    sh("pip install --upgrade -r requirements.txt")
+
     // Generate results summary
     def updateResultsDir = "scripts/updateResultsDir.py"
     sh([
@@ -65,7 +68,41 @@ def call(Map parameters) {
     try {
         rpLaunchUrl = updateReportPortal(parameters)
     } catch(Exception ex) {
-        print("Failed to update report portal ${ex}")        
+        print("Failed to update report portal ${ex}")
+    }
+
+    // Post results to Google Sheet
+    def gsheetId = null
+    def product = buildType.toLowerCase()
+    def release = rhBuild
+    
+    // Build dynamic credential ID: gsheet-id-{product}-{release}
+    def credId = "gsheet-id-${product}-${release}"
+    
+    try {
+        gsheetId = withCredentials([string(credentialsId: credId, variable: 'GSHEET_ID')]) {
+            return GSHEET_ID
+        }
+        echo "Successfully retrieved Google Sheet ID for ${product}-${release}"
+    } catch(Exception ex) {
+        echo "Warning: Could not find Google Sheet credentials for '${credId}': ${ex.message}"
+        echo "Skipping Google Sheet update for this build."
+        gsheetId = null
+    }
+
+    if (gsheetId) {
+        withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_SERVICE_ACCOUNT')]) {
+            def gsheetScript = "scripts/xunit2gsheet.py"
+
+            sh("cp -n \$GCP_SERVICE_ACCOUNT /home/jenkins/.gcp_service_account.json")
+            sh([
+                "${jobConfigs.PYTHON} ${gsheetScript}",
+                "--service-account /home/jenkins/.gcp_service_account.json",
+                "--version ${cephVersion}",
+                "--resultdir ${resultsDir}",
+                "--gsheet ${gsheetId}"
+            ].join(" "))
+        }
     }
 
     // Create test artifacts Content
@@ -81,7 +118,7 @@ def call(Map parameters) {
         "Container": "${containerImage}",
         "jobName": "${env.JOB_NAME}",
         "ReportPortal": "${rpLaunchUrl}",
-        "Results": ${testResult},        
+        "Results": ${testResult},
     }"""
     writeJSON file: "${artifacts}", json: artifactsContent
 
