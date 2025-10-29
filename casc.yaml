@@ -154,6 +154,13 @@ credentials:
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/gcp_service_account}"
 
+          - file:
+              description: "Repo access key for synchronization"
+              id: "repo_access_key"
+              fileName: "repo_access_key"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/repo_access}"
+
           - string:
               description: "Google Sheet ID for recording Ceph 9.0 test results."
               id: "gsheet-id-ibm-90"
