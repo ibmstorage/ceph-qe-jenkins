@@ -74,3 +74,6 @@ sanity:
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       build:
         - ibm
+    - name: "Tier-1 DMFG Service Apply Spec"
+      suite: suites/tentacle/cephadm/tier1-service-apply-spec.yaml
+      global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
