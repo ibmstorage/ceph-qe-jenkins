@@ -1,0 +1,41 @@
+// Import shared library
+@Library("ceph-qe-libs@main")_
+
+
+// Pipeline definition
+pipeline {
+    options {
+        // Set build archieve policy
+        buildDiscarder(logRotator(numToKeepStr: "30", daysToKeepStr: "30"))
+
+        // Disable parallel execution
+        disableConcurrentBuilds()
+    }
+
+    agent {
+        // Use agent label
+        label "infra"
+    }
+
+    stages {
+        // Sync repository20.1.0-70
+        stage("Sync Repository") {
+            when {
+                expression {
+                    params.CEPH_VERSION
+                }
+            }
+
+            steps {
+                script {
+                    // Sync repository
+                    syncRepository(
+                        buildVersion: params.BUILD_VERSION,
+                        platform: params.RHEL_VERSION,
+                        cephVersion: params.CEPH_VERSION
+                    )
+                }
+            }
+        }
+   }
+}
