@@ -232,9 +232,9 @@ def call(Map parameters) {
     args += parameters.skipSosReport ? ["--skip-sos-report"] : []
 
     // Add exit status
-    args += [
-        "|| exit 0"  // exit 0 in case test case failed for unexpected errors
-    ]
+//     args += [
+//         "|| exit 0"  // exit 0 in case test case failed for unexpected errors
+//     ]   //Commenting as we need to mark the suite execution as failed
 
     // Start cephci run
     dir(gitDir) {

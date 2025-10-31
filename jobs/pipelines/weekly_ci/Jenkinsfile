@@ -124,6 +124,7 @@ pipeline {
                                 } catch (Exception e) {
                                     // Debug
                                     echo "Test execution failed: ${e.message}"
+                                    error("Suite ${suite.name} failed")
                                 } finally {
                                     // Cleanup configs generated
                                     cleanupCluster(
