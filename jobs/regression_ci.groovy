@@ -12,7 +12,7 @@ def generate_jobs(data) {
     // Set release specific variables
     def release = ["stable", "nightly"]
     if (data.cephVersion.toLowerCase() == "squid") {
-        release += ["released", "z0", "z1", "z2", "z3", "z4"]
+        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4"]
         rhelVersion = ["rhel-9"]
         buildVersion = ["8.1", "8.0"]
     } else if (data.cephVersion.toLowerCase() == "tentacle") {
