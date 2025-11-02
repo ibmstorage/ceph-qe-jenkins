@@ -1,5 +1,5 @@
 """
-Job to sync RedHat repo to IBM Cloud local repo.
+Job to sync Red Hat Repository to mirror repository.
 """
 
 // Set default job configuration

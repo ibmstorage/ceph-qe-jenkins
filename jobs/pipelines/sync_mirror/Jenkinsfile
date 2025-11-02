@@ -1,0 +1,22 @@
+// Synchronize the mirror repository
+@Library("ceph-qe-libs@main") _
+
+pipeline {
+    agent { label "infra" }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "5", daysToKeepStr: "5"))
+    }
+
+    triggers {
+        cron("@weekly")
+    }
+
+    stages {
+        stage("Syncrhonize") {
+            steps {
+                script { syncMirrorOsRpms() }
+            }
+        }
+    }
+}
