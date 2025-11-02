@@ -28,7 +28,7 @@ def job = pipelineJob("sync-blue-ceph-images") {
 
         // Required parameter
         parameters {
-            textParam("BLUE_IMAGES", "", "A IBM Storage Ceph repo per line.")
+            textParam("BLUE_IMAGES", "", "IBM Storage Ceph container images per line.")
         }
     }
 }

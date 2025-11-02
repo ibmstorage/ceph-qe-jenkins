@@ -1,5 +1,5 @@
 // Synchronize the mirror repository with blue build
-@Library("ceph-qe-libs@main")
+@Library("ceph-qe-libs@main") _
 
 pipeline {
     agent { label "infra" }
@@ -13,7 +13,7 @@ pipeline {
         stage("Validate Input") {
             steps {
                 script {
-                    if ( params.BLUE_IMAGES == null || params.BLUE_IMAGES.trim().isEmpty()) {
+                    if ( params.BLUE_IMAGES == null || params.BLUE_IMAGES.trim().isEmpty() ) {
                         error("No repository information was provided.")
                     }
                 }
