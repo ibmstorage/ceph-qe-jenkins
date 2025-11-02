@@ -148,6 +148,13 @@ credentials:
               secretBytes: "${readFileBase64:/secrets/cephci_conf}"
 
           - file:
+              description: "All Registries authentication file."
+              id: "all-cr-auth"
+              fileName: "auth.json"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/all_registry_auth}"
+
+          - file:
               description: "Red Hat Google Platform - Service Account"
               id: "gcp-service-account"
               fileName: "gcp_service_account.json"
