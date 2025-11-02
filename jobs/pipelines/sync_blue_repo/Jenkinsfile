@@ -1,0 +1,29 @@
+// Synchronize the mirror repository with blue build
+@Library("ceph-qe-libs@main")
+
+pipeline {
+    agent { label "infra" }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "5", daysToKeepStr: "5"))
+    }
+
+    stages {
+
+        stage("Validate Input") {
+            steps {
+                script {
+                    if ( params.BLUE_REPOS == null || params.BLUE_REPOS.trim().isEmpty()) {
+                        error("No repository information was provided.")
+                    }
+                }
+            }
+        }
+
+        stage("Syncrhonize") {
+            steps {
+                script { syncBlueRepos(repos: params.BLUE_REPOS) }
+            }
+        }
+    }
+}
