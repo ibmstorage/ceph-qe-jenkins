@@ -13,7 +13,7 @@ def call(Map parameters) {
         // Process the image
         def imageSplit = image.tokenize('/')
         def imageRegistry = imageSplit.removeAt(0)
-        def imageAndTag = imageSplit.pop()
+        def imageAndTag = imageSplit.join('/')
 
         // Identify the local image repository to be used
         if ( imageRegistry == "cp.stg.icr.io" ) {
