@@ -1,5 +1,5 @@
 // Synchronize the mirror repository with blue build
-@Library("ceph-qe-libs@main")
+@Library("ceph-qe-libs@main") _
 
 pipeline {
     agent { label "infra" }
