@@ -71,9 +71,11 @@ def call(Map parameters) {
         remote.identityFile = "${NGINX_SERVER_KEY}"
 
         // Execute the rsync command on the remote server
-        sshCommand remote: remote, command: "${rsyncCmd}"
+        println("Remote execution to pull rpm packages")
+        sshCommand remote: remote, command: rsyncCmd
 
         // Execute the createrepo command on the remote server
-        sshCommand remote: remote, command: "${createrepoCmd}"
+        println("Remote execution of createrepo")
+        sshCommand remote: remote, command: createrepoCmd
     }
 }

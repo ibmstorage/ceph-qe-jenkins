@@ -9,7 +9,7 @@ def generate_jobs(data) {
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
-    def release = ["stable", "nightly"]
+    def release = ["nightly", "stable"]
 
     // Add the job configurations
     data.jobsConfiguration.add([

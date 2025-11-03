@@ -9,7 +9,7 @@ def rhelVersion = ["rhel-10", "rhel-9"]
 // Create job to sync RHCS repo
 def job = pipelineJob("sync-rhcs-repo") {
     // Job display name
-    displayName("Sync RHCS Repo")
+    displayName("Infra - Synchronize Red Hat Ceph rpms")
 
     // Job definition from git repo
     definition {
