@@ -6,7 +6,9 @@ def call(Map parameters) {
     def local_cr = " docker://registry.qe.ceph.eu.lab:5000/"
     def baseCmd = "skopeo copy --dest-tls-verify=false --authfile "
 
-    parameters.images.eachLine { image ->
+    def paramList = parameters.images.split("\r?\n")
+
+    paramList.each { image ->
         def trimImage = image.trim()
         def srcImage = "docker://" + trimImage
         def target_repo = "ibm-stage/"
