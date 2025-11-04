@@ -19,7 +19,7 @@ def call(Map parameters) {
         cmdStr += " quay.io/ibm-ceph-qe/repo-sync:blue "
 
         // Sync IBM Storage Ceph repo
-        parameters.repos.stripIndent().eachLine { repo ->
+        parameters.repos.eachLine { repo ->
             def repoCmd = cmdStr + repo.trim()
             sshCommand remote: remoteConnection, command: repoCmd
         }

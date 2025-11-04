@@ -13,6 +13,7 @@ pipeline {
         stage("Validate Input") {
             steps {
                 script {
+                    println("The list of repos " + params.BLUE_REPOS)
                     if ( params.BLUE_REPOS == null || params.BLUE_REPOS.trim().isEmpty()) {
                         error("No repository information was provided.")
                     }

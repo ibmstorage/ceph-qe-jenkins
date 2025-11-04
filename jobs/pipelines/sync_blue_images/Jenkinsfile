@@ -13,6 +13,7 @@ pipeline {
         stage("Validate Input") {
             steps {
                 script {
+                    println("The list of container images provided " + params.BLUE_IMAGES)
                     if ( params.BLUE_IMAGES == null || params.BLUE_IMAGES.trim().isEmpty() ) {
                         error("No repository information was provided.")
                     }
