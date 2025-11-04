@@ -124,12 +124,13 @@ def call(Map parameters) {
         }
 
         // Get repo data center
-        def repoDc = ""
+        /*def repoDc = ""
         if (jobConfig.buildType == "RH") {
             repoDc = "eu-de"
         } else if (jobConfig.buildType == "IBM") {
             repoDc = manifestConfigs.DEFAULT_DC
-        }
+        }*/
+        def repoDc = "eu-de"
 
         // Get ceph downstream repo based on DC & platform
         jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDc}"."${jobConfig.platform}"
