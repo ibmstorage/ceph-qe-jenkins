@@ -1,0 +1,32 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome and Storage Insights"
+      suite: suites/squid/callhome/tier1-cephadm-bootstrap-with-callhome-and-si.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome"
+      suite: suites/squid/callhome/tier1-cephadm-bootstrap-with-callhome.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome Enabled After Bootstrap"
+      suite: suites/squid/callhome/tier1-enable-callhome-after-bootstrap.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Perform CallHome Operations Using CallHome CLI Commands"
+      suite: suites/squid/callhome/tier2-perform-callhome-operations-using-callhome-commands.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Validate CallHome Configuration Using Ceph Config"
+      suite: suites/squid/callhome/tier2-validate-call-home-configuration-using-ceph-config.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Validate CallHome Agent Configuration Using Ceph Config"
+      suite: suites/squid/callhome/tier2-validate-callhome-agent-configuration-using-ceph-config.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Validate CallHome Configuration Using Ceph Config"
+      suite: suites/squid/callhome/tier2-validate-storage-insights-configuration-using-ceph-config.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test DMFG Tier-2 Validate On Demand Diagnostics functionality"
+      suite: suites/squid/callhome/tier2-validate-on-demand-diagnostics.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test DMFG Tier-1 Upgrade with CallHome and SI enabled 7x to 8x"
+      suite: suites/squid/callhome/tier1-upgrade-with-callhome-si-enabled-7x-to-8x.yaml
+      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
