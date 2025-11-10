@@ -139,7 +139,9 @@ def call(Map parameters) {
         jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
 
         // Set container image
-        jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
+        if ( ! params.CONTAINER_IMAGE ) {
+            jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
+        }
 
         // -----------------------------------------------------------------------------
         // Configure custom container images
@@ -153,6 +155,14 @@ def call(Map parameters) {
         // -----------------------------------------------------------------------------
         recipeContent."${params.RELEASE}".images.each { image, url ->
             if (image == "ceph-base") {
+                return
+            }
+
+            if ( image == "crimson_image") {
+                return
+            }
+
+            if ( image == "nvmeof_cli_image" ) {
                 return
             }
 
