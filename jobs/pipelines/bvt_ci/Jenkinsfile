@@ -89,7 +89,7 @@ pipeline {
                                 def logDir = [jobConfigs.logDir, suite.name].join("/")
 
                                 // Generate a random prefix for resources
-                                def prefix = "${jobConfigs.prefix}-${generatePrefixString()}"
+                                def prefix = "${jobConfigs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
 
                                 try {
                                     // Execute the test job

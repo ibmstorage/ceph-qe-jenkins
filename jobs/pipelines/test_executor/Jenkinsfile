@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     // Generate a random prefix for resources
-                    prefix = "${jobConfigs.prefix}-${generatePrefixString()}"
+                    prefix = "${jobConfigs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
 
                     // Execute the test job
                     execTestSuites(
