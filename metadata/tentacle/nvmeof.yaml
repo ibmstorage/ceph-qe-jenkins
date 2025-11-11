@@ -21,21 +21,21 @@ regression:
         vm-flavor: bx2-4x16
         build:
          - ibm
-      - name: "[8.1] Tests on NVMe gateway CLI operations"
-        suite: suites/tentacle/nvmeof/tier-2_8-1_nvmeof_gateway_operations.yaml
-        global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
-        vm-flavor: bx2-4x16
-        build:
-         - ibm
-      - name: "[8.1] E2E Tests on NVMe Namespace Masking"
+      - name: "E2E Tests on NVMe Namespace Masking"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_ns-masking.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_ns-masking-5_client.yaml
         vm-flavor: bx2-4x16
         build:
          - ibm
-      - name: "[8.1] E2E Tests on NVMe Inband Authentication"
+      - name: "E2E Tests on NVMe Inband Authentication"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_4-nvmeof-gwgroup_inbandauth_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
+        vm-flavor: bx2-4x16
+        build:
+         - ibm
+      - name: "E2E Tests on NVMe Namespace reservation"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_ns-reservation.yaml
+        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ns_reservation-2_client.yaml
         vm-flavor: bx2-4x16
         build:
          - ibm
@@ -105,4 +105,3 @@ weekly:
         vm-flavor: bx2-4x16
         build:
          - ibm
-        
