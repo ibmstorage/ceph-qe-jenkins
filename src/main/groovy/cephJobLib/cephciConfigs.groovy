@@ -15,7 +15,7 @@ class cephciConfigs {
     static final String LOG_LEVEL = "DEBUG"
     static final String INSTANCE_PREFIX = "cephci"
     static final String CLOUD_TYPE = "ibmc"
-    static final String VM_FLAVOR = "bx2-2x8"
+    static final String VM_FLAVOR = "bxf-2x8"
     static final String VPC_NAME = "vpc-cephci"
 
     // Default inventory config
