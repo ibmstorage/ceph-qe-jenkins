@@ -146,23 +146,31 @@ def call(Map parameters) {
         // -----------------------------------------------------------------------------
         // Configure custom container images
         //
-        // The images defined in the job’s custom configuration take precedence
+        // The images defined in the job's custom configuration take precedence
         // over those specified in the release manifest.
         //
         // Precedence order:
         //   1) Job configuration (highest priority)
         //   2) Manifest defaults (fallback)
         // -----------------------------------------------------------------------------
+
+        // Collect images that need to be synced
+        def imagesToSync = []
+
         recipeContent."${params.RELEASE}".images.each { image, url ->
+            // Check if image exists in registry
+            if (!checkImageInRegistry(url)) {
+                println("Image ${image}=${url} is not available in source registry, will sync...")
+                imagesToSync << url
+            }
+
+            // Skip adding ceph-base to customConfig as it's already set as containerImage
             if (image == "ceph-base") {
                 return
             }
 
-            if ( image == "crimson_image") {
-                return
-            }
-
-            if ( image == "nvmeof_cli_image" ) {
+            // Skip adding crimson_image and nvmeof_cli_image to customConfig
+            if (image == "crimson_image" || image == "nvmeof_cli_image") {
                 return
             }
 
@@ -172,6 +180,19 @@ def call(Map parameters) {
                 println("Added custom-config for ${image} from qe-ceph-manifest")
             }
 
+        }
+
+        // Sync all missing images in batch using syncBlueImages
+        if (imagesToSync.size() > 0) {
+            println("Syncing ${imagesToSync.size()} missing image(s) to local registry...")
+            try {
+                def imagesList = imagesToSync.join("\n")
+                syncBlueImages(images: imagesList)
+                println("Successfully synced ${imagesToSync.size()} image(s) to local registry")
+            } catch (Exception e) {
+                currentBuild.result = "ABORTED"
+                error("Failed to sync images to local registry: ${e.getMessage()}")
+            }
         }
 
     } else {
