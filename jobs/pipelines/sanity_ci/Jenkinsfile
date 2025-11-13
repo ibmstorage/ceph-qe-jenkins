@@ -11,6 +11,7 @@ def suites = [:]
 def testSuitesMap = [:]
 def skipSosReport = true
 def skipSubscription = true
+def NO_NEW_BUILDS = false
 
 
 // Pipeline definition
@@ -38,7 +39,36 @@ pipeline {
             }
         }
 
+        stage("Check for New Builds") {
+            when {
+                expression { !params.SKIP_BUILD_CHECK }
+            }
+            steps {
+                script {
+                    // Check if nightly and stable builds are different
+                    def hasNewBuilds = checkForNewBuilds(
+                        buildType: jobConfigs.buildType,
+                        rhBuild: jobConfigs.rhBuild,
+                        job: jobConfigs.job
+                    )
+
+                    // If no new builds, abort the pipeline gracefully
+                    if (!hasNewBuilds) {
+                        NO_NEW_BUILDS = true
+                        env.NO_NEW_BUILDS = 'true'
+                        currentBuild.result = "NOT_BUILT"
+                        currentBuild.description = "No new builds to test. Nightly and stable are identical."
+                        echo "Skipping sanity tests - no new builds available"
+                        catchError(buildResult: 'NOT_BUILT', stageResult: 'NOT_BUILT') {
+                            error("No new builds to test")
+                        }
+                    }
+                }
+            }
+        }
+
         stage("Setup") {
+            when { expression { env.NO_NEW_BUILDS != 'true' } }
             steps {
                 script {
                     // Setup Ceph CI repository and virtual environment
@@ -59,6 +89,7 @@ pipeline {
         }
 
         stage("Fetch Suites") {
+            when { expression { env.NO_NEW_BUILDS != 'true' } }
             steps {
                 script {
                     // Get suites for given FG & Component
@@ -75,6 +106,7 @@ pipeline {
         }
 
         stage("Get Stages") {
+            when { expression { env.NO_NEW_BUILDS != 'true' } }
             steps {
                 script {
                     // Iterate over suite list
@@ -146,6 +178,7 @@ pipeline {
         }
 
         stage("Execute Suites") {
+            when { expression { env.NO_NEW_BUILDS != 'true' } }
             steps {
                 script {
                     // Execute all the test suites in parallel
@@ -158,38 +191,39 @@ pipeline {
     post {
         always {
             script {
-                // Debug
-                echo "Send results to ${params.EMAIL_ADDRESS}"
+            if (env.NO_NEW_BUILDS == 'true') {
+                echo "Skipped publish: nightly and stable are identical."
+                return
+            }
 
-                // Always run this block
-                publishTestResults(
-                    cephVersion: jobConfigs.cephVersion,
-                    rhsCephRepo: jobConfigs.rhsCephRepo,
-                    containerImage: jobConfigs.containerImage,
-                    buildType: jobConfigs.buildType,
-                    rhBuild: jobConfigs.rhBuild,
-                    platform: jobConfigs.platform,
-                    cloudType: jobConfigs.cloudType,
-                    logDir: jobConfigs.logDir,
-                    resultsDir: jobConfigs.resultsDir,
-                    resultsSummary: jobConfigs.resultsSummary,
-                    artifacts: jobConfigs.artifacts,
-                    emailBody: jobConfigs.emailBody,
-                    emailAddr: params.EMAIL_ADDRESS,
-                    rpLaunchUrl: jobConfigs.rpLaunchUrl,
-                    rpLaunchName: jobConfigs.rpLaunchName,
-                    rpLaunchDesc: jobConfigs.rpLaunchDesc,
-                    rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
-                    rpProjectName: jobConfigs.rpProjectName
-                )
+            // Normal (heavy) publish path
+            publishTestResults(
+                cephVersion: jobConfigs.cephVersion,
+                rhsCephRepo: jobConfigs.rhsCephRepo,
+                containerImage: jobConfigs.containerImage,
+                buildType: jobConfigs.buildType,
+                rhBuild: jobConfigs.rhBuild,
+                platform: jobConfigs.platform,
+                cloudType: jobConfigs.cloudType,
+                logDir: jobConfigs.logDir,
+                resultsDir: jobConfigs.resultsDir,
+                resultsSummary: jobConfigs.resultsSummary,
+                artifacts: jobConfigs.artifacts,
+                emailBody: jobConfigs.emailBody,
+                emailAddr: params.EMAIL_ADDRESS,
+                rpLaunchUrl: jobConfigs.rpLaunchUrl,
+                rpLaunchName: jobConfigs.rpLaunchName,
+                rpLaunchDesc: jobConfigs.rpLaunchDesc,
+                rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
+                rpProjectName: jobConfigs.rpProjectName
+            )
             }
         }
 
         cleanup {
             script {
-                // cleanup logic
-                echo "Cleanup completed successfully ..."
+            echo "Cleanup completed successfully ..."
             }
         }
-    }
+    }   
 }
