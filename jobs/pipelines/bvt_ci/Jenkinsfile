@@ -181,20 +181,6 @@ pipeline {
                     rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
                     rpProjectName: jobConfigs.rpProjectName
                 )
-
-                // Update BVT results to manifest
-                if (params.UPDATE_BVT_RESULTS) {
-                    updateBvtResults(
-                        resultsSummary: jobConfigs.resultsSummary,
-                        job: jobConfigs.job,
-                        buildType: jobConfigs.buildType,
-                        rhBuild: jobConfigs.rhBuild,
-                        platform: jobConfigs.platform,
-                        cephVersion: jobConfigs.cephVersion,
-                        rhsCephRepo: jobConfigs.rhsCephRepo,
-                        containerImage: jobConfigs.containerImage
-                    )
-                }
             }
         }
 
