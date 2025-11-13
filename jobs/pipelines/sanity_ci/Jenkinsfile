@@ -196,27 +196,41 @@ pipeline {
                 return
             }
 
-            // Normal (heavy) publish path
-            publishTestResults(
-                cephVersion: jobConfigs.cephVersion,
-                rhsCephRepo: jobConfigs.rhsCephRepo,
-                containerImage: jobConfigs.containerImage,
-                buildType: jobConfigs.buildType,
-                rhBuild: jobConfigs.rhBuild,
-                platform: jobConfigs.platform,
-                cloudType: jobConfigs.cloudType,
-                logDir: jobConfigs.logDir,
-                resultsDir: jobConfigs.resultsDir,
-                resultsSummary: jobConfigs.resultsSummary,
-                artifacts: jobConfigs.artifacts,
-                emailBody: jobConfigs.emailBody,
-                emailAddr: params.EMAIL_ADDRESS,
-                rpLaunchUrl: jobConfigs.rpLaunchUrl,
-                rpLaunchName: jobConfigs.rpLaunchName,
-                rpLaunchDesc: jobConfigs.rpLaunchDesc,
-                rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
-                rpProjectName: jobConfigs.rpProjectName
-            )
+                // Always run this block
+                publishTestResults(
+                    cephVersion: jobConfigs.cephVersion,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
+                    platform: jobConfigs.platform,
+                    cloudType: jobConfigs.cloudType,
+                    logDir: jobConfigs.logDir,
+                    resultsDir: jobConfigs.resultsDir,
+                    resultsSummary: jobConfigs.resultsSummary,
+                    artifacts: jobConfigs.artifacts,
+                    emailBody: jobConfigs.emailBody,
+                    emailAddr: params.EMAIL_ADDRESS,
+                    rpLaunchUrl: jobConfigs.rpLaunchUrl,
+                    rpLaunchName: jobConfigs.rpLaunchName,
+                    rpLaunchDesc: jobConfigs.rpLaunchDesc,
+                    rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
+                    rpProjectName: jobConfigs.rpProjectName
+                )
+
+                // Update Sanity results to manifest
+                if (params.UPDATE_SANITY_RESULTS) {
+                    updateSanityResults(
+                        resultsSummary: jobConfigs.resultsSummary,
+                        job: jobConfigs.job,
+                        buildType: jobConfigs.buildType,
+                        rhBuild: jobConfigs.rhBuild,
+                        platform: jobConfigs.platform,
+                        cephVersion: jobConfigs.cephVersion,
+                        rhsCephRepo: jobConfigs.rhsCephRepo,
+                        containerImage: jobConfigs.containerImage
+                    )
+                }
             }
         }
 

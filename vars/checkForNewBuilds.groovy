@@ -49,7 +49,7 @@ def call(Map parameters) {
     echo "Stable version: ${stableVersion}"
 
     // Compare versions
-    if (nightlyVersion >= stableVersion) {
+    if (nightlyVersion <= stableVersion) {
         echo "Nightly and stable builds are identical (version: ${nightlyVersion})"
         echo "No new build to test. Skipping sanity tests."
         return false  // Builds are same, no need to run tests
