@@ -3,7 +3,7 @@
 def call(Map parameters) {
 
     println("Debug - Inside syncBlueImages workflow")
-    def local_cr = " docker://registry.qe.ceph.eu.lab:5000/"
+    def local_cr = " docker://registry.qe.ceph.lab:5000/"
     def baseCmd = "skopeo copy --dest-tls-verify=false --authfile "
 
     def paramList = parameters.images.split("\r?\n")

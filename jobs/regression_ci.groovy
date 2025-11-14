@@ -54,7 +54,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
     fg: "DMFG",
-    vpc: ["vpc-dmfg"]
+    vpc: ["ci-vpc-01"]
 )
 
 // Create jobs specific to Ceph - Squid - callhome
@@ -62,14 +62,14 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
     fg: "callhome",
-    vpc: ["vpc-dmfg"]
+    vpc: ["ci-vpc-01"]
 )
 // Create jobs specific to Ceph - Squid - smb
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Squid",
     fg: "smb",
-    vpc: ["vpc-dmfg"]
+    vpc: ["ci-vpc-01"]
 )
 
 // Create jobs specific to Ceph - Squid - CephFS
@@ -125,7 +125,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
     fg: "DMFG",
-    vpc: ["vpc-dmfg"]
+    vpc: ["ci-vpc-01"]
 )
 
 // Create jobs specific to Ceph - Tentacle - callhome
@@ -133,7 +133,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
     fg: "callhome",
-    vpc: ["vpc-dmfg"]
+    vpc: ["ci-vpc-01"]
 )
 
 // Create jobs specific to Ceph - Tentacle - smb
@@ -141,7 +141,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
     fg: "smb",
-    vpc: ["vpc-dmfg"]
+    vpc: ["ci-vpc-01"]
 )
 
 // Create jobs specific to Ceph - Tentacle - CephFS
@@ -189,7 +189,7 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
     fg: "RGW",
-    vpc: ["vpc-rgw"]
+    vpc: ["ci-vpc-01"]
 )
 
 // Create job for each configuration created
