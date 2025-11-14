@@ -3,9 +3,9 @@ def jobsConfiguration = []
 
 // Method to generate required job metadata
 def generate_jobs(data) {
-    def vpc = ["vpc-cephci", "vpc-block", "vpc-cephfs", "vpc-dmfg", "vpc-nfsg", "vpc-rgw"]
+    def vpc = ["vpc-cephci"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
-    def vmFlavor = ["bxf-2x8", "vx2d-2x28", "bxf-8x32"]
+    def vmFlavor = ["bxf-2x8"]
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
