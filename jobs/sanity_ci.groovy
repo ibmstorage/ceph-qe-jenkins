@@ -89,7 +89,7 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 booleanParam("SKIP_BUILD_CHECK", false, "Skip checking if nightly and stable builds are identical")
-                booleanParam("UPDATE_SANITY_RESULTS", false, "Update Sanity results to manifest")
+                booleanParam("UPDATE_SANITY_RESULTS", true, "Update Sanity results to manifest")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com", "Email Address")
             }
