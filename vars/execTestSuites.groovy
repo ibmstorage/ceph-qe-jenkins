@@ -95,7 +95,7 @@ def call(Map parameters) {
         "--instances-name ${instanceName}",
         "--release ${release}",
         "--platform ${platform}",
-        "--build ${manifestSection}",
+        "--build ${parameters.manifestSection}",
         "--global-conf ${globalConf}",
         "--suite ${suite}"
     ]
