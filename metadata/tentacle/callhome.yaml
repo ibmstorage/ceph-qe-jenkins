@@ -1,0 +1,29 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome and Storage Insights"
+      suite: suites/tentacle/callhome/tier1-cephadm-bootstrap-with-callhome-and-si.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome"
+      suite: suites/tentacle/callhome/tier1-cephadm-bootstrap-with-callhome.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome Enabled After Bootstrap"
+      suite: suites/tentacle/callhome/tier1-enable-callhome-after-bootstrap.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Perform CallHome Operations Using CallHome CLI Commands"
+      suite: suites/tentacle/callhome/tier2-perform-callhome-operations-using-callhome-commands.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Validate CallHome Configuration Using Ceph Config"
+      suite: suites/tentacle/callhome/tier2-validate-call-home-configuration-using-ceph-config.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Validate CallHome Agent Configuration Using Ceph Config"
+      suite: suites/tentacle/callhome/tier2-validate-callhome-agent-configuration-using-ceph-config.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test CallHome Tier-2 Validate CallHome Configuration Using Ceph Config"
+      suite: suites/tentacle/callhome/tier2-validate-storage-insights-configuration-using-ceph-config.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test DMFG Tier-2 Validate On Demand Diagnostics functionality"
+      suite: suites/tentacle/callhome/tier2-validate-on-demand-diagnostics.yaml
+      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
