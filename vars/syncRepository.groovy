@@ -6,7 +6,7 @@ def call(Map parameters) {
     def buildVersion = parameters.get("buildVersion")
     def platform = parameters.get("platform")
     def cephVersion = parameters.get("cephVersion")
-    if (!buildVersion || !platform || !cephVersion) {
+    if ( !buildVersion || !platform || !cephVersion ) {
         throw new RuntimeException(
             "Mandatory build parameters are not provided"
         )
@@ -18,10 +18,10 @@ def call(Map parameters) {
 
     // Set IBM Cloud Object Storage bucket
     def ibmCosBucket = ""
-    if (buildVersion.startsWith("8")) {
+    if ( buildVersion.startsWith("8") ) {
         ibmCosBucket = "ceph-8"
         nginxRepoPath += "/8"
-    } else if (buildVersion.startsWith("9")) {
+    } else if ( buildVersion.startsWith("9") ) {
         ibmCosBucket = "ceph-9"
         nginxRepoPath += "/9"
     } else {
@@ -29,26 +29,30 @@ def call(Map parameters) {
     }
 
     // Append the platform to the bucket name
-    if (platform == "rhel-8") {
+    if ( platform == "rhel-8" ) {
         ibmCosBucket += "-rhel8"
         nginxRepoPath += "/rhel8"
-    } else if (platform == "rhel-9") {
+    } else if ( platform == "rhel-9" ) {
         ibmCosBucket += "-rhel9"
         nginxRepoPath += "/rhel9"
-    } else if (platform == "rhel-10") {
+    } else if ( platform == "rhel-10" ) {
         ibmCosBucket += "-rhel10"
         nginxRepoPath += "/rhel10"
     } else {
         error("Unsupported rhel platform ${platform}")
     }
 
-    // Create the rsync command
-    def rsyncCmd = "/usr/local/bin/rclone sync "
-    rsyncCmd += "${ibmcConfigs.IBM_COS_CRN}:${ibmCosBucket} ${nginxRepoPath} "
-    rsyncCmd += "--disable partials "
-    rsyncCmd += "--progress "
-    rsyncCmd += "--log-level DEBUG "
-    rsyncCmd += "--log-file ${nginxLogPath}/rclone-ceph-${cephVersion}-build-${env.BUILD_NUMBER}.log"
+    // Add the ceph version
+    srcTarget = "${ibmCosBucket}/${cephVersion}"
+    dstTarget = "${nginxRepoPath}/${cephVersion}"
+
+    // Create the copy command
+    def remoteCopyCmd = "/usr/local/bin/rclone copy "
+    remoteCopyCmd += "${ibmcConfigs.IBM_COS_CRN}:${srcTarget} ${dstTarget} "
+    remoteCopyCmd += "--disable partials "
+    remoteCopyCmd += "--progress "
+    remoteCopyCmd += "--log-level DEBUG "
+    remoteCopyCmd += "--log-file ${nginxLogPath}/rclone-ceph-${cephVersion}-build-${env.BUILD_NUMBER}.log"
 
     // Create repo command
     def createrepoCmd = "createrepo ${nginxRepoPath}/${cephVersion}/Tools "
@@ -72,7 +76,7 @@ def call(Map parameters) {
 
         // Execute the rsync command on the remote server
         println("Remote execution to pull rpm packages")
-        sshCommand remote: remote, command: rsyncCmd
+        sshCommand remote: remote, command: remoteCopyCmd
 
         // Execute the createrepo command on the remote server
         println("Remote execution of createrepo")
