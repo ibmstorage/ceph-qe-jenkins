@@ -43,8 +43,11 @@ def call(Map parameters) {
 
     // Update dir paths based on build version
     jobConfig.rhBuild = params.BUILD_VERSION
-    jobDir += [jobConfig.rhBuild]
-    jobConfig.rpLaunchName += "[${jobConfig.rhBuild}]"
+
+    // Adding support for newer parameters
+    jobConfig.release = params.BUILD_VERSION
+    jobDir += [jobConfig.release]
+    jobConfig.rpLaunchName += "[${jobConfig.release}]"
 
     // Get RHEL version
     jobConfig.platform = params.RHEL_VERSION
@@ -92,113 +95,99 @@ def call(Map parameters) {
     // Get subscription manager execution
     jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
 
-    // Check for repository and container image
-    if ( params.REPO && params.CONTAINER_IMAGE ) {
-        // Get ceph downstream repo & container image
-        jobConfig.rhsCephRepo = params.REPO
-        jobConfig.containerImage = params.CONTAINER_IMAGE
+    // Support coverage for a particular build by reading the manifest before a
+    // change.
+    def release = "${jobConfig.buildType.toLowerCase()}"
+    if ( release == "RH" ) {
+        release = "redhat"
+    }
+    def manifestFile = "${release}/${jobConfig.rhBuild}.yaml"
+    recipeContent = readFromManifest(recipe: manifestFile, job: jobConfig.job)
 
-        // Fetch ceph version
-        jobConfig.cephVersion = fetchCephVersion(jobConfig)
-    } else if ( params.RELEASE ) {
-        // Set recipe path
-        def recipe = "${jobConfig.buildType.toLowerCase()}"
-        if (jobConfig.buildType == "RH") {
-            recipe = "redhat"
-        }
-        recipe += "/${jobConfig.rhBuild}.yaml"
-
-        // Read recipe file from manifest repo
-        recipeContent = readFromManifest(recipe: recipe, job: jobConfig.job)
-
-        // Check if recipe content is valid
-        if ( ! recipeContent ) {
-            currentBuild.result = "ABORTED"
-            error("No recipe found for the provided recipe: ${recipe}")
-        }
-
-        // Check if release is valid
-        if ( ! recipeContent."${params.RELEASE}" ) {
-            currentBuild.result = "ABORTED"
-            error("No build info found for the provided release: ${params.RELEASE}")
-        }
-
-        // Get repo data center
-        /*def repoDc = ""
-        if (jobConfig.buildType == "RH") {
-            repoDc = "eu-de"
-        } else if (jobConfig.buildType == "IBM") {
-            repoDc = manifestConfigs.DEFAULT_DC
-        }*/
-        def repoDc = "eu-de"
-
-        // Get ceph downstream repo based on DC & platform
-        jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDc}"."${jobConfig.platform}"
-
-        // Fetch ceph version
-        jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
-
-        // Set container image
-        if ( ! params.CONTAINER_IMAGE ) {
-            jobConfig.containerImage = recipeContent."${params.RELEASE}".images."ceph-base"
-        }
-
-        // -----------------------------------------------------------------------------
-        // Configure custom container images
-        //
-        // The images defined in the job's custom configuration take precedence
-        // over those specified in the release manifest.
-        //
-        // Precedence order:
-        //   1) Job configuration (highest priority)
-        //   2) Manifest defaults (fallback)
-        // -----------------------------------------------------------------------------
-
-        // Collect images that need to be synced
-        def imagesToSync = []
-
-        recipeContent."${params.RELEASE}".images.each { image, url ->
-            // Check if image exists in registry
-            if (!checkImageInRegistry(url)) {
-                println("Image ${image}=${url} is not available in source registry, will sync...")
-                imagesToSync << url
-            }
-
-            // Skip adding ceph-base to customConfig as it's already set as containerImage
-            if (image == "ceph-base") {
-                return
-            }
-
-            // Skip adding crimson_image and nvmeof_cli_image to customConfig
-            if (image == "crimson_image" || image == "nvmeof_cli_image") {
-                return
-            }
-
-            def exists = jobConfig.customConfig.any { it.startsWith("${image}=") }
-            if (!exists) {
-                jobConfig.customConfig << "${image}=${url}"
-                println("Added custom-config for ${image} from qe-ceph-manifest")
-            }
-
-        }
-
-        // Sync all missing images in batch using syncBlueImages
-        if (imagesToSync.size() > 0) {
-            println("Syncing ${imagesToSync.size()} missing image(s) to local registry...")
-            try {
-                def imagesList = imagesToSync.join("\n")
-                syncBlueImages(images: imagesList)
-                println("Successfully synced ${imagesToSync.size()} image(s) to local registry")
-            } catch (Exception e) {
-                currentBuild.result = "ABORTED"
-                error("Failed to sync images to local registry: ${e.getMessage()}")
-            }
-        }
-
-    } else {
-        // Abort if mandatory parameters are not provided
+    if ( ! recipeContent ) {
         currentBuild.result = "ABORTED"
-        error("Unable to get parameters 'REPO' & 'CONTAINER_IMAGE'")
+        error("Failed to retrieve build details for - ${recipe}")
+    }
+
+    // Check if release is valid
+    if ( ! recipeContent."${params.RELEASE}" ) {
+        currentBuild.result = "ABORTED"
+        error("No build info found for the provided release: ${params.RELEASE}")
+    }
+
+    // FixMe: This has to be dynamic
+    def repoDC = "eu-de"
+    // Get ceph downstream repo based on DC & platform
+    jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDc}"."${jobConfig.platform}"
+
+    // Fetch ceph version
+    jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
+
+    //Set the manifest section
+    jobConfig.manifestSection = params.RELEASE
+
+    /* -----------------------------------------------------------------------------
+        Configure custom container images
+
+        The images defined in the job's custom configuration take precedence
+        over those specified in the release manifest.
+
+        Precedence order:
+            1) Job configuration (highest priority)
+            2) Manifest defaults (fallback)
+    ----------------------------------------------------------------------------- */
+
+    // Collect images that need to be synced
+    def imagesToSync = []
+
+    recipeContent."${params.RELEASE}".images.each { image, url ->
+        // Check if image exists in registry
+        if ( ! checkImageInRegistry(url) ) {
+            println("Image ${image}=${url} is not available in source registry, will sync...")
+            imagesToSync << url
+        }
+
+        // Skip adding ceph-base to customConfig as it's already set as containerImage
+        if ( image == "ceph-base" ) {
+            jobConfig.containerImage = "${url}"
+            return
+        }
+
+        // Skip adding crimson_image and nvmeof_cli_image to customConfig
+        if ( image == "crimson_image" || image == "nvmeof_cli_image" ) {
+            return
+        }
+
+        def exists = jobConfig.customConfig.any { it.startsWith("${image}=") }
+        if ( ! exists ) {
+            jobConfig.customConfig << "${image}=${url}"
+            println("Added custom-config for ${image} from qe-ceph-manifest")
+        }
+    }
+
+    // Sync all missing images in batch using syncBlueImages
+    if ( imagesToSync.size() > 0 ) {
+        println("Syncing ${imagesToSync.size()} missing image(s) to local registry...")
+        
+        try {
+            def imagesList = imagesToSync.join("\n")
+            syncBlueImages(images: imagesList)
+            
+            println("Successfully synced ${imagesToSync.size()} image(s) to local registry")
+        } catch (Exception e) {
+            currentBuild.result = "ABORTED"
+            error("Failed to sync images to local registry: ${e.getMessage()}")
+        }
+    }
+
+    // If repo is provided, use that repo instead of the manifestFile one.
+    if ( params.REPO ) {
+        jobConfig.rhsCephRepo = params.REPO
+    }
+
+    // if CONTAINER_IMAGE is provided, use the provided image
+    if ( params.CONTAINER_IMAGE ) {
+        jobConfig.containerImage = params.CONTAINER_IMAGE
     }
 
     // Debug info

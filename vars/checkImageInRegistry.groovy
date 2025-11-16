@@ -42,4 +42,3 @@ def call(String imageUrl) {
         return false
     }
 }
-

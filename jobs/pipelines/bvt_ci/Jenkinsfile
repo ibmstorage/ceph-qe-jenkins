@@ -1,5 +1,5 @@
 // Import shared library
-@Library("ceph-qe-libs@main")_
+@Library("ceph-qe-libs@main") _
 
 // Set job parameters
 def job = "bvt"
@@ -10,8 +10,6 @@ def jobConfigs = [:]
 def suites = [:]
 def testSuitesMap = [:]
 def skipSosReport = true
-def skipSubscription = true
-
 
 // Pipeline definition
 pipeline {
@@ -98,8 +96,9 @@ pipeline {
                                         venvDir: jobConfigs.venvDir,
                                         instanceName: prefix,
                                         cloudType: jobConfigs.cloudType,
-                                        rhBuild: jobConfigs.rhBuild,
+                                        product: jobConfigs.product,
                                         platform: jobConfigs.platform,
+                                        release: jobConfigs.buildVersion,
                                         logDir: logDir,
                                         globalConf: suite.global_conf,
                                         suite: suite.suite,
@@ -117,7 +116,8 @@ pipeline {
                                         vmFlavor: jobConfigs.vmFlavor,
                                         skipSosReport: skipSosReport,
                                         vpcName: jobConfigs.vpcName,
-                                        skipSubscription: skipSubscription
+                                        skipSubscription: jobConfigs.skipSubscription,
+                                        manifestSection: jobConfigs.manifestSection
                                     )
 
                                     // Debug

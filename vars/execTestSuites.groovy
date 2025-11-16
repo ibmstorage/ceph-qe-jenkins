@@ -92,8 +92,9 @@ def call(Map parameters) {
         "--osp-cred ${ibmcCredFile}",
         "--inventory ${inventory}",
         "--instances-name ${instanceName}",
-        "--rhbuild ${rhbuild}",
+        "--release ${release}",
         "--platform ${platform}",
+        "--build ${manifestSection}",
         "--global-conf ${globalConf}",
         "--suite ${suite}"
     ]
@@ -120,7 +121,9 @@ def call(Map parameters) {
     // Check for IBM build type
     def buildType = parameters.get("buildType")
     if ( buildType.toLowerCase() == "ibm" ) {
-        args += ["--custom-config ibm-build=True"]
+        args += ["--product ibm"]
+    } else {
+        args += ["--product redhat"]
     }
 
     // Check for FIPS mode
@@ -145,7 +148,7 @@ def call(Map parameters) {
     }
 
     // Check for container image
-    def containerImage = parameters.get("containerImage").trim()
+    def containerImage = parameters.get("containerImage")
     if ( ! containerImage ) {
         throw new RuntimeException(
             "Ceph CI requires container image to execute tests"
@@ -230,11 +233,6 @@ def call(Map parameters) {
 
     // Check for sos report
     args += parameters.skipSosReport ? ["--skip-sos-report"] : []
-
-    // Add exit status
-//     args += [
-//         "|| exit 0"  // exit 0 in case test case failed for unexpected errors
-//     ]   //Commenting as we need to mark the suite execution as failed
 
     // Start cephci run
     dir(gitDir) {

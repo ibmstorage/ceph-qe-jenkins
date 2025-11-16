@@ -1,10 +1,9 @@
 // Import shared library
-@Library("ceph-qe-libs@main")_
+@Library("ceph-qe-libs@main") _
 
 def job = "executor"
 def jobConfigs = [:]
 def prefix = ""
-def skipSubscription = true
 
 
 pipeline {
@@ -64,7 +63,8 @@ pipeline {
                         venvDir: jobConfigs.venvDir,
                         instanceName: prefix,
                         cloudType: jobConfigs.cloudType,
-                        rhBuild: jobConfigs.rhBuild,
+                        product: jobConfigs.product,
+                        release: jobConfigs.buildVersion,
                         platform: jobConfigs.platform,
                         globalConf: params.GLOBAL_CONF,
                         logDir: jobConfigs.logDir,
@@ -82,7 +82,8 @@ pipeline {
                         additionalArgs: jobConfigs.additionalArgs,
                         vmFlavor: jobConfigs.vmFlavor,
                         vpcName: jobConfigs.vpcName,
-                        skipSubscription: skipSubscription
+                        skipSubscription: jobConfigs.skipSubscription,
+                        manifestSection: jobConfigs.manifestSection
                     )
 
                     echo "Test execution completed successfully."
