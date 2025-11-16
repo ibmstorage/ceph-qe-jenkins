@@ -140,17 +140,22 @@ def parse_testsuite_stats(xml_root):
 def parse_testcases(xml_root):
     """Extract each test case name, its Polarion ID, and status, execution time per test suite."""
     statuses, timings = [], []
-    components = ["rgw", "rbd", "nfs", "cephfs", "rados", "nvmeof"]
 
     for suite in xml_root.findall(".//testsuite"):
         suite_name = suite.get("name", "")
 
-        # Determine component from testcase name
-        component = "BVT"
-        for comp in components:
-            if comp.lower() in suite_name.lower():
-                component = comp.upper()
-                break
+        # Extract component from suite-name property
+        component = "BVT"  # Default component
+        suite_name_prop = suite.find(".//property[@name='suite-name']")
+        if suite_name_prop is not None:
+            suite_name_value = suite_name_prop.get("value", "").strip()
+            if suite_name_value and suite_name_value.endswith('.yaml'):
+                # Get the directory name just before the .yaml file
+                normalized_path = os.path.normpath(suite_name_value)
+                path_parts = normalized_path.split(os.sep)
+                if len(path_parts) >= 2:
+                    dir_name = path_parts[-2]
+                    component = dir_name.upper()
 
         for case in suite.findall(".//testcase"):
             testcase_name = case.get("name", "")
