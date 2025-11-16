@@ -33,10 +33,11 @@ def call(Map parameters) {
         )
     }
 
-    def rhbuild = parameters.get("rhBuild")
-    if ( ! rhbuild ) {
+    def release = parameters.get("release")
+    def rhbuild = release
+    if ( ! release ) {
         throw new RuntimeException(
-            "CephCI requires 'rhbuild' parameter to execute tests"
+            "CephCI requires 'release' parameter to execute tests"
         )
     }
 
