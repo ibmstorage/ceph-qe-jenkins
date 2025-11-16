@@ -162,4 +162,7 @@ weekly:
     - name: "tier-1 rgw upgrade ms ssl ecpool 80GA to 8x latest" 
       suite: suites/squid/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_80GA_to_8x_latest.yaml
       global-conf: conf/squid/rgw/ms-ec-profile-4+2-cluster.yaml
+    - name: "tier-2_ssl_rgw_regression_extended"
+      suite: suites/squid/rgw/tier-2_ssl_rgw_regression_extended.yaml
+      global-conf: conf/squid/rgw/tier-0_rgw.yaml
 
