@@ -118,7 +118,7 @@ def call(Map parameters) {
     // FixMe: This has to be dynamic
     def repoDC = "eu-de"
     // Get ceph downstream repo based on DC & platform
-    jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDc}"."${jobConfig.platform}"
+    jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDC}"."${jobConfig.platform}"
 
     // Fetch ceph version
     jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
