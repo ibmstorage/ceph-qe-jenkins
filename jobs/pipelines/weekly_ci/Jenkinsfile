@@ -96,7 +96,7 @@ pipeline {
                                         instanceName: prefix,
                                         cloudType: jobConfigs.cloudType,
                                         product: jobConfigs.product,
-                                        release: jobConfigs.buildVersion,
+                                        release: jobConfigs.release,
                                         platform: jobConfigs.platform,
                                         logDir: logDir,
                                         globalConf: suite.global_conf,
