@@ -98,7 +98,7 @@ def call(Map parameters) {
     // Support coverage for a particular build by reading the manifest before a
     // change.
     def release = "${jobConfig.buildType.toLowerCase()}"
-    if ( release == "RH" ) {
+    if ( release == "rh" ) {
         release = "redhat"
     }
     def manifestFile = "${release}/${jobConfig.rhBuild}.yaml"
@@ -106,7 +106,7 @@ def call(Map parameters) {
 
     if ( ! recipeContent ) {
         currentBuild.result = "ABORTED"
-        error("Failed to retrieve build details for - ${recipe}")
+        error("Failed to retrieve build details for - ${manifestFile}")
     }
 
     // Check if release is valid
