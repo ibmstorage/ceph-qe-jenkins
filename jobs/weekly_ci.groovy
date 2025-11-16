@@ -3,8 +3,8 @@ def jobsConfiguration = []
 
 // Method to generate required job metadata
 def generate_jobs(data) {
-    def logLevel = ["DEBUG", "INFO", "ERROR"]
-    def vmFlavor = ["cx2-2x4", "cx2-4x8", "cx2-8x16"]
+    def logLevel = ["ERROR", "INFO", "DEBUG"]
+    def vmFlavor = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
     def buildType = ["IBM", "RH"]
     def rhelVersion = []
     def buildVersion = []

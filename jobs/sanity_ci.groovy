@@ -5,11 +5,11 @@ def jobsConfiguration = []
 def generate_jobs(data) {
     def vpc = ["vpc-cephci"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
-    def vmFlavor = ["cx2-2x4", "cx2-4x8", "cx2-8x16"]
+    def vmFlavor = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
-    def release = ["stable", "nightly"]
+    def release = ["nightly", "stable"]
     if (data.cephVersion.toLowerCase() == "squid") {
         release += ["rc", "released", "z0", "z1", "z2", "z3", "z4"]
     }
