@@ -5,7 +5,7 @@
 pipeline {
     options {
         // Set build archieve policy
-        buildDiscarder(logRotator(numToKeepStr: "30", daysToKeepStr: "30"))
+        buildDiscarder(logRotator(numToKeepStr: "5", daysToKeepStr: "5"))
 
         // Disable parallel execution
         disableConcurrentBuilds()
