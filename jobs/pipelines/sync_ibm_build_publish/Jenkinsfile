@@ -1,0 +1,106 @@
+// Wrapper pipeline to synchronize IBM Build images and repos
+// and publish the build information to the manifest repository
+@Library("ceph-qe-libs@main") _
+
+pipeline {
+    agent { label "infra" }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "10"))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage("Validate") {
+            steps {
+                script {
+                    if (!params.CEPH_VERSION) {
+                        error("CEPH_VERSION parameter is required.")
+                    }
+                    if (!params.CephBuildVersion || params.CephBuildVersion.trim().isEmpty()) {
+                        error("CephBuildVersion parameter is required (e.g., 19.2.0-139 or 17.2.1-145).")
+                    }
+                    if (!params.IMAGES || params.IMAGES.trim().isEmpty()) {
+                        error("IMAGES parameter is required.")
+                    }
+                    if (!params.REPOS || params.REPOS.trim().isEmpty()) {
+                        error("REPOS parameter is required.")
+                    }
+                    println("Validated inputs:")
+                    println("  CEPH_VERSION: ${params.CEPH_VERSION}")
+                    println("  CephBuildVersion: ${params.CephBuildVersion}")
+                    println("  IMAGES: ${params.IMAGES}")
+                    println("  REPOS: ${params.REPOS}")
+                    println("  RELEASE_CANDIDATE: ${params.RELEASE_CANDIDATE}")
+                }
+            }
+        }
+
+        stage("Sync Container Images") {
+            steps {
+                script {
+                    println("Starting sync of container images...")
+                    def imagesBuild = build(
+                        job: "sync-blue-ceph-images",
+                        wait: true,
+                        parameters: [
+                            textParam(name: "BLUE_IMAGES", value: params.IMAGES)
+                        ]
+                    )
+                    println("Container images sync completed. Build number: ${imagesBuild.number}")
+                    currentBuild.description = "Images: #${imagesBuild.number}"
+                }
+            }
+        }
+
+        stage("Sync Repositories") {
+            steps {
+                script {
+                    println("Starting sync of repositories...")
+                    def reposBuild = build(
+                        job: "sync-blue-ceph-repos",
+                        wait: true,
+                        parameters: [
+                            textParam(name: "BLUE_REPOS", value: params.REPOS)
+                        ]
+                    )
+                    println("Repositories sync completed. Build number: ${reposBuild.number}")
+                    currentBuild.description += " | Repos: #${reposBuild.number}"
+                }
+            }
+        }
+
+        stage("Update Manifest") {
+            steps {
+                script {
+                    println("Syncing build information to manifest repository...")
+                    syncBuildInfoToGithubManifest(
+                        cephVersion: params.CEPH_VERSION,
+                        cephBuildVersion: params.CephBuildVersion,
+                        images: params.IMAGES,
+                        repos: params.REPOS,
+                        releaseCandidate: params.RELEASE_CANDIDATE
+                    )
+                    println("Manifest repository updated successfully.")
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                println("Wrapper pipeline completed successfully.")
+                println("  Images sync: sync-blue-ceph-images")
+                println("  Repos sync: sync-blue-ceph-repos")
+                def sections = params.RELEASE_CANDIDATE ? "nightly and rc" : "nightly"
+                println("  Manifest updated: ibm/${params.CEPH_VERSION}.yaml (${sections} section(s))")
+            }
+        }
+        failure {
+            script {
+                println("Wrapper pipeline failed. Check individual job builds for details.")
+            }
+        }
+    }
+}
