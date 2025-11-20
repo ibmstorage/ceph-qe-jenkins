@@ -192,9 +192,9 @@ def call(Map parameters) {
             } else if (trimmed.contains("promtail")) {
                 imageName = "promtail_image"
             } else {
-                imageName = "unknown"
                 println("  Warning: Could not determine image name from URL, using 'unknown'")
                 println("  URL: ${trimmed}")
+                return
             }
             
             // Store the image
