@@ -154,7 +154,7 @@ def call(Map parameters) {
         }
 
         // Skip adding crimson_image and nvmeof_cli_image to customConfig
-        if ( image == "crimson_image" || image == "nvmeof_cli_image" ) {
+        if ( image == "crimson_image" || image == "nvmeof_cli_image" || image == "ceph_csi_image" ) {
             return
         }
 

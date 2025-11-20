@@ -175,8 +175,6 @@ def call(Map parameters) {
             } else if (trimmed.contains("ceph-base") || trimmed.matches(/.*\/ceph-\d+-rhel\d+.*/)) {
                 // Matches ceph-base or ceph-8-rhel9, ceph-9-rhel9, ceph-10-rhel10, etc.
                 imageName = "ceph-base"
-            } else if (trimmed.contains("cephcsi")) {
-                imageName = "ceph_csi_image"
             } else if (trimmed.contains("grafana")) {
                 imageName = "grafana_image"
             } else if (trimmed.contains("haproxy")) {
