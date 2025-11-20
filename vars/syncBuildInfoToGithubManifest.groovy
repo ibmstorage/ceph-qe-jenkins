@@ -125,8 +125,9 @@ def call(Map parameters) {
             def euDeUrl = repoUrl
             def cephMajorVersion = cephVersion.split("\\.")[0]
             
+            def eudeplatform = platform.replace("-", "")
             // IBM repository: Replace public.dhe.ibm.com with repo.qe.ceph.eu.lab
-            euDeUrl = "http://repo.qe.ceph.lab/repos/ceph/testing/ibm/${cephMajorVersion}/${platform}/${cephBuildVersion}/"
+            euDeUrl = "http://repo.qe.ceph.lab/repos/ceph/testing/ibm/${cephMajorVersion}/${eudeplatform}/${cephBuildVersion}/"
             
             manifestContent.nightly.repositories."eu-de"[platform] = euDeUrl
             println("  Repository (eu-de/${platform}): ${euDeUrl}")
