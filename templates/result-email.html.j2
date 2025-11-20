@@ -92,6 +92,28 @@
                     <td style="text-align: center">{{item.skipped}}</td>
                     <td style="text-align: center">{{item.comments}}</td>
                 </tr>
+
+                {% if item.testcases %}
+                    <tr>
+                        <td colspan="7">
+                            <table style="width:1000px">
+                                <tr>
+                                    <th style="text-align: center; background-color: #D4D7D4;"><b>Test Case</b></th>
+                                    <th style="text-align: center; background-color: #D4D7D4;"><b>Status</b></th>
+                                    <th style="text-align: center; background-color: #D4D7D4;"><b>Time (sec)</b></th>
+                                </tr>
+
+                                {% for tc in item.testcases %}
+                                    <tr style="text-align:center; {% if tc.status == 'Failed' %}background-color: #FCD0D0;{% else %}background-color: #DDFFDD;{% endif %}">
+                                        <td>{{ tc.name }}</td>
+                                        <td>{{ tc.status }}</td>
+                                        <td>{{ tc.time }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </table>
     {% endif %}

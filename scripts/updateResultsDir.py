@@ -140,6 +140,11 @@ def generate_results(results, logs, suite):
         result = _get_testsuite_summary(child.attrib)
         comments = []
 
+        # Only capture testcase results for BVT suites
+        testcase_results = []
+        is_bvt = "build_verfification_test" in suite.lower()
+        LOG.info(f"Is BVT suite: {is_bvt}")
+
         for testcase in child:
             # Check for test case details
             if not testcase.tag == "testcase":
@@ -153,8 +158,26 @@ def generate_results(results, logs, suite):
                 if prop.get("name") == "comments":
                     comments.append(prop.get("value"))
 
+            # NEW: Build per-test result only for BVT
+            if is_bvt:
+                tc_name = testcase.attrib.get("name")
+                tc_time = float(testcase.attrib.get("time", 0.0))
+
+                failure_tag = testcase.find("failure")
+                status = "Failed" if failure_tag is not None else "Passed"
+
+                testcase_results.append(
+                    {
+                        "name": tc_name,
+                        "status": status,
+                        "time": tc_time
+                    }
+                )
         result["comments"] = ", ".join(comments) if comments else ""
 
+        # Attach testcase details only for BVT suites
+        if is_bvt:
+            result["testcases"] = testcase_results
     # Update testsuite to result
     xunit = os.path.join(results, f"{os.path.basename(suite)}.xml")
     LOG.info(f"Updating xunit results for '{xunit}'")
