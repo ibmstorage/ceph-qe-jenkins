@@ -1,4 +1,29 @@
 // Method to check if nightly and stable builds are different
+// Helper: Parse "20.1.0-101" → [20,1,0,101]
+List<Integer> parseVersion(String version) {
+    def parts = version.split('-')
+    def main = parts[0]
+    def build = parts.size() > 1 ? parts[-1] : "0"
+
+    def nums = main.tokenize('.').collect { it.toInteger() }
+    nums << build.toInteger()
+    return nums
+}
+
+// Helper: Compare versions
+boolean isNewer(String nightly, String stable) {
+    def n = parseVersion(nightly)
+    def s = parseVersion(stable)
+
+    int len = Math.max(n.size(), s.size())
+    for (int i = 0; i < len; i++) {
+        int nv = i < n.size() ? n[i] : 0
+        int sv = i < s.size() ? s[i] : 0
+        if (nv > sv) return true
+        if (nv < sv) return false
+    }
+    return false
+}
 
 def call(Map parameters) {
     // Check for mandatory job parameters
@@ -48,11 +73,10 @@ def call(Map parameters) {
     echo "Nightly version: ${nightlyVersion}"
     echo "Stable version: ${stableVersion}"
 
-    // Compare versions
-    if (nightlyVersion <= stableVersion) {
+     if (!isNewer(nightlyVersion, stableVersion)) {
         echo "Nightly and stable builds are identical (version: ${nightlyVersion})"
-        echo "No new build to test. Skipping sanity tests."
-        return false  // Builds are same, no need to run tests
+        echo "Skipping sanity tests."
+        return false
     }
 
     // Check if nightly has newer content
