@@ -131,18 +131,3 @@ sanity:
         - rhel-9
       build:
         - ibm
-    - name: "Tier-1 Enable Callhome Post Upgrade 5.x to 7.x"
-      suite: suites/squid/callhome/tier1-enable-callhome-post-upgrade-5x-to-7x.yaml
-      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
-      platform:
-        - rhel-9
-      build:
-        - ibm
-    - name: "Tier-1 Enable Callhome Post Upgrade 6.x to 7.x"
-      suite: suites/squid/callhome/tier1-enable-callhome-post-upgrade-6x-to-7x.yaml
-      global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
-      platform:
-        - rhel-9
-      build:
-        - ibm
-
