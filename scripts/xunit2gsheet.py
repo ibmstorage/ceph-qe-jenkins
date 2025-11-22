@@ -75,6 +75,23 @@ def get_gsheet_client(credentials_path):
     creds = Credentials.from_service_account_file(credentials_path, scopes=scopes)
     return gspread.authorize(creds)
 
+def parse_ceph_version(version_str):
+    """
+    Parse Ceph version string (e.g., "20.0.1-178") into comparable tuple.
+    Returns tuple (major, minor, patch, build) for comparison.
+    """
+    try:
+        parts = version_str.split('-', 1)
+        version_part = parts[0]
+        build_part = int(parts[1]) if len(parts) > 1 else 0
+
+        version_nums = [int(x) for x in version_part.split('.')]
+        while len(version_nums) < 3:
+            version_nums.append(0)
+
+        return (*version_nums, build_part)
+    except (ValueError, IndexError):
+        return (0, 0, 0, 0)
 
 def get_or_create_worksheet(spreadsheet, sheet_name):
     """
@@ -90,7 +107,6 @@ def get_or_create_worksheet(spreadsheet, sheet_name):
     except gspread.exceptions.WorksheetNotFound:
         worksheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="20")
     return worksheet
-
 
 def parse_xml_properties(xml_root, ceph_version):
     """
@@ -137,6 +153,17 @@ def parse_testsuite_stats(xml_root):
         })
     return stats
 
+def find_tag_case_insensitive(element, tag_name):
+    """
+    Find XML tag case-insensitively.
+    Returns the element if found, None otherwise.
+    """
+    for variant in [tag_name.lower(), tag_name.capitalize(), tag_name.upper()]:
+        tag = element.find(variant)
+        if tag is not None:
+            return tag
+    return None
+
 def parse_testcases(xml_root):
     """Extract each test case name, its Polarion ID, and status, execution time per test suite."""
     statuses, timings = [], []
@@ -150,12 +177,17 @@ def parse_testcases(xml_root):
         if suite_name_prop is not None:
             suite_name_value = suite_name_prop.get("value", "").strip()
             if suite_name_value and suite_name_value.endswith('.yaml'):
-                # Get the directory name just before the .yaml file
                 normalized_path = os.path.normpath(suite_name_value)
                 path_parts = normalized_path.split(os.sep)
                 if len(path_parts) >= 2:
                     dir_name = path_parts[-2]
                     component = dir_name.upper()
+
+        # Extract Jenkins URL for log hyperlinks
+        jenkin_url = ""
+        jenkin_url_prop = suite.find(".//property[@name='jenkin-url']")
+        if jenkin_url_prop is not None:
+            jenkin_url = jenkin_url_prop.get("value", "").strip()
 
         for case in suite.findall(".//testcase"):
             testcase_name = case.get("name", "")
@@ -169,17 +201,30 @@ def parse_testcases(xml_root):
             if prop is not None:
                 polarion_id = prop.get("value", "").strip()
 
-            # Determine test status
-            failure_tag = case.find("failure")
-            if failure_tag is not None:
+            # Determine test status (check in priority order: failure/error > skipped > passed)
+            failure_tag = find_tag_case_insensitive(case, "failure")
+            error_tag = find_tag_case_insensitive(case, "error")
+            skipped_tag = find_tag_case_insensitive(case, "skipped")
+
+            if failure_tag is not None or error_tag is not None:
                 status = "Failed"
+            elif skipped_tag is not None:
+                status = "Skipped"
+            else:
+                status = "Passed"
+
+            # Create status with hyperlink if Jenkins URL is available
+            status_value = status
+            if jenkin_url:
+                # Create HYPERLINK formula for Google Sheets
+                status_value = f'=HYPERLINK("{jenkin_url}", "{status}")'
 
             statuses.append({
                 "Test Suite Name": suite_name,
                 "Component": component,
                 "Test Case Name": testcase_name,
                 "polarion-testcase-id": polarion_id,
-                "Status": status,
+                "Status": status_value,
             })
 
             # Get time taken (float)
@@ -284,9 +329,10 @@ def _apply_status_color_formatting(worksheet):
         
         # Add conditional formatting rules for better performance
         # This creates a single batch request with all rules
+        # Priority order: Passed (green) > Failed (red) > Skipped (orange) > Blank (white)
         for col_idx in version_cols:
             
-            # Green formatting rule for "passed"
+            # Green formatting rule for "Passed"
             requests.append({
                 "addConditionalFormatRule": {
                     "index": 0,
@@ -301,7 +347,7 @@ def _apply_status_color_formatting(worksheet):
                         "booleanRule": {
                             "condition": {
                                 "type": "TEXT_CONTAINS",
-                                "values": [{"userEnteredValue": "passed"}]
+                                "values": [{"userEnteredValue": "Passed"}]
                             },
                             "format": {
                                 "backgroundColor": {"red": 0.85, "green": 0.92, "blue": 0.83}
@@ -311,7 +357,7 @@ def _apply_status_color_formatting(worksheet):
                 }
             })
             
-            # Red formatting rule for "failed"
+            # Red formatting rule for "Failed" (includes both failure and error tags)
             requests.append({
                 "addConditionalFormatRule": {
                     "index": 1,
@@ -326,7 +372,7 @@ def _apply_status_color_formatting(worksheet):
                         "booleanRule": {
                             "condition": {
                                 "type": "TEXT_CONTAINS",
-                                "values": [{"userEnteredValue": "failed"}]
+                                "values": [{"userEnteredValue": "Failed"}]
                             },
                             "format": {
                                 "backgroundColor": {"red": 0.96, "green": 0.8, "blue": 0.8}
@@ -336,11 +382,36 @@ def _apply_status_color_formatting(worksheet):
                 }
             })
             
+            # Orange formatting rule for "Skipped"
+            requests.append({
+                "addConditionalFormatRule": {
+                    "index": 2,
+                    "rule": {
+                        "ranges": [{
+                            "sheetId": sheet_id,
+                            "startRowIndex": 1,
+                            "endRowIndex": num_rows,
+                            "startColumnIndex": col_idx,
+                            "endColumnIndex": col_idx + 1
+                        }],
+                        "booleanRule": {
+                            "condition": {
+                                "type": "TEXT_CONTAINS",
+                                "values": [{"userEnteredValue": "Skipped"}]
+                            },
+                            "format": {
+                                "backgroundColor": {"red": 1.0, "green": 0.65, "blue": 0.0}
+                            }
+                        }
+                    }
+                }
+            })
+
             # White formatting rule for empty cells (lowest priority - acts as default)
             # This ensures cells become white when text is removed
             requests.append({
                 "addConditionalFormatRule": {
-                    "index": 2,
+                    "index": 3,
                     "rule": {
                         "ranges": [{
                             "sheetId": sheet_id,
@@ -396,6 +467,359 @@ def update_worksheet(spreadsheet_obj, sheet_name, data, columns_order=None):
     except Exception as e:
         print(f"Failed to update worksheet '{sheet_name}': {e}")
 
+def _read_sheet_data(worksheet, sheet_name, value_type):
+    """Read existing sheet data and formulas (if Status sheet)."""
+    try:
+        all_values = worksheet.get_all_values()
+        all_formulas = []
+        if value_type == "Status":
+            try:
+                service = build('sheets', 'v4', credentials=worksheet.spreadsheet.client.auth)
+                result = service.spreadsheets().values().get(
+                    spreadsheetId=worksheet.spreadsheet.id,
+                    range=f"'{worksheet.title}'!A:ZZ",
+                    valueRenderOption='FORMULA'
+                ).execute()
+                all_formulas = result.get('values', [])
+            except Exception as e:
+                print(f"Warning: Could not read formulas from {sheet_name}: {e}")
+                all_formulas = []
+    except Exception as e:
+        print(f"Warning: Could not read existing data from {sheet_name}: {e}")
+        all_values = []
+        all_formulas = []
+    
+    header = all_values[0] if all_values and len(all_values[0]) > 0 else []
+    existing_rows = all_values[1:] if all_values and len(all_values) > 1 else []
+    existing_formulas = all_formulas[1:] if all_formulas and len(all_formulas) > 1 else []
+    
+    return header, existing_rows, existing_formulas
+
+def _ensure_base_headers(header, value_type):
+    """Ensure required base headers exist in header list."""
+    required_headers = ["Test Suite Name", "Test Case Name", "Component"]
+    if value_type == "Status":
+        required_headers.append("polarion-testcase-id")
+    
+    required_headers_set = set(required_headers)
+    header_set = set(header)
+    for col in required_headers:
+        if col not in header_set:
+            header.append(col)
+            header_set.add(col)
+    
+    return required_headers, required_headers_set
+
+def _insert_version_column(header, existing_rows, existing_formulas, version_col_name, 
+                          required_headers, value_type):
+    """Insert or move version column to correct position."""
+    insert_base_idx = len(required_headers)
+    header_indices = {col: idx for idx, col in enumerate(header)}
+    
+    if version_col_name in header_indices:
+        old_idx = header_indices[version_col_name]
+        moved_header = header.pop(old_idx)
+        header_indices = {col: (idx if idx < old_idx else idx - 1) 
+                         for col, idx in header_indices.items() if col != moved_header}
+        
+        moved_col_data = [row.pop(old_idx) if len(row) > old_idx else "" for row in existing_rows]
+        moved_formula_data = []
+        if value_type == "Status" and existing_formulas:
+            moved_formula_data = [formula_row.pop(old_idx) if len(formula_row) > old_idx else "" 
+                                 for formula_row in existing_formulas]
+        
+        header.insert(insert_base_idx, moved_header)
+        for col_name, idx in header_indices.items():
+            if idx >= insert_base_idx:
+                header_indices[col_name] = idx + 1
+        header_indices[moved_header] = insert_base_idx
+        
+        for r_idx, row in enumerate(existing_rows):
+            row.insert(insert_base_idx, moved_col_data[r_idx])
+        if value_type == "Status" and existing_formulas:
+            for r_idx, formula_row in enumerate(existing_formulas):
+                if r_idx < len(moved_formula_data):
+                    formula_row.insert(insert_base_idx, moved_formula_data[r_idx])
+                else:
+                    formula_row.insert(insert_base_idx, "")
+    else:
+        header.insert(insert_base_idx, version_col_name)
+        header_indices[version_col_name] = insert_base_idx
+        for col_name, idx in header_indices.items():
+            if idx >= insert_base_idx:
+                header_indices[col_name] = idx + 1
+        for row in existing_rows:
+            row.insert(insert_base_idx, "")
+        if value_type == "Status" and existing_formulas:
+            for formula_row in existing_formulas:
+                formula_row.insert(insert_base_idx, "")
+    
+    return insert_base_idx
+
+def _reorder_version_columns(header, existing_rows, existing_formulas, required_headers_set, 
+                            insert_base_idx, value_type):
+    """Reorder all version columns so newest is first."""
+    version_columns = []
+    for idx, col_name in enumerate(header):
+        if col_name not in required_headers_set:
+            version_columns.append((idx, col_name))
+    
+    if len(version_columns) > 1:
+        version_data = {}
+        version_formula_data = {}
+        for old_idx, col_name in version_columns:
+            version_data[col_name] = [row[old_idx] if old_idx < len(row) else "" for row in existing_rows]
+            if value_type == "Status" and existing_formulas:
+                version_formula_data[col_name] = [formula_row[old_idx] if old_idx < len(formula_row) else "" 
+                                                 for formula_row in existing_formulas]
+        
+        version_columns_sorted = sorted(version_columns, key=lambda x: parse_ceph_version(x[1]), reverse=True)
+        
+        for old_idx, col_name in sorted(version_columns, reverse=True, key=lambda x: x[0]):
+            header.pop(old_idx)
+            for row in existing_rows:
+                if old_idx < len(row):
+                    row.pop(old_idx)
+            if value_type == "Status" and existing_formulas:
+                for formula_row in existing_formulas:
+                    if old_idx < len(formula_row):
+                        formula_row.pop(old_idx)
+        
+        for new_pos, (_, col_name) in enumerate(version_columns_sorted):
+            insert_pos = insert_base_idx + new_pos
+            header.insert(insert_pos, col_name)
+            for row_idx, row in enumerate(existing_rows):
+                col_data = version_data[col_name][row_idx] if row_idx < len(version_data[col_name]) else ""
+                row.insert(insert_pos, col_data)
+            if value_type == "Status" and existing_formulas:
+                for formula_row_idx, formula_row in enumerate(existing_formulas):
+                    formula_data = version_formula_data[col_name][formula_row_idx] if formula_row_idx < len(version_formula_data[col_name]) else ""
+                    formula_row.insert(insert_pos, formula_data)
+
+def _update_header_with_formatting(worksheet, header):
+    """Update header row with formatting using batchUpdate."""
+    try:
+        service = build('sheets', 'v4', credentials=worksheet.spreadsheet.client.auth)
+        sheet_id = worksheet.id
+        
+        requests = [
+            {
+                "updateCells": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 0,
+                        "endRowIndex": 1,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": len(header)
+                    },
+                    "rows": [{
+                        "values": [{"userEnteredValue": {"stringValue": str(val)}} for val in header]
+                    }],
+                    "fields": "userEnteredValue"
+                }
+            },
+            {
+                "repeatCell": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 0,
+                        "endRowIndex": 1,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": len(header)
+                    },
+                    "cell": {
+                        "userEnteredFormat": {
+                            "textFormat": {"bold": True}
+                        }
+                    },
+                    "fields": "userEnteredFormat.textFormat.bold"
+                }
+            },
+            {
+                "updateSheetProperties": {
+                    "properties": {
+                        "sheetId": sheet_id,
+                        "gridProperties": {
+                            "frozenRowCount": 1
+                        }
+                    },
+                    "fields": "gridProperties.frozenRowCount"
+                }
+            }
+        ]
+        
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=worksheet.spreadsheet.id,
+            body={"requests": requests}
+        ).execute()
+    except Exception as e:
+        print(f"Warning: Batch header update failed, using individual calls: {e}")
+        worksheet.update(values=[header], range_name="A1")
+        set_frozen(worksheet, 1)
+        fmt = cellFormat(textFormat=textFormat(bold=True))
+        format_cell_range(worksheet, f"A1:{gspread.utils.rowcol_to_a1(1, len(header))}", fmt)
+
+def _build_data_maps(existing_rows, existing_formulas, header, idx_suite, idx_case):
+    """Build maps of existing rows and formulas."""
+    sheet_row_map = {}
+    sheet_formula_map = {}
+    for row_idx, row in enumerate(existing_rows):
+        if len(row) > max(idx_suite, idx_case) and idx_suite >= 0 and idx_case >= 0:
+            key = (row[idx_suite], row[idx_case])
+            sheet_row_map[key] = row
+            if row_idx < len(existing_formulas):
+                formula_row = existing_formulas[row_idx]
+                while len(formula_row) < len(header):
+                    formula_row.append("")
+                sheet_formula_map[key] = formula_row
+    return sheet_row_map, sheet_formula_map
+
+def _merge_new_data(data, sheet_row_map, sheet_formula_map, header, header_idx_map, 
+                    version_col_idx, version_column_indices, value_type):
+    """Merge new data with existing data, preserving formulas."""
+    updated_keys = set()
+    header_len = len(header)
+    
+    for entry in data:
+        key = (entry.get("Test Suite Name", ""), entry.get("Test Case Name", ""))
+        if not key[0] or not key[1]:
+            continue
+        
+        updated_keys.add(key)
+        new_row = ["" for _ in header]
+        
+        for col_name, value in entry.items():
+            col_idx = header_idx_map.get(col_name)
+            if col_idx is not None:
+                new_row[col_idx] = value
+        
+        if value_type == "Time":
+            if version_col_idx >= 0:
+                new_row[version_col_idx] = entry.get("Time (seconds)", "")
+        elif value_type == "Status":
+            if version_col_idx >= 0:
+                new_row[version_col_idx] = entry.get("Status", "")
+        
+        if key in sheet_row_map:
+            existing = sheet_row_map[key]
+            existing_formula_row = sheet_formula_map.get(key, [])
+            merged = []
+            for i in range(header_len):
+                if i == version_col_idx:
+                    merged.append(new_row[i])
+                elif i in version_column_indices:
+                    if value_type == "Status" and existing_formula_row and i < len(existing_formula_row):
+                        formula = existing_formula_row[i]
+                        if formula and isinstance(formula, str) and formula.strip():
+                            formula_upper = formula.strip().upper()
+                            if formula_upper.startswith('=HYPERLINK('):
+                                merged.append(formula.strip())
+                            else:
+                                merged.append(existing[i] if i < len(existing) else "")
+                        else:
+                            merged.append(existing[i] if i < len(existing) else "")
+                    else:
+                        merged.append(existing[i] if i < len(existing) else "")
+                else:
+                    merged.append(new_row[i] if new_row[i] else (existing[i] if i < len(existing) else ""))
+            sheet_row_map[key] = merged
+        else:
+            sheet_row_map[key] = new_row
+    
+    return updated_keys
+
+def _preserve_unupdated_rows(sheet_row_map, sheet_formula_map, updated_keys, header_len, 
+                             version_column_indices, value_type):
+    """Preserve existing rows that weren't updated (Status sheet only)."""
+    if value_type == "Status":
+        for key, existing_row in list(sheet_row_map.items()):
+            if key not in updated_keys:
+                existing_formula_row = sheet_formula_map.get(key, [])
+                if existing_formula_row:
+                    preserved_row = []
+                    for i in range(header_len):
+                        if i in version_column_indices and i < len(existing_formula_row):
+                            formula = existing_formula_row[i]
+                            if formula and isinstance(formula, str) and formula.strip():
+                                formula_upper = formula.strip().upper()
+                                if formula_upper.startswith('=HYPERLINK('):
+                                    preserved_row.append(formula.strip())
+                                else:
+                                    preserved_row.append(existing_row[i] if i < len(existing_row) else "")
+                            else:
+                                preserved_row.append(existing_row[i] if i < len(existing_row) else "")
+                        else:
+                            preserved_row.append(existing_row[i] if i < len(existing_row) else "")
+                    sheet_row_map[key] = preserved_row
+
+def _write_data_to_sheet(worksheet, final_rows, header):
+    """Write final data to sheet using batchUpdate."""
+    if not final_rows:
+        return
+    
+    try:
+        service = build('sheets', 'v4', credentials=worksheet.spreadsheet.client.auth)
+        sheet_id = worksheet.id
+        
+        rows_data = []
+        for row in final_rows:
+            row_values = []
+            for col_idx, cell_value in enumerate(row):
+                if col_idx < len(header):
+                    if isinstance(cell_value, str) and cell_value.strip() and cell_value.strip().startswith('='):
+                        row_values.append({
+                            "userEnteredValue": {
+                                "formulaValue": cell_value.strip()
+                            }
+                        })
+                    elif cell_value:
+                        row_values.append({
+                            "userEnteredValue": {
+                                "stringValue": str(cell_value)
+                            }
+                        })
+                    else:
+                        row_values.append({
+                            "userEnteredValue": {
+                                "stringValue": ""
+                            }
+                        })
+                else:
+                    row_values.append({})
+            rows_data.append({"values": row_values})
+        
+        end_row = len(final_rows) + 1
+        request = {
+            "updateCells": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 1,
+                    "endRowIndex": end_row,
+                    "startColumnIndex": 0,
+                    "endColumnIndex": len(header)
+                },
+                "rows": rows_data,
+                "fields": "userEnteredValue"
+            }
+        }
+        
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=worksheet.spreadsheet.id,
+            body={"requests": [request]}
+        ).execute()
+    except Exception as e:
+        print(f"Warning: Batch update failed, falling back to regular update: {e}")
+        worksheet.update(
+            values=final_rows,
+            range_name=f"A2:{gspread.utils.rowcol_to_a1(len(final_rows)+1, len(header))}",
+            value_input_option='USER_ENTERED'
+        )
+    
+    if len(final_rows) > 1000:
+        time.sleep(1)
+    else:
+        time.sleep(0.5)
+
 def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, value_type="Time"):
     """
     Update Google Sheet with dynamic columns per Ceph version.
@@ -407,136 +831,54 @@ def update_dynamic_worksheet(spreadsheet_obj, sheet_name, data, ceph_version, va
     - For value_type == "Status":
         * Adds only Status column with Ceph version as header.
         * Applies color formatting to the new version column (Passed/Failed).
+        * Adds HYPERLINK of jenkins job for the test case to the Status column.
     """
     worksheet = get_or_create_worksheet(spreadsheet_obj, sheet_name)
     
-    # Fetch existing sheet data
-    all_values = worksheet.get_all_values()
-    header = all_values[0] if all_values and len(all_values[0]) > 0 else []
-    existing_rows = all_values[1:] if all_values and len(all_values) > 1 else []
+    # Step 1: Read existing sheet data and formulas
+    header, existing_rows, existing_formulas = _read_sheet_data(worksheet, sheet_name, value_type)
     
-    # Ensure base headers exist (using set for faster lookup)
-    required_headers = ["Test Suite Name", "Test Case Name", "Component"]
-    if value_type == "Status":
-        required_headers.append("polarion-testcase-id")
+    # Step 2: Ensure base headers exist
+    required_headers, required_headers_set = _ensure_base_headers(header, value_type)
     
-    header_set = set(header)
-    for col in required_headers:
-        if col not in header_set:
-            header.append(col)
-            header_set.add(col)
-
-    # Determine column names and data keys
-    # Both Status and Timings sheets use only Ceph version number as header
+    # Step 3: Insert or move version column to correct position
     version_col_name = ceph_version
-    dynamic_cols = [version_col_name]
-
-    # Insert new columns (optimized: create header indices map)
-    insert_base_idx = len(required_headers)
-    header_indices = {col: idx for idx, col in enumerate(header)}
+    insert_base_idx = _insert_version_column(header, existing_rows, existing_formulas, 
+                                            version_col_name, required_headers, value_type)
     
-    for col in reversed(dynamic_cols):
-        if col in header_indices:
-            old_idx = header_indices[col]
-            # Remove the header
-            moved_header = header.pop(old_idx)
-            # Update indices after pop
-            header_indices = {col: (idx if idx < old_idx else idx - 1) for col, idx in header_indices.items() if col != moved_header}
-            
-            # Remove and store the column data for all rows (optimized)
-            moved_col_data = [row.pop(old_idx) if len(row) > old_idx else "" for row in existing_rows]
-            
-            # Insert header and column data at new position
-            header.insert(insert_base_idx, moved_header)
-            for col_name, idx in header_indices.items():
-                if idx >= insert_base_idx:
-                    header_indices[col_name] = idx + 1
-            header_indices[moved_header] = insert_base_idx
-            
-            for r_idx, row in enumerate(existing_rows):
-                row.insert(insert_base_idx, moved_col_data[r_idx])
-        else:
-            header.insert(insert_base_idx, col)
-            header_indices[col] = insert_base_idx
-            for col_name, idx in header_indices.items():
-                if idx >= insert_base_idx:
-                    header_indices[col_name] = idx + 1
-            for row in existing_rows:
-                row.insert(insert_base_idx, "")
-
-    # Update header row
-    worksheet.update(values=[header], range_name="A1")
-    time.sleep(2)
-    set_frozen(worksheet, 1)
-    fmt = cellFormat(textFormat=textFormat(bold=True))
-    format_cell_range(worksheet, f"A1:{gspread.utils.rowcol_to_a1(1, len(header))}", fmt)
-
-    # Cache column indices for performance
-    idx_suite = header.index("Test Suite Name")
-    idx_case = header.index("Test Case Name")
+    # Step 4: Reorder version columns so newest is first
+    _reorder_version_columns(header, existing_rows, existing_formulas, required_headers_set, 
+                            insert_base_idx, value_type)
     
-    # Build map of existing rows (optimized with pre-check)
-    sheet_row_map = {}
-    for row in existing_rows:
-        if len(row) > max(idx_suite, idx_case):
-            key = (row[idx_suite], row[idx_case])
-            sheet_row_map[key] = row
-
-    # Pre-calculate column indices for performance
-    version_col_idx = header.index(version_col_name) if version_col_name in header else -1
+    # Step 5: Update header with formatting
+    _update_header_with_formatting(worksheet, header)
+    time.sleep(0.5)
+    
+    # Step 6: Build data maps for existing rows and formulas
+    header_idx_map = {col: idx for idx, col in enumerate(header)}
+    idx_suite = header_idx_map.get("Test Suite Name", -1)
+    idx_case = header_idx_map.get("Test Case Name", -1)
+    version_column_indices = [idx for idx, col in enumerate(header) if col not in required_headers_set]
+    
+    sheet_row_map, sheet_formula_map = _build_data_maps(existing_rows, existing_formulas, 
+                                                        header, idx_suite, idx_case)
+    
+    # Step 7: Merge new data with existing data
+    version_col_idx = header_idx_map.get(version_col_name, -1)
+    updated_keys = _merge_new_data(data, sheet_row_map, sheet_formula_map, header, header_idx_map,
+                                   version_col_idx, version_column_indices, value_type)
+    
+    # Step 8: Preserve unupdated rows (Status sheet only)
     header_len = len(header)
-
-    # Merge new data (optimized with pre-calculated indices)
-    for entry in data:
-        key = (entry["Test Suite Name"], entry["Test Case Name"])
-        
-        # Start with empty row of correct length
-        new_row = ["" for _ in header]
-        
-        # Fill in all fields from entry
-        for col_name in entry:
-            if col_name in header:
-                col_idx = header.index(col_name)
-                new_row[col_idx] = entry[col_name]
-        
-        # Populate data based on sheet type
-        if value_type == "Time":
-            # Timings sheet: populate only Time column (no Status column)
-            if version_col_idx >= 0:
-                new_row[version_col_idx] = entry.get("Time (seconds)", "")
-        elif value_type == "Status":
-            # Status sheet: populate Status column
-            if version_col_idx >= 0:
-                new_row[version_col_idx] = entry.get("Status", "")
-
-        # Merge with existing data if key exists
-        if key in sheet_row_map:
-            existing = sheet_row_map[key]
-            # Merge: For Time and Status sheets, overwrite version columns completely with new data
-            # For other sheets, prefer new data if present
-            merged = []
-            for i in range(header_len):
-                # For version column, always use new data (even if empty)
-                if i == version_col_idx:
-                    merged.append(new_row[i])
-                else:
-                    # For other columns, prefer new data if present, else keep existing
-                    merged.append(new_row[i] if new_row[i] else (existing[i] if i < len(existing) else ""))
-            sheet_row_map[key] = merged
-        else:
-            sheet_row_map[key] = new_row
-
-    # write final data
+    _preserve_unupdated_rows(sheet_row_map, sheet_formula_map, updated_keys, header_len,
+                            version_column_indices, value_type)
+    
+    # Step 9: Write final data to sheet
     final_rows = list(sheet_row_map.values())
-    if final_rows:
-        worksheet.update(
-            values=final_rows,
-            range_name=f"A2:{gspread.utils.rowcol_to_a1(len(final_rows)+1, len(header))}"
-        )
-        time.sleep(2)
-
+    _write_data_to_sheet(worksheet, final_rows, header)
+    
+    # Step 10: Apply formatting
     _auto_resize_columns(worksheet)
-    # Only apply color formatting to Status sheets (not Timings sheets)
     if value_type == "Status":
         _apply_status_color_formatting(worksheet)
     print(f"Worksheet '{sheet_name}' updated successfully...")
