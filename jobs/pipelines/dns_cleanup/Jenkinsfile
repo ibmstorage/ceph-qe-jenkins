@@ -1,0 +1,81 @@
+// DNS Cleanup Job - Generates report and cleans up orphan DNS entries
+@Library("ceph-qe-libs@main") _
+
+def gitDir = "cephci"
+def venvDir = "venv"
+def ibmcCredFile = "osp-cred"  // Matches standard convention (no .yaml extension)
+
+pipeline {
+    agent { label "infra" }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "5", daysToKeepStr: "5"))
+    }
+
+    stages {
+        stage("Setup") {
+            steps {
+                script {
+                    def gitUrl = params.CEPHCI_REPO ?: "https://github.com/red-hat-storage/cephci.git"
+                    def gitBranch = params.BRANCH ?: "main"
+
+                    echo "Setting up Ceph CI repository and virtual environment..."
+
+                    // Setup Ceph CI repository and virtual environment using shared library
+                    setupCephCiRepo(
+                        python: "python3",
+                        venvDir: venvDir,
+                        gitUrl: gitUrl,
+                        gitDir: gitDir,
+                        gitBranch: gitBranch,
+                        cloudType: "ibmc",
+                        ibmcCredFile: ibmcCredFile
+                    )
+
+                    echo "Ceph CI repository setup completed successfully"
+                }
+            }
+        }
+
+        stage("Generate DNS Report") {
+            steps {
+                script {
+                    dir(gitDir) {
+                        echo "Generating DNS report..."
+                        def py = "${venvDir}/bin/python"
+                        def args = [
+                            "utility/ibm_dns_report.py",
+                            "--creds ${ibmcCredFile}"
+                        ]
+                        if (params.DELETE)      args.add("--delete")
+                        if (params.DRY_RUN)     args.add("--dry-run")
+                        def command = "${py} ${args.join(' ')}"
+                        echo "Running: ${command}"
+                        sh command
+                    }
+                }
+            }
+        }
+
+        stage("Archive Results") {
+            steps {
+                script {
+                    dir(gitDir) {
+                        // Archive the generated CSV report
+                        archiveArtifacts artifacts: "dns_report_*.csv", allowEmptyArchive: true, fingerprint: true
+                        echo "Results archived successfully"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "DNS cleanup job completed successfully"
+        }
+        failure {
+            echo "DNS cleanup job failed. Please check the logs for details."
+        }
+    }
+}
