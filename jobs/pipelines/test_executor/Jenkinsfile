@@ -57,6 +57,12 @@ pipeline {
                     // Generate a random prefix for resources
                     prefix = "${jobConfigs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
 
+                    // Define log directory with suite name to align with other jobs
+                    def suiteName = params.SUITE.tokenize('/').last()
+                                    .replaceFirst(/\.[^.]+$/, "")
+                                    .replaceAll(/[^A-Za-z0-9_]/, "_")
+                    def logDir = [jobConfigs.logDir, suiteName].join("/")
+
                     // Execute the test job
                     execTestSuites(
                         gitDir: jobConfigs.gitDir,
@@ -67,7 +73,7 @@ pipeline {
                         release: jobConfigs.release,
                         platform: jobConfigs.platform,
                         globalConf: params.GLOBAL_CONF,
-                        logDir: jobConfigs.logDir,
+                        logDir: logDir,
                         suite: params.SUITE,
                         ibmcCredFile: jobConfigs.ibmcCredFile,
                         inventory: jobConfigs.inventory,
@@ -95,8 +101,31 @@ pipeline {
     post {
         always {
             script {
+                echo "Send results to ${params.EMAIL_ADDRESS}"
+
                 // Always run this block
-                echo "This will always run, regardless of the build result."
+                publishTestResults(
+                    cephVersion: jobConfigs.cephVersion,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
+                    platform: jobConfigs.platform,
+                    cloudType: jobConfigs.cloudType,
+                    logDir: jobConfigs.logDir,
+                    resultsDir: jobConfigs.resultsDir,
+                    resultsSummary: jobConfigs.resultsSummary,
+                    artifacts: jobConfigs.artifacts,
+                    emailBody: jobConfigs.emailBody,
+                    emailAddr: params.EMAIL_ADDRESS,
+                    rpLaunchUrl: jobConfigs.rpLaunchUrl,
+                    rpLaunchName: jobConfigs.rpLaunchName,
+                    rpLaunchDesc: jobConfigs.rpLaunchDesc,
+                    rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
+                    rpProjectName: jobConfigs.rpProjectName,
+                    enableReportPortal: jobConfigs.enableReportPortal,
+                    enableGoogleSheet: jobConfigs.enableGoogleSheet
+                )
             }
         }
         cleanup {

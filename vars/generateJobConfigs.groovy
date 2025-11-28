@@ -60,6 +60,12 @@ def call(Map parameters) {
     // Get FIREWALL config
     jobConfig.enableFirewall = params.ENABLE_FIREWALL
 
+    // Get Update Report Portal config
+    jobConfig.enableReportPortal = params.ENABLE_REPORT_PORTAL ?: false
+    
+    // Get Update Google Sheet config
+    jobConfig.enableGoogleSheet = params.ENABLE_GSHEET ?: false
+    
     // Get additional rhel repo
     jobConfig.addRepo = params.RHEL_REPO
 
@@ -203,6 +209,15 @@ def call(Map parameters) {
         jobConfig.fg = params.FG
         jobDir += [jobConfig.fg]
         jobConfig.rpLaunchName += "[${jobConfig.fg}]"
+    } 
+    
+    // Update path with suite name for MTE jobs
+    if (params.SUITE) {
+        def suite = params.SUITE.trim().split("/")[-2]
+
+        jobConfig.fgSuite = suite
+        jobDir += [jobConfig.fgSuite]
+        jobConfig.rpLaunchName += "[${jobConfig.fgSuite}]"
     }
 
     // Update job path with build number
