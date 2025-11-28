@@ -101,6 +101,9 @@ def call(Map parameters) {
     // Get subscription manager execution
     jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
 
+    // Get Sos Report config parameter
+    jobConfig.skipSosReport = params.SKIP_SOS_REPORT ?: true
+
     // Support coverage for a particular build by reading the manifest before a
     // change.
     def release = "${jobConfig.buildType.toLowerCase()}"

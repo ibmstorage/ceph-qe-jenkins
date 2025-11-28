@@ -233,7 +233,7 @@ def call(Map parameters) {
     }
 
     // Check for sos report
-    args += parameters.skipSosReport ? ["--skip-sos-report"] : []
+    args += parameters.get("skipSosReport") ? ["--skip-sos-report"] : []
 
     // Start cephci run
     dir(gitDir) {

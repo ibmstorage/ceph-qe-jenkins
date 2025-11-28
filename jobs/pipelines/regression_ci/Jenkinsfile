@@ -8,7 +8,6 @@ def jobConfigs = [:]
 // Set suite parameters
 def suites = [:]
 def testSuitesMap = [:]
-def skipSosReport = true
 
 
 // Pipeline definition
@@ -114,7 +113,7 @@ pipeline {
                                         containerImage: jobConfigs.containerImage,
                                         additionalArgs: jobConfigs.additionalArgs,
                                         vmFlavor: jobConfigs.vmFlavor,
-                                        skipSosReport: skipSosReport,
+                                        skipSosReport: jobConfigs.skipSosReport,
                                         vpcName: jobConfigs.vpcName,
                                         skipSubscription: jobConfigs.skipSubscription,
                                         manifestSection: jobConfigs.manifestSection

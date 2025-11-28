@@ -186,6 +186,7 @@ for (jobConfig in jobsConfiguration) {
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")
+                booleanParam("SKIP_SOS_REPORT", true, "Uncheck to enable SOS Report collection")
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
