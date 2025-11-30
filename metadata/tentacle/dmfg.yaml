@@ -98,3 +98,65 @@ weekly:
     - name: "Test DMFG Tier-4 Crash Configuration"
       suite: suites/tentacle/cephadm/tier4-crash-configuration.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test DMFG upgrade RHCS 7x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-7x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Test DMFG upgrade RHCS 8x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Test DMFG upgrade with monitoring stack RHCS 8x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Test DMFG staggered upgrade RHCS 8x to 9x"
+      suite: suites/tentacle/upgrades/tier2-upgrade-rhcs-staggered-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Test DMFG upgrade IBMSC 7x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-ibm-7x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Test DMFG upgrade IBMSC 8x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-ibm-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Test DMFG upgrade with monitoring stack IBMSC 8x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-with-monitoring-stack-ibm-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Test DMFG staggered upgrade IBMSC 8x to 9x"
+      suite: suites/tentacle/upgrades/tier2-upgrade-ibm-staggered-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm

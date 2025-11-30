@@ -30,3 +30,16 @@ regression:
     - name: "Test SMB QoS Test Cases"
       suite: suites/tentacle/smb/tier-1-smb-qos.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test SMB upgrade IBMSC 9x to 9x latest"
+      suite: suites/tentacle/smb/tier-0-smb-upgrade-ibm-8x-to-8x-latest.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
