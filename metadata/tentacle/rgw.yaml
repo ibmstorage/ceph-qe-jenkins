@@ -110,7 +110,7 @@ weekly:
       custom-config:
         gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
         gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
-        gklm-endpoint-ibmc: "10.245.64.16"
+        gklm-endpoint-ibmc: "10.243.36.4"
       vm-flavor: bx2-4x16
     - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
       suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
