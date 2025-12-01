@@ -15,3 +15,6 @@ regression:
     - name: "Tier-1 NFS Ganesha QoS"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-qos.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha BYOK"
+      suite: suites/tentacle/nfs/tier0-nfs-ganesha-byok.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
