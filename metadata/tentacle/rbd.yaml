@@ -18,6 +18,12 @@ regression:
       - name: "tier-2 rbd group mirror"
         suite: suites/tentacle/rbd/tier-2_rbd_group_mirror.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror failover"
+        suite: suites/tentacle/rbd/tier-2_rbd_group_mirror_failover.yaml
+        global-conf: conf/tentacle/rbd/5-node-2-clusters.yamlas
+      - name: "tier-2 rbd group mirror misc"
+        suite: suites/tentacle/rbd/tier-2_rbd_group_mirror_misc.yaml
+        global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
       - name: "tier-2 default namespace mirroring"
         suite: suites/tentacle/rbd/tier-2_default_namespace_mirroring.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
@@ -95,5 +101,18 @@ weekly:
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
       - name: "tier-2 rbd group mirror scale"
         suite: suites/tentacle/rbd/tier-2_rbd_group_mirror_scale.yaml
+        global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+
+upgrade:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "Test RBD Mirror upgrade from 7x GA to 9x latest"
+        suite: suites/tentacle/rbd/tier-3_rbd_mirror_upgrade_7x_to_9x.yaml
+        global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+        suites:
+      - name: "Test RBD Mirror upgrade from 8x GA to 9x latest"
+        suite: suites/tentacle/rbd/tier-3_rbd_mirror_upgrade_8x_to_9x.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
         

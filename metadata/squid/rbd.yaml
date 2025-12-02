@@ -20,6 +20,16 @@ regression:
         global-conf: conf/squid/rbd/5-node-2-clusters.yaml
         version:
           - 8.1
+      - name: "tier-2 rbd group mirror failover"
+        suite: suites/squid/rbd/tier-2_rbd_group_mirror_failover.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+        version:
+          - 8.1
+      - name: "tier-2 rbd group mirror misc"
+        suite: suites/squid/rbd/tier-2_rbd_group_mirror_misc.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+        version:
+          - 8.1
       - name: "tier-2 default namespace mirroring"
         suite: suites/squid/rbd/tier-2_default_namespace_mirroring.yaml
         global-conf: conf/squid/rbd/5-node-2-clusters.yaml
@@ -104,4 +114,18 @@ weekly:
         global-conf: conf/squid/rbd/5-node-2-clusters.yaml
         version:
           - 8.1
-          
+
+upgrade:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "Test RBD Mirror upgrade from 6x GA to 8x latest"
+        suite: suites/squid/rbd/tier-3_ibm_rbd_mirror_upgrade_6x_to_8x.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "Test RBD Mirror upgrade from 7x GA to 8x latest"
+        suite: suites/squid/rbd/tier-3_ibm_rbd_mirror_upgrade_7x_to_8x.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
+      - name: "Test RBD Mirror upgrade from 8x GA to 8x latest"
+        suite: suites/squid/rbd/tier-3_ibm_rbd_mirror_upgrade_8xGA_to_8x_latest.yaml
+        global-conf: conf/squid/rbd/5-node-2-clusters.yaml
