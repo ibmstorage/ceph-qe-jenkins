@@ -77,3 +77,23 @@ weekly:
     - name: "Test cephfs Kernel"
       suite: suites/tentacle/cephfs/tier-1_fs_kernel_pipeline.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test Cephfs Upgrade 8.1x to 9x"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_81_to_9x.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Upgrade 7x to 9x"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_7x_to_9x.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Mirror Upgrade 7x to 8x to 9x"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_mirrror_upgrade_7x_to_8x_to_9x.yaml
+      global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
+      platform:
+        - rhel-9

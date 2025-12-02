@@ -74,3 +74,28 @@ weekly:
     - name: "Test cephfs Kernel"
       suite: suites/squid/cephfs/tier-1_fs_kernel_pipeline.yaml
       global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test Cephfs Upgrade 6x to 8x"
+      suite: suites/squid/cephfs/tier-0_cephfs_upgrade_6x_to_8x.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Upgrade 7.1x to 8x"
+      suite: suites/squid/cephfs/tier-0_cephfs_upgrade_71_to_8x.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Upgrade 8x Latest to 8.1x Latest"
+      suite: suites/squid/cephfs/tier-0_cephfs_upgrade_8x_latest_to_81x_latest.yaml
+      global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+    - name: "Test Cephfs Mirror Upgrade 6x to 7x to 8x"
+      suite: suites/squid/cephfs/tier-0_cephfs_mirrror_upgrade_6x_to_7x_to_8x.yaml
+      global-conf: conf/squid/cephfs/tier-1_cephfs_mirror.yaml
+      platform:
+        - rhel-9
