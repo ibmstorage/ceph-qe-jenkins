@@ -59,6 +59,9 @@ regression:
     - name: "Tier-1 rgw sw qat" # 39 mins, 37 secs
       suite: suites/squid/rgw/tier-1_rgw_sw_qat.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW conditional delete" # 54 mins, 37 secs
+      suite: suites/squid/rgw/tier-2_rgw_conditional_put_delete.yaml
+      global-conf: conf/squid/rgw/tier-0_rgw.yaml
 
 weekly:
   metadata:
