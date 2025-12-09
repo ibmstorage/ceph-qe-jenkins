@@ -3,22 +3,10 @@ regression:
     cloud:
       - ibmc
   suites:
-    - name: "RADOS Test - Drain Customer Issue"
-      suite: suites/squid/rados/tier-2_rados_test-drain-customer-issue.yaml
-      global-conf: conf/squid/rados/11-node-cluster.yaml
-      # VM count: 11
     - name: "RADOS Test - OSD Rebalance"
       suite: suites/squid/rados/tier-2_rados_test-osd-rebalance.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
       # VM count: 11
-    - name: "RADOS Test - EC Pool Recovery"
-      suite: suites/squid/rados/tier-2_rados_ec-pool_recovery.yaml
-      global-conf: conf/squid/rados/11-node-cluster.yaml
-      # VM count: 11
-    - name: "RADOS Test - 8+6 MSR EC Pools"
-      suite: suites/squid/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
-      global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
-      # VM count: 6
     - name: "RADOS Test - EC Pool OSD Rebalance"
       suite: suites/squid/rados/tier-2_rados_test-ecpool-osd-rebalance.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
@@ -80,10 +68,6 @@ weekly:
       suite: suites/squid/rados/tier-4_rados_test-pool-osd-recovery.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
       # VM count: 13
-    - name: "RADOS Test - 3 AZ Cluster"
-      suite: suites/squid/rados/tier-3_rados_test-3-AZ-Cluster.yaml
-      global-conf: conf/squid/rados/3AZ-cluster-rhos-1.yaml
-      # VM count: 10
     - name: "RADOS Test - Scrubbing"
       suite: suites/squid/rados/tier-2_rados_test-scrubbing.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
@@ -92,12 +76,42 @@ weekly:
       suite: suites/squid/rados/tier-4_rados_tests.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
       # VM count: 13
-    - name: "RADOS - Brownfield tests"
-      suite: suites/squid/rados/tier-2_rados_test-brownfield.yaml
-      global-conf: conf/squid/rados/7-node-cluster.yaml
-      # VM count: 7
     - name: "RADOS Test - 4 Node EC Pools"
       suite: suites/squid/rados/tier-3_rados_test-4-node-ecpools.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
-
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "RADOS Test - Drain Customer Issue"
+      suite: suites/squid/rados/tier-2_rados_test-drain-customer-issue.yaml
+      global-conf: conf/squid/rados/11-node-cluster.yaml
+      # VM count: 11
+      # 7.1z0 -> latest
+    - name: "RADOS - Brownfield tests"
+      suite: suites/squid/rados/tier-2_rados_test-brownfield.yaml
+      global-conf: conf/squid/rados/7-node-cluster.yaml
+      # VM count: 7
+      # 7.1z1 -> 7.1z2 -> latest
+    - name: "RADOS Test - EC Pool Recovery"
+      suite: suites/squid/rados/tier-2_rados_ec-pool_recovery.yaml
+      global-conf: conf/squid/rados/11-node-cluster.yaml
+      # VM count: 11
+      # 6.1 GA -> latest
+    - name: "RADOS Test - Location Stretch Mode Upgrade"
+      suite: suites/squid/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
+      global-conf: conf/squid/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+      # 8.0 GA -> latest
+    - name: "RADOS Test - 3 AZ Cluster"
+      suite: suites/squid/rados/tier-3_rados_test-3-AZ-Cluster.yaml
+      global-conf: conf/squid/rados/3AZ-cluster-rhos-1.yaml
+      # VM count: 10
+      # 8.0 GA -> latest
+    - name: "RADOS Test - 8+6 MSR EC Pools"
+      suite: suites/squid/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
+      global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+      # 8.0 GA -> latest

@@ -3,22 +3,11 @@ regression:
     cloud:
       - ibmc
   suites:
-    - name: "RADOS Test - Drain Customer Issue"
-      suite: suites/tentacle/rados/tier-2_rados_test-drain-customer-issue.yaml
-      global-conf: conf/tentacle/rados/11-node-cluster.yaml
       # VM count: 11
     - name: "RADOS Test - OSD Rebalance"
       suite: suites/tentacle/rados/tier-2_rados_test-osd-rebalance.yaml
       global-conf: conf/tentacle/rados/11-node-cluster.yaml
       # VM count: 11
-    - name: "RADOS Test - EC Pool Recovery"
-      suite: suites/tentacle/rados/tier-2_rados_ec-pool_recovery.yaml
-      global-conf: conf/tentacle/rados/11-node-cluster.yaml
-      # VM count: 11
-    - name: "RADOS Test - 8+6 MSR EC Pools"
-      suite: suites/tentacle/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
-      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
-      # VM count: 6
     - name: "RADOS Test - EC Pool OSD Rebalance"
       suite: suites/tentacle/rados/tier-2_rados_test-ecpool-osd-rebalance.yaml
       global-conf: conf/tentacle/rados/11-node-cluster.yaml
@@ -67,14 +56,14 @@ regression:
       suite: suites/tentacle/rados/tier-2_rados_test-new-features.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
-    - name: "RADOS Test - 6+2 EC Pools"
-      suite: suites/tentacle/rados/tier-3_rados_test_6+2_ecpools.yaml
-      global-conf: conf/tentacle/rados/9-node-ec-cluster-1-client.yaml
-      # VM count: 9
     - name: "RADOS Test - Stretch Mode Tentacle New Features"
       suite: suites/tentacle/rados/tier-3_rados_test-stretch-mode-new-features.yaml
       global-conf: conf/tentacle/rados/13-node-cluster-4-clients.yaml
       # VM count: 17
+    - name: "RADOS Test - EC Partial Write Optimization"
+      suite: suites/tentacle/rados/tier-3_rados_ec_partial_reads_writes.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
 weekly:
   metadata:
     cloud:
@@ -96,10 +85,6 @@ weekly:
       suite: suites/tentacle/rados/tier-4_rados_test-pool-osd-recovery.yaml
       global-conf: conf/tentacle/rados/13-node-cluster.yaml
       # VM count: 13
-    - name: "RADOS Test - 3 AZ Cluster"
-      suite: suites/tentacle/rados/tier-3_rados_test-3-AZ-Cluster.yaml
-      global-conf: conf/tentacle/rados/3AZ-cluster-rhos-1.yaml
-      # VM count: 10
     - name: "RADOS Test - Scrubbing"
       suite: suites/tentacle/rados/tier-2_rados_test-scrubbing.yaml
       global-conf: conf/tentacle/rados/7-node-cluster.yaml
@@ -107,13 +92,53 @@ weekly:
     - name: "RADOS Tier4 tests"
       suite: suites/tentacle/rados/tier-4_rados_tests.yaml
       global-conf: conf/tentacle/rados/13-node-cluster.yaml
-      # VM count: 13
-    - name: "RADOS - Brownfield tests"
-      suite: suites/tentacle/rados/tier-2_rados_test-brownfield.yaml
-      global-conf: conf/tentacle/rados/7-node-cluster.yaml
       # VM count: 7
     - name: "RADOS Test - 4 node EC Pools"
       suite: suites/tentacle/rados/tier-3_rados_test-4-node-ecpools.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
-
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "RADOS Test - Drain Customer Issue"
+      suite: suites/tentacle/rados/tier-2_rados_test-drain-customer-issue.yaml
+      global-conf: conf/tentacle/rados/11-node-cluster.yaml
+      # VM count: 11
+      # 7.1z0 -> latest
+    - name: "RADOS - Brownfield tests"
+      suite: suites/tentacle/rados/tier-2_rados_test-brownfield.yaml
+      global-conf: conf/tentacle/rados/7-node-cluster.yaml
+      # VM count: 7
+      # 7.1z1 -> 7.1z2 -> latest
+    - name: "RADOS Test - EC Pool Recovery"
+      suite: suites/tentacle/rados/tier-2_rados_ec-pool_recovery.yaml
+      global-conf: conf/tentacle/rados/11-node-cluster.yaml
+      # VM count: 11
+      # 7.1 GA -> latest
+    - name: "RADOS Test - Location Stretch Mode Upgrade"
+      suite: suites/tentacle/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
+      global-conf: conf/tentacle/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+      # 7.1 GA -> 8.1 GA -> latest
+    - name: "RADOS Test - 3 AZ Cluster"
+      suite: suites/tentacle/rados/tier-3_rados_test-3-AZ-Cluster.yaml
+      global-conf: conf/tentacle/rados/3AZ-cluster-rhos-1.yaml
+      # VM count: 10
+      # 8.1 GA -> latest
+    - name: "RADOS Test - 8+6 MSR EC Pools"
+      suite: suites/tentacle/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+      # 8.1 GA -> latest
+    - name: "RADOS Test - 4 node FAST EC Pools"
+      suite: suites/tentacle/rados/tier-3_rados_test-4-node-fast-ecpools.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+      # 8.1 GA -> latest
+    - name: "RADOS Test - 6+2 EC Pools"
+      suite: suites/tentacle/rados/tier-3_rados_test_6+2_ecpools.yaml
+      global-conf: conf/tentacle/rados/9-node-ec-cluster-1-client.yaml
+      # VM count: 9
+      # 8.1 GA -> latest
