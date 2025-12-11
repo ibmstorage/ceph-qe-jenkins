@@ -18,3 +18,24 @@ regression:
     - name: "Tier-0 NFS Ganesha BYOK"
       suite: suites/tentacle/nfs/tier0-nfs-ganesha-byok.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 9.0 Latest"
+      suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-7.1x-to-9x-latest.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-9
+    - name: "TEST Ceph NFS Ganesha Upgrade from 8.0 to 9.0 Latest"
+      suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-8x-to-9x-latest.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-9
+    - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 8.1x to 9.0 Latest"
+      suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-7.1x-to-8.1x-to-9x-latest
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-9
