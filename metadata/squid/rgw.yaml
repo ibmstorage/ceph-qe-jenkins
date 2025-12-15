@@ -169,3 +169,50 @@ weekly:
       suite: suites/squid/rgw/tier-2_ssl_rgw_regression_extended.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
 
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-1 rgw ms upgrade ssl 71GA to 8x latest" 
+      suite: suites/squid/rgw/tier-1_rgw_ssl_multisite_test_upgrade_71GA_to_8x_latest.yaml
+      global-conf: conf/squid/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw upgrade ssl archive 80GA to 8x latest"
+      suite: suites/squid/rgw/tier-1_rgw_upgrade_archive_ssl_ecpool_80GA_to_8x_latest.yaml
+      global-conf: conf/squid/rgw/3-way-archive-ec-profile-2+2@4nodes.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw multirealm upgrade 71GA to 8x latest"
+      suite: suites/squid/rgw/tier-1_rgw_ms_upgrade_multirealm_71GA_to_8x_latest.yaml
+      global-conf: conf/squid/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw ms upgrade 61GA to 8x latest"
+      suite: suites/squid/rgw/tier-1_rgw_ms_upgrade_61GA_to_8x_latest.yaml
+      global-conf: conf/squid/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw upgrade ssl ecpool 81GA to 8x latest"
+      suite: suites/squid/rgw/tier-1_rgw_upgrade_ssl_ecpool_81GA_to_8x_latest.yaml
+      global-conf: conf/squid/rgw/ec-profile-4+2-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw ibm upgrade ms ssl 71GA to 9x latest"
+      suite: suites/squid/rgw/tier-1_rgw_ibm_ssl_ms_upgrade_71GA_to_8x_latest.yaml
+      global-conf: conf/squid/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
