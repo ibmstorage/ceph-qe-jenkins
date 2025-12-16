@@ -10,6 +10,9 @@ def generate_jobs(data) {
 
     // Set releases for Ceph versions
     def release = ["nightly", "stable"]
+    if (data.cephVersion.toLowerCase() == "squid") {
+        release += ["rc"]
+    }
 
     // Add the job configurations
     data.jobsConfiguration.add([
