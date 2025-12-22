@@ -40,6 +40,10 @@ regression:
       suite: suites/tentacle/rados/tier-3_rados_test-4-node-scrub-tests.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
+    - name: "RADOS Test - Scrub Tests 2"
+      suite: suites/tentacle/rados/tier-3_rados_test-4-node-scrub-tests-2.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
     - name: "RADOS Test - Location Stretch Mode"
       suite: suites/tentacle/rados/tier-3_rados_test-location-stretch-mode.yaml
       global-conf: conf/tentacle/rados/13-node-cluster-4-clients.yaml
