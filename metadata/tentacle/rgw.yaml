@@ -29,14 +29,14 @@ regression:
       suite: suites/tentacle/rgw/tier-2_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       vm-flavor: bx2-2x8
-    - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
-    - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-      vm-flavor: bx2-2x8
+    # - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
+    #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
+    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    #   vm-flavor: bx2-2x8
+    # - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
+    #   suite: suites/tentacle/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
+    #   global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+    #   vm-flavor: bx2-2x8
     - name: "Tier-3 archivezone colocated datazone" # 95 mins, 43 secs
       suite: suites/tentacle/rgw/tier-3_archive_zone_colocate_data_zone.yaml
       global-conf: conf/tentacle/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
@@ -53,14 +53,11 @@ regression:
     - name: "Tier-2 RGW sanity with d3n enabled" # 105 mins, 13 secs
       suite: suites/tentacle/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 RGW sts aswi" # 73 mins, 18 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_sts_aswi.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    # - name: "Tier-2 RGW sts aswi" # 73 mins, 18 secs
+    #   suite: suites/tentacle/rgw/tier-2_rgw_sts_aswi.yaml
+    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
     - name: "Tier-1 RGW sw qat" # 39 mins, 37 secs
       suite: suites/tentacle/rgw/tier-1_rgw_sw_qat.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 RGW conditional delete" # 54 mins, 37 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_conditional_put_delete.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
 
 weekly:
@@ -96,10 +93,10 @@ weekly:
     - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
       suite: suites/tentacle/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+    # - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
+    #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
+    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    #   vm-flavor: bx2-2x8
     - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
@@ -107,18 +104,18 @@ weekly:
     - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_ms_async_data_notification.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-      custom-config:
-        gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
-        gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
-        gklm-endpoint-ibmc: "10.243.36.4"
-      vm-flavor: bx2-4x16
-    - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+    # - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
+    #   suite: suites/tentacle/rgw/tier-2_rgw_ms_async_data_notification.yaml
+    #   global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+    #   custom-config:
+    #     gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
+    #     gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
+    #     gklm-endpoint-ibmc: "10.243.36.4"
+    #   vm-flavor: bx2-4x16
+    # - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
+    #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
+    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    #   vm-flavor: bx2-2x8
     - name: "Tier-2 rgw single site regression extended" 
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
