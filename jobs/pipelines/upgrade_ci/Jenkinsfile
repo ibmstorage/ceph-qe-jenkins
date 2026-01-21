@@ -1,123 +1,36 @@
-@Library("ceph-qe-libs@main")_
+// Import shared library
+@Library("ceph-qe-libs@main") _
 
+// Set job parameters
 def job = "upgrade"
 def jobConfigs = [:]
-def skipSosReport = true
-def skipSubscription = true
 
-// Compare version v against target
-def versionComparison(v, target) {
-    return (v.tokenize('.')*.toInteger() <=> target.tokenize('.')*.toInteger()) >= 0
-}
+// Set suite parameters
+def suites = [:]
+def testSuitesMap = [:]
 
-// If BUILD_VERSION is lower than the introduction version, the component is skipped.
-def allowComponent = { comp, buildVersion, buildType ->
-    if (!params[comp.toUpperCase()]) return false
-    switch (comp.toLowerCase()) {
-        case "rados":     return versionComparison(buildVersion, "5.1")
-        case "nfs":       return versionComparison(buildVersion, "7.1")
-        case "nvmeotcp":  return versionComparison(buildVersion, "7.1") && (buildType == "IBM")
-        case "smb":       return versionComparison(buildVersion, "8.1")
-        default:          return true
-    }
-}
 
-// Execute a single testsuite under a component
-def runSuite = { suite, comp, buildVersion, buildType ->
-    def stageName = "${comp}-${suite.name}"
-    def logDir = "${jobConfigs.logDir}/${stageName}"
-    def prefix = "${params.PREFIX}-${env.BUILD_NUMBER}-${generatePrefixString()}"
-
-    stage(stageName) {
-        // Delay before provisioning cloud resources — avoids mass simultaneous API hits
-        sleep time: 60, unit: 'SECONDS'
-
-        try {
-            execTestSuites(
-                gitDir: jobConfigs.gitDir,
-                venvDir: jobConfigs.venvDir,
-                instanceName: prefix,
-                cloudType: jobConfigs.cloudType,
-                rhBuild: buildVersion,
-                platform: jobConfigs.platform,
-                logDir: logDir,
-                globalConf: suite.global_conf,
-                suite: suite.suite,
-                ibmcCredFile: jobConfigs.ibmcCredFile,
-                inventory: jobConfigs.inventory,
-                logLevel: params.LOG_LEVEL,
-                customConfig: params.CUSTOM_CONFIG,
-                buildType: buildType,
-                enableFipsMode: params.ENABLE_FIPS_MODE,
-                enableFirewall: params.ENABLE_FIREWALL,
-                rhsCephRepo: params.REPO,
-                hotfixRepo: params.HOTFIX_REPO,
-                containerImage: params.CONTAINER_IMAGE,
-                additionalArgs: params.ADDITIONAL_ARGS,
-                vmFlavor: params.VM_FLAVOR,
-                skipSosReport: skipSosReport,
-                vpcName: params.VPC_NAME,
-                skipSubscription: skipSubscription
-            )
-        } finally {
-            cleanupCluster(
-                gitDir: jobConfigs.gitDir,
-                venvDir: jobConfigs.venvDir,
-                cloudType: jobConfigs.cloudType,
-                instanceName: prefix,
-                ibmcCredFile: jobConfigs.ibmcCredFile,
-                logLevel: params.LOG_LEVEL,
-                vpcName: params.VPC_NAME
-            )
-        }
-    }
-}
-
-// Execute all suites of a component — in parallel
-def runComponent = { comp, buildVersion, buildType ->
-    stage("Component: ${comp}") {
-        def suites = fetchTestSuites(
-            rhBuild: buildVersion,
-            fg: comp,
-            job: job,
-            platform: jobConfigs.platform,
-            cloudType: jobConfigs.cloudType,
-            buildType: buildType
-        )?.upgrade?.suites ?: []
-
-        if (!suites) {
-            echo "No suites found for ${comp}"
-            return
-        }
-
-        def suiteMap = [:]
-        suites.each { suite ->
-            suiteMap["${comp}-${suite.name}"] = {
-                runSuite(suite, comp, buildVersion, buildType)
-            }
-        }
-
-        catchError(buildResult: "SUCCESS", stageResult: "FAILURE") {
-            parallel suiteMap
-        }
-    }
-}
-
+// Pipeline definition
 pipeline {
-    agent { label "agents" }
-
     options {
+        // Set build archieve policy
         buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
-        timeout(time: 24, unit: "HOURS")
+    }
+
+    agent {
+        // Use agent label
+        label "agents"
     }
 
     stages {
-
         stage("Validate") {
             steps {
                 script {
+                    // Validate mandatory parameters
                     jobConfigs = generateJobConfigs(job: job)
-                    echo "Validation successful"
+
+                    // Debug
+                    echo "Parameters validated successfully ..."
                 }
             }
         }
@@ -125,42 +38,117 @@ pipeline {
         stage("Setup") {
             steps {
                 script {
+                    // Setup Ceph CI repository and virtual environment
                     setupCephCiRepo(
                         python: jobConfigs.python,
                         venvDir: jobConfigs.venvDir,
-                        gitUrl: params.CEPHCI_REPO,
+                        gitUrl: jobConfigs.gitUrl,
                         gitDir: jobConfigs.gitDir,
-                        gitBranch: params.BRANCH,
+                        gitBranch: jobConfigs.gitBranch,
                         cloudType: jobConfigs.cloudType,
                         ibmcCredFile: jobConfigs.ibmcCredFile
+                    )
+
+                    // Debug
+                    echo "Ceph CI repository setup completed successfully ..."
+                }
+            }
+        }
+
+        stage("Fetch Suites") {
+            steps {
+                script {
+                    // Get suites for given FG & Component
+                    suites = fetchTestSuites(
+                        rhBuild: jobConfigs.rhBuild,
+                        fg: params.FG,
+                        job: job,
+                        platform: jobConfigs.platform,
+                        cloudType: jobConfigs.cloudType,
+                        buildType: jobConfigs.buildType
                     )
                 }
             }
         }
 
-        stage("Execute Components") {
+        stage("Get Stages") {
             steps {
                 script {
-                    def buildVersion = params.BUILD_VERSION
-                    def buildType = params.BUILD_TYPE
-                    def inputComponents = params.components ?: []
+                    // Iterate over suite list
+                    suites.upgrade.suites.each { suite ->
+                        // Debug
+                        echo "Executing suite: ${suite.suite} with config: ${suite.global_conf}"
 
-                    for (comp in inputComponents) {
+                        // Create stages based on test suite
+                        testSuitesMap[suite.name] = {
+                            stage(suite.name) {
+                                // Set log directory
+                                def logDir = [jobConfigs.logDir, suite.name].join("/")
 
-                        if (!allowComponent(comp, buildVersion, buildType)) {
-                            echo "Skipped component: ${comp} (gates not satisfied)"
-                            continue
+                                // Generate a random prefix for resources
+                                def prefix = "${jobConfigs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
+
+                                try {
+                                    // Execute the test job
+                                    execTestSuites(
+                                        gitDir: jobConfigs.gitDir,
+                                        venvDir: jobConfigs.venvDir,
+                                        instanceName: prefix,
+                                        cloudType: jobConfigs.cloudType,
+                                        product: jobConfigs.product,
+                                        release: jobConfigs.release,
+                                        platform: jobConfigs.platform,
+                                        logDir: logDir,
+                                        globalConf: suite.global_conf,
+                                        suite: suite.suite,
+                                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                                        inventory: jobConfigs.inventory,
+                                        logLevel: jobConfigs.logLevel,
+                                        customConfig: jobConfigs.customConfig,
+                                        buildType: jobConfigs.buildType,
+                                        enableFipsMode: jobConfigs.enableFipsMode,
+                                        enableFirewall: jobConfigs.enableFirewall,
+                                        rhsCephRepo: jobConfigs.rhsCephRepo,
+                                        hotfixRepo: jobConfigs.hotfixRepo,
+                                        containerImage: jobConfigs.containerImage,
+                                        additionalArgs: jobConfigs.additionalArgs,
+                                        vmFlavor: jobConfigs.vmFlavor,
+                                        skipSosReport: jobConfigs.skipSosReport,
+                                        vpcName: jobConfigs.vpcName,
+                                        skipSubscription: jobConfigs.skipSubscription,
+                                        manifestSection: jobConfigs.manifestSection
+                                    )
+
+                                    // Debug
+                                    echo "Test execution for ${suite.name} completed successfully."
+                                } catch (Exception e) {
+                                    // Debug
+                                    echo "Test execution failed: ${e.message}"
+                                    error("Suite ${suite.name} failed")
+                                } finally {
+                                    // Cleanup configs generated
+                                    cleanupCluster(
+                                        gitDir: jobConfigs.gitDir,
+                                        venvDir: jobConfigs.venvDir,
+                                        cloudType: jobConfigs.cloudType,
+                                        instanceName: prefix,
+                                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                                        logLevel: jobConfigs.logLevel,
+                                        vpcName: jobConfigs.vpcName
+                                    )
+                                }
+                            }
                         }
-
-                        echo "Starting Component: ${comp}"
-
-                        catchError(buildResult: "SUCCESS", stageResult: "FAILURE") {
-                            runComponent(comp, buildVersion, buildType)
-                        }
-
-                        echo "Completed Component: ${comp}"
-                        sleep time: 120, unit: 'SECONDS'  // avoid IBM API rate spike
                     }
+                }
+            }
+        }
+
+        stage("Execute Suites") {
+            steps {
+                script {
+                    // Execute all the test suites in parallel
+                    parallel testSuitesMap
                 }
             }
         }
@@ -169,12 +157,16 @@ pipeline {
     post {
         always {
             script {
+                // Debug
+                echo "Send results to ${params.EMAIL_ADDRESS}"
+
+                // Always run this block
                 publishTestResults(
                     cephVersion: jobConfigs.cephVersion,
-                    rhsCephRepo: params.REPO,
-                    containerImage: params.CONTAINER_IMAGE,
-                    buildType: params.BUILD_TYPE,
-                    rhBuild: params.BUILD_VERSION,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
                     platform: jobConfigs.platform,
                     cloudType: jobConfigs.cloudType,
                     logDir: jobConfigs.logDir,
@@ -189,6 +181,13 @@ pipeline {
                     rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
                     rpProjectName: jobConfigs.rpProjectName
                 )
+            }
+        }
+
+        cleanup {
+            script {
+                // cleanup logic
+                echo "Cleanup completed successfully ..."
             }
         }
     }
