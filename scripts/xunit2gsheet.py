@@ -61,6 +61,10 @@ SHEET_SUMMARY = "Summary"
 SHEET_TEST_STATUS = "Test Case Status"
 SHEET_TEST_TIMINGS = "Test Case Timings"
 
+# Magna log-server base URL
+MAGNA_BASE_URL = "http://magna002.ceph.redhat.com/cephci-jenkins/results/"
+JENKINS_LOG_DIR_PREFIX = "/data/jenkins/ceph-builds/"
+
 
 def get_gsheet_client(credentials_path):
     """
@@ -193,11 +197,17 @@ def parse_testcases(xml_root):
                     dir_name = path_parts[-2]
                     component = dir_name.upper()
 
-        # Extract Jenkins URL for log hyperlinks
-        jenkin_url = ""
-        jenkin_url_prop = suite.find(".//property[@name='jenkin-url']")
-        if jenkin_url_prop is not None:
-            jenkin_url = jenkin_url_prop.get("value", "").strip()
+        # Extract log-dir and build Magna log-server URL for hyperlinks
+        magna_log_url = ""
+        log_dir_prop = suite.find(".//property[@name='log-dir']")
+        if log_dir_prop is not None:
+            log_dir = log_dir_prop.get("value", "").strip()
+            # Convert log-dir path to Magna URL
+            if log_dir.startswith(JENKINS_LOG_DIR_PREFIX):
+                relative_path = log_dir[len(JENKINS_LOG_DIR_PREFIX):]
+                magna_log_url = MAGNA_BASE_URL + relative_path.rstrip("/") + "/"
+            # else:
+            #     magna_log_url = MAGNA_BASE_URL + log_dir.lstrip("/").rstrip("/") + "/"
 
         for case in suite.findall(".//testcase"):
             testcase_name = case.get("name", "")
@@ -223,11 +233,11 @@ def parse_testcases(xml_root):
             else:
                 status = "Passed"
 
-            # Create status with hyperlink if Jenkins URL is available
+            # Create status with hyperlink if Magna log URL is available
             status_value = status
-            if jenkin_url:
-                # Create HYPERLINK formula for Google Sheets
-                status_value = f'=HYPERLINK("{jenkin_url}", "{status}")'
+            if magna_log_url:
+                # Create HYPERLINK formula for Google Sheets with Magna log-server URL
+                status_value = f'=HYPERLINK("{magna_log_url}", "{status}")'
 
             statuses.append(
                 {
@@ -972,7 +982,7 @@ def update_dynamic_worksheet(
     - For value_type == "Status":
         * Adds only Status column with Ceph version as header.
         * Applies color formatting to the new version column (Passed/Failed).
-        * Adds HYPERLINK of jenkins job for the test case to the Status column.
+        * Adds HYPERLINK of Magna log-server URL for the test case to the Status column.
     """
     worksheet = get_or_create_worksheet(spreadsheet_obj, sheet_name)
 
