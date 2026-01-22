@@ -77,3 +77,105 @@ regression:
     - name: "Test DMFG Tier-4 Service Operations"
       suite: suites/squid/cephadm/tier4-service-operations.yaml
       global-conf: conf/squid/cephadm/1admin-4node-1client-cluster.yaml
+
+upgrade:
+  metadata:
+    cloud:
+      - openstack
+      - ibmc
+    testrun-template:
+      rh: rh-squid-upgrade
+      ibm: ibm-squid-upgrade
+
+  suites:
+    # - name:
+    #   suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-to-8x.yaml
+    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+    #   platform:
+    #     - rhel-9
+    #   build:
+    #     - rh
+    - name:
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name:
+      suite: suites/squid/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    # - name:
+    #   suite: suites/squid/upgrades/tier2-upgrade-rhcs-staggered-6x-to-8x.yaml
+    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+    #   platform:
+    #     - rhel-9
+    #   build:
+    #     - rh
+    - name:
+      suite: suites/squid/upgrades/tier2-upgrade-rhcs-staggered-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    # - name:
+    #   suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-to-8x.yaml
+    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+    #   platform:
+    #     - rhel-9
+    #   build:
+    #     - rh
+    - name:
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-8x-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    # - name:
+    #   suite: suites/squid/upgrades/tier1-upgrade-ibm-6x-to-8x.yaml
+    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+    #   platform:
+    #     - rhel-9
+    #   build:
+    #     - ibm
+    - name:
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name:
+      suite: suites/squid/upgrades/tier1-upgrade-with-monitoring-stack-ibm-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    # - name:
+    #   suite: suites/squid/upgrades/tier2-upgrade-ibm-staggered-6x-to-8x.yaml
+    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+    #   platform:
+    #     - rhel-9
+    #   build:
+    #     - ibm
+    - name:
+      suite: suites/squid/upgrades/tier2-upgrade-ibm-staggered-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name:
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-8x-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
