@@ -122,4 +122,17 @@ weekly:
         vm-flavor: bx2-4x16
         build:
          - ibm
-        
+
+upgrade:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "TEST NVMe Upgrade from 7.1x to 8.x Latest"
+        suite: suites/squid/nvmeof/tier-2_nvmeof_7x-to-8x_upgrade.yaml
+        global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-flavor: bx2-4x16
+        platform:
+          - rhel-9
+        build:
+          - ibm
