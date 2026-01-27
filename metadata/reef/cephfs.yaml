@@ -1,0 +1,112 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+      - name: "Tier-0 Basic FS Tests"
+        suite: suites/reef/cephfs/tier-2_fs.yaml
+        global-conf: conf/reef/cephfs/tier-0_fs.yaml
+      - name: "Tier-0 Multi-FS Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-multifs.yaml
+        global-conf: conf/reef/cephfs/tier-0_fs.yaml
+      - name: "Tier-0 Quota Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-quota.yaml
+        global-conf: conf/reef/cephfs/tier-0_fs.yaml
+      - name: "Tier-0 Snapshot Clone Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-snapshot-clone.yaml
+        global-conf: conf/reef/cephfs/tier-0_fs.yaml
+      - name: "Tier-1 Basic FS Tests"
+        suite: suites/reef/cephfs/tier-1_fs.yaml
+        global-conf: conf/reef/cephfs/tier-1_fs.yaml
+      - name: "Tier-1 Cephfs CG Quiesce Tests"
+        suite: suites/reef/cephfs/tier-1_cephfs_cg_quiesce.yaml
+        global-conf: conf/reef/cephfs/tier-1_fs.yaml
+      - name: "Tier-1 Cephfs Mirroring Tests"
+        suite: suites/reef/cephfs/tier-1_cephfs_mirror.yaml
+        global-conf: conf/reef/cephfs/tier-1_cephfs_mirror.yaml
+      - name: "Tier-2 File and Directory Layout Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test_file_and_dir_layout.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Tier-2 Volume Management Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-volume-management.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Tier-2 NFS Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-nfs.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Tier-2 Clients Tests"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-clients.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+
+
+weekly:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+      - name: "Test Cephfs Top"
+        suite: suites/reef/cephfs/tier-3_cephfs_test_cephfs-top.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Test Cephfs Recovery"
+        suite: suites/reef/cephfs/tier-4_cephfs_recovery.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Test Cephfs CG Quiesce"
+        suite: suites/reef/cephfs/tier-1_cephfs_cg_quiesce_systemic.yaml
+        global-conf: conf/reef/cephfs/tier-1_cephfs_cg_quiesce.yaml
+      - name: "Test Cephfs Metrics"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-metrics.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Test Cephfs Performance"
+        suite: suites/reef/cephfs/tier-3_cephfs_test_performance.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Test Cephfs MDS Pinning"
+        suite: suites/reef/cephfs/tier-2_cephfs_test_mds_pinning.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Test Cephfs Scale"
+        suite: suites/reef/cephfs/tier-3_cephfs_scale.yaml
+        global-conf: conf/reef/cephfs/tier-0_fs.yaml
+      - name: "Test Cephfs Bugs"
+        suite: suites/reef/cephfs/tier-3_cephfs_bugs.yaml
+        global-conf: conf/reef/cephfs/tier-3_cephfs_4clients_4osd.yaml
+      - name: "Test Cephfs Mirror HA"
+        suite: suites/reef/cephfs/tier-2_cephfs_mirror_ha.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_mirror_ha.yaml
+      - name: "Test Cephfs Generic"
+        suite: suites/reef/cephfs/tier-2_cephfs_generic.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+      - name: "Test Cephfs System"
+        suite: suites/reef/cephfs/tier-4_cephfs_system.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_upgrade.yaml
+      - name: "Test Cephfs Ops"
+        suite: suites/reef/cephfs/tier-3_cephfs.yaml
+        global-conf: conf/reef/cephfs/tier-3_cephfs_4clients_4osd.yaml
+      - name: "Test Cephfs Mirror Metrics"  
+        suite: suites/reef/cephfs/tier-2_cephfs_mirror_metrics.yaml
+        global-conf: conf/reef/cephfs/tier-1_cephfs_mirror.yaml
+      - name: "Test Cephfs Mirror HA Metrics"
+        suite: suites/reef/cephfs/tier-2_cephfs_mirror_ha_metrics.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_mirror_ha.yaml
+      - name: "Test Cephfs Multi MDS"
+        suite: suites/reef/cephfs/tier-2_cephfs_test-multi-mds.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_8mds-cluster.yaml
+      - name: "Test Cephfs Kernel"
+        suite: suites/reef/cephfs/tier-1_fs_kernel_pipeline.yaml
+        global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
+
+
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test Cephfs Upgrade 7x Latest to 7.1x Latest"
+      suite: suites/reef/cephfs/tier-0_cephfs_upgrade_7x_latest_to_71x_latest.yaml
+      global-conf: conf/reef/cephfs/tier-2_cephfs_upgrade.yaml
+    - name: "Test Cephfs Upgrade 61 to 7x"
+      suite: suites/reef/cephfs/tier-0_cephfs_upgrade_61_to_7x.yaml
+      global-conf: conf/reef/cephfs/tier-2_cephfs_upgrade.yaml
+    - name: "Test Cephfs Upgrade 5x to 7x"
+      suite: suites/reef/cephfs/tier-0_cephfs_upgrade_5x_to_7x.yaml
+      global-conf: conf/reef/cephfs/tier-2_cephfs_upgrade.yaml
+    - name: "Test Cephfs Mirror Upgrade 5x to 6x to 7x"
+      suite: suites/reef/cephfs/tier-0_cephfs_mirrror_upgrade_5x_to_6x_to_7x.yaml
+      global-conf: conf/reef/cephfs/tier-1_cephfs_mirror.yaml
