@@ -6,91 +6,91 @@ regression:
       - name: "NVMeoTCP functional regression tests"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_functional_Regression.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "NVMe Tests on restart operations"
         suite: suites/tentacle/nvmeof/tier-3_nvmeof_restart_operations.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "HA Test - 4 NVMeoF Gateway failover and failback scenarios"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_4nodes_gateway_ha_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "E2E Tests on NVMe Namespace Masking"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_ns-masking.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_ns-masking-5_client.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "E2E Tests on NVMe Inband Authentication"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_4-nvmeof-gwgroup_inbandauth_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "E2E Tests on NVMe Namespace reservation"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_ns-reservation.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ns_reservation-2_client.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Tests on NVMe gateway CLI operations"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_gateway_operations.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Tests on bdev and cluster operations"
         suite: suites/tentacle/nvmeof/tier-3_nvmeof_bdev_fio_operations.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Operations on NVMeoF namespaces"
         suite: suites/tentacle/nvmeof/tier-4_nvmeof_namespace_operations.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Negative tests on NVMe gateway CLI operations"
         suite: suites/tentacle/nvmeof/tier-4_nvmeof_neg_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "[8.1] Tests on NVMe alerts and Health Checks"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof-alerts_health-checks-events.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "NVMeoF HA with a single GWgroup for n-1 node failures"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_1gwgroup_8gwnodes_ha_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Basic 4 NVMeoF GWgroup having 2 Gateways with HA Test suite"
         suite: suites/tentacle/nvmeof/tier-1_nvmeof_4-nvmeof-gwgroup_2gw_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Basic NVMeoF GWgroup having 8 Gateways with scaledown and scaleup"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_1gwgroup_8gwnodes_loadbalancing_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
       - name: "Negative tests on deployment of NVMe gateway in GWgroup scenarios"
         suite: suites/tentacle/nvmeof/tier-4_8_1_nvmeof_neg_tests.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
 
@@ -102,7 +102,7 @@ weekly:
       - name: "Scale to 4 GW groups with 2 GWs having 128 subsystems to 1024 namespaces"
         suite: suites/tentacle/nvmeof/tier-3_4-group_2-gw_128-sub_1024-NS.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_4-group_2-gws_scale.yaml
-        vm-flavor: bx2-4x16
+        vm-flavor: cx2-8x16
         build:
          - ibm
 
@@ -114,6 +114,7 @@ upgrade:
       - name: "TEST NVMe Upgrade from 8.1x to 9.1 Latest"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_8x-to-9x_upgrade.yaml
         global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-flavor: cx2-8x16
         platform:
           - rhel-9
         build:
