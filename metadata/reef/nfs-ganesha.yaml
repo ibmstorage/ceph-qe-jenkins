@@ -1,0 +1,26 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-1 NFS Ganesha Phase-2"
+      suite: suites/reef/nfs/tier1-nfs-ganesha-phase2.yaml
+      global-conf: conf/reef/nfs/1admin-3client-7node.yaml
+    - name: "Tier-1 NFS Ganesha"
+      suite: suites/reef/nfs/tier1-nfs-ganesha.yaml
+      global-conf: conf/reef/nfs/1admin-3client-7node.yaml
+    - name: "Tier-1 NFS Ganesha Multinode Deployment"
+      suite: suites/reef/nfs/tier1-nfs-ganesha-multinode-deployment.yaml
+      global-conf: conf/reef/nfs/12node-1admin-4client.yaml
+    - name: "Tier-0 NFS Ganesha v3"
+      suite: suites/reef/nfs/tier0-nfs-ganesha-v3.yaml
+      global-conf: conf/reef/nfs/1admin-3client-7node.yaml
+
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Upgrade Ceph 7(GA) cluster to Ceph 7(Latest) with NFS-Ganesha in RHEL9"
+      suite: suites/reef/nfs/tier1-nfs-ganesha-upgrade-7x-to-7x-latest.yaml
+      global-conf: conf/reef/nfs/1admin-3client-7node.yaml
