@@ -1,0 +1,193 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-1 RGW MS ECPOOL Regression Tests"
+      suite: suites/reef/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
+      global-conf: conf/reef/rgw/ms-ec-profile-4+2-cluster.yaml
+    - name: "Tier-2 RGW Regression test" # 198 mins, 0 secs
+      suite: suites/reef/rgw/tier-2_rgw_regression_test.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+    - name: "Tier-2 RGW MS Regression test" # 390 mins, 45 secs
+      suite: suites/reef/rgw/tier-2_rgw_ms_regression_test.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-2 RGW Multisite scenarios" # 351 mins, 30 secs
+      suite: suites/reef/rgw/tier-2_rgw_multisite_scenarios.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-4 rgw " # 142 mins, 26 secs
+      suite: suites/reef/rgw/tier-4-rgw.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms failover failback" # 136 mins, 39 secs
+      suite: suites/reef/rgw/tier-2_rgw_ms_failover_failback.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-2 RGW regression extended" # 93 mins, 37 secs
+      suite: suites/reef/rgw/tier-2_rgw_regression_extended.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+    # - name: "Tier-2 RGW test bucket notifications kafka sasl" # 102 mins, 16 secs
+    #   suite: suites/reef/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
+    #   global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    #   vm-flavor: bx2-4x16
+    # - name: "Tier-2 rgw ms test bucket notifications" # 134 mins, 42 secs
+    #   suite: suites/reef/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
+    #   global-conf: conf/reef/rgw/rgw_multisite.yaml
+    #   vm-flavor: bx2-4x16
+    - name: "Tier-3 archive zone colocate data zone" # 92 mins, 52 secs
+      suite: suites/reef/rgw/tier-3_archive_zone_colocate_data_zone.yaml
+      global-conf: conf/reef/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
+    - name: "Tier-2 ssl rgw ecpool test" # 89 mins, 45 secs
+      suite: suites/reef/rgw/tier-2_ssl_rgw_ecpool_test.yaml
+      global-conf: conf/reef/rgw/ec-profile-4+2-cluster.yaml
+    - name: "Tier-2 rgw ingress multi realm" # 70 mins, 35 secs
+      suite: suites/reef/rgw/tier-2_rgw_ingress_multi_realm.yaml
+      global-conf: conf/reef/rgw/tier-1_rgw_multirealm.yaml
+    - name: "Tier-2 ssl rgw regression test" # 81 mins, 4 secs
+      suite: suites/reef/rgw/tier-2_ssl_rgw_regression_test.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+    - name: "Tier-2 rgw test basic sanity with d3n enabled" # 74 mins, 45 secs
+      suite: suites/reef/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    # - name: "Tier-2 rgw sts aswi" # 73 mins, 18 secs
+    #   suite: suites/reef/rgw/tier-2_rgw_sts_aswi.yaml
+    #   global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw sw qat" # 39 mins, 37 secs
+      suite: suites/reef/rgw/tier-1_rgw_sw_qat.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+
+weekly:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
+      suite: suites/reef/rgw/tier-2_rgw_ms-archive.yaml
+      global-conf: conf/reef/rgw/rgw_ms_archive.yaml
+      vm-flavor: bx2-4x16
+    - name: "migrate default single to multisite" # 150 mins, 35 secs
+      suite: suites/reef/rgw/migrate_default_single_to_multisite.yaml
+      global-conf: conf/reef/rgw/migrate_default_single_to_multisite.yaml
+    - name: "Tier-2 rgw test lifecycle" # 347 mins, 35 secs
+      suite: suites/reef/rgw/tier-2_rgw_test_lifecycle.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw test using s3cmd" # 406 mins, 55 secs
+      suite: suites/reef/rgw/tier-2_rgw_test_using_s3cmd.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding granular sync" # 409 mins, 40 secs
+      suite: suites/reef/rgw/tier-2_rgw_ms-archive_resharding_granular_sync.yaml
+      global-conf: conf/reef/rgw/rgw_ms_archive.yaml
+    - name: "Tier-2 rgw multisite regression extended" # 254 mins, 1 secs
+      suite: suites/reef/rgw/tier-2_rgw_multisite_regression_extended.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
+      suite: suites/reef/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    # - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
+    #   suite: suites/reef/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
+    #   global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    #   vm-flavor: bx2-4x16
+    - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
+      suite: suites/reef/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    # - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
+    #   suite: suites/reef/rgw/tier-2_rgw_ms_async_data_notification.yaml
+    #   global-conf: conf/reef/rgw/rgw_multisite.yaml
+    #   custom-config:
+    #     gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
+    #     gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
+    #     gklm-endpoint-ibmc: "10.245.36.4"
+    #   vm-flavor: bx2-4x16
+    # - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
+    #   suite: suites/reef/rgw/tier-2_rgw_test_bucket_notifications.yaml
+    #   global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    #   vm-flavor: bx2-4x16
+    - name: "Tier-2 rgw ms archive with haproxy" # 470 mins, 30 secs
+      suite: suites/reef/rgw/tier-2_rgw_ms_archive_with_haproxy.yaml
+      global-conf: conf/reef/rgw/tier-2_rgw_ms_archive_with_haproxy_conf.yaml
+    - name: "Tier-2 rgw singlesite to multisite" # 400 mins, 56 secs
+      suite: suites/reef/rgw/migrate_default_single_to_multisite.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-2 rgw single site regression extended" 
+      suite: suites/reef/rgw/tier-2_rgw_regression_extended.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+    - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
+      suite: suites/reef/rgw/tier-2_rgw_regression_test.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+      vm-flavor: bx2-4x16
+    - name: "Tier-2 ssl rgw ms ecpool test" # 155 mins, 21 secs
+      suite: suites/reef/rgw/tier-2_ssl_rgw_ms_ecpool_test.yaml
+      global-conf: conf/reef/rgw/ms-ec-profile-4+2-cluster.yaml
+    - name: "Tier-2 rgw cloud transition" # 70 mins, 58 secs
+      suite: suites/reef/rgw/tier-2_rgw_cloud_transition.yaml
+      global-conf: conf/reef/rgw/cloud_transition.yaml
+    - name: "test granular s3test" # 75 mins, 46 secs
+      suite: suites/reef/rgw/test_granular_s3test.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw upgrade 53GA to 7x latest"
+      suite: suites/reef/rgw/tier-1_rgw_upgrade_5_3GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-1rgw upgrade 61GA to 7x latest"
+      suite: suites/reef/rgw/tier-1_rgw_upgrade_6_1GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw archive ms upgrade 61GA to 7x latest" 
+      suite: suites/reef/rgw/tier-1_rgw_archive_ms_upgrade_61GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_ms_archive.yaml
+    - name: "Tier-1 rgw ms upgrade 61GA to 7x latest"
+      suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_6_1GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-2 rgw ms rgw module"
+      suite: suites/reef/rgw/tier-2_rgw_ms_rgw_module.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "Tier-1 rgw upgrade 70GA to 7x latest"
+      suite: suites/reef/rgw/tier-1_rgw_upgrade_7_0GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+    - name: "tier-1 rgw upgrade ms 70GA to 7x latest" 
+      suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_7_0GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+    - name: "tier-2_ssl_rgw_regression_test"
+      suite: suites/reef/rgw/tier-2_ssl_rgw_regression_test.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier-1 rgw ms upgrade ssl 61GA to 7x latest" 
+      suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_6_1GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw upgrade ssl multisite 71GA to 71x latest"
+      suite: suites/reef/rgw/tier-1_rgw_ssl_multisite_test_upgrade_71GA_to_71x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw multirealm upgrade 61GA to 7x latest"
+      suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_multirealm_61GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw ms upgrade 53GA to 7x latest"
+      suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_5_3GA_to_7x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Tier-1 rgw ibm upgrade ms ssl 61GA to 71x latest"
+      suite: suites/reef/rgw/tier-1_rgw_ibm_ssl_multisite_upgrade_61GA_to_71x_latest.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
