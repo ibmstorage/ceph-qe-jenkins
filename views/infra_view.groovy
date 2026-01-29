@@ -2,6 +2,7 @@ def default_jobs = "seed"
 
 def view_list = [
   ["name": "Default", "description": "Frequently used jobs", "job_regex": "${default_jobs}"],
+  ["name": "Reef", "description": "Ceph Reef Jobs", "job_regex": ".*reef.*"],
   ["name": "Squid", "description": "Ceph Squid Jobs", "job_regex": ".*squid.*"],
   ["name": "Tentacle", "description": "Ceph Tentacle Jobs", "job_regex": ".*tentacle.*"],
   ["name": "Executor", "description": "Test executor jobs", "job_regex": ".*executor.*"],
