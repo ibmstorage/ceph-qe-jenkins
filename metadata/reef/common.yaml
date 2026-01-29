@@ -1,0 +1,103 @@
+bvt:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "BVT Cluster Deployment"
+      suite: suites/compaction/deployments/bvt-deploy-and-configure.yaml
+      global-conf: conf/compaction/bvt/bvt-3node-1client.yaml
+      platform:
+        - rhel-9
+      tags:
+        - deploy-and-config
+    - name: "Build Verification Test"
+      suite: suites/compaction/bvt/bvt.yaml
+      global-conf: conf/compaction/bvt/bvt-3node-1client.yaml
+      platform:
+        - rhel-9
+      tags:
+        - bvt
+
+sanity:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Tier0 Filesystem Test suite"
+      suite: suites/reef/cephfs/tier-0_fs.yaml
+      global-conf: conf/reef/cephfs/tier-0_fs.yaml
+      platform:
+        - rhel-9
+    - name: "Deploy all services using a spec file option"
+      suite: suites/reef/cephadm/tier1-service-apply-spec.yaml
+      global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      platform:
+        - rhel-9
+    - name: "DMFG Smoke Test suite"
+      suite: suites/reef/smoke/build.yaml
+      global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+      platform:
+        - rhel-9
+    - name: "NFS Ganesha Basic Sanity Test"
+      suite: suites/reef/nfs/tier0-nfs-ganesha.yaml
+      global-conf: conf/reef/nfs/1admin-3client-7node.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-0 NFS Ganesha v3"
+      suite: suites/reef/nfs/tier0-nfs-ganesha-v3.yaml
+      global-conf: conf/reef/nfs/1admin-3client-7node.yaml
+      platform:
+        - rhel-9
+    - name: "RBD Tier1 Test suite"
+      suite: suites/reef/rbd/tier-1_rbd.yaml
+      global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      platform:
+        - rhel-9
+    - name: "iSCSI Basic Sanity Test"
+      suite: suites/reef/iscsi/iscsi_sanity.yaml
+      global-conf: conf/reef/iscsi/ceph_iscsi_functional.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "RBD Mirror Tier1 Test suite"
+      suite: suites/reef/rbd/tier-1_rbd_mirror.yaml
+      global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      platform:
+        - rhel-9
+    - name: "RGW Tier1 Test suite"
+      suite: suites/reef/rgw/tier-1_rgw.yaml
+      global-conf: conf/reef/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "RGW Multisite Tier1 Test suite"
+      suite: suites/reef/rgw/tier-1_rgw_multisite.yaml
+      global-conf: conf/reef/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+    - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
+      suite: suites/reef/nvmeof/tier-1_nvmeof_sanity.yaml
+      global-conf: conf/reef/nvmeof/ceph_nvmeof_sanity.yaml
+      vm-flavor: cx2-8x16
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Basic E2E-Test with FIPS mode enabled"
+      suite: suites/reef/nvmeof/tier-2_nvmeof_e2e_fips.yaml
+      global-conf: conf/reef/nvmeof/ceph_nvmeof_sanity.yaml
+      vm-flavor: cx2-8x16
+      # custom-config:
+      #   enable-fips-mode: true
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "HA test - 2 NVMe Gateway High availability Sanity"
+      suite: suites/reef/nvmeof/tier-1_nvmeof_ha_sanity.yaml
+      global-conf: conf/reef/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      vm-flavor: cx2-8x16
+      platform:
+        - rhel-9
+      build:
+        - ibm
