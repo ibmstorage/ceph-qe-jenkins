@@ -68,6 +68,10 @@ regression:
       suite: suites/tentacle/rados/tier-3_rados_ec_partial_reads_writes.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
       # VM count: 6
+    - name: "RADOS Test - OSD Thrashing tests"
+      suite: suites/tentacle/rados/tier-3_rados_osd_thrashing_tests.yaml
+      global-conf: conf/tentacle/rados/9-node-ec-cluster-1-client.yaml
+      # VM count: 6
 weekly:
   metadata:
     cloud:

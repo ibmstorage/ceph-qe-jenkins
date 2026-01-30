@@ -1,0 +1,107 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "RADOS Test - OSD Rebalance"
+      suite: suites/reef/rados/tier-2_rados_test-osd-rebalance.yaml
+      global-conf: conf/reef/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - EC Pool OSD Rebalance"
+      suite: suites/reef/rados/tier-2_rados_test-ecpool-osd-rebalance.yaml
+      global-conf: conf/reef/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - Trim"
+      suite: suites/reef/rados/tier-2_rados_trim_tests.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - Mon DB Trimming"
+      suite: suites/reef/rados/tier-2_rados_test-mon-db-trimming.yaml
+      global-conf: conf/reef/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - Bugfixes"
+      suite: suites/reef/rados/tier-2_rados_test-bugfixes.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - CBT and COT"
+      suite: suites/reef/rados/tier-2_rados_test_cot_cbt.yaml
+      global-conf: conf/reef/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name: "RADOS Test - PG Split and Merge"
+      suite: suites/reef/rados/tier-2_rados_test-pg-split-merge.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - OMAP"
+      suite: suites/reef/rados/tier-2_rados_test_omap.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - Scrub Tests"
+      suite: suites/reef/rados/tier-3_rados_test-4-node-scrub-tests.yaml
+      global-conf: conf/reef/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    - name: "RADOS Test - Location Stretch Mode"
+      suite: suites/reef/rados/tier-3_rados_test-location-stretch-mode.yaml
+      global-conf: conf/reef/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+    - name: "RADOS Test - Parameters"
+      suite: suites/reef/rados/tier-2_rados_test_parameters.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+weekly:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "RADOS Test - Pool Functionalities"
+      suite: suites/reef/rados/tier-2_rados_test-pool-functionalities.yaml
+      global-conf: conf/reef/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - BlueStore"
+      suite: suites/reef/rados/tier-2_rados_test_bluestore.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - CIDR Blocklisting"
+      suite: suites/reef/rados/tier-3_rados_cidr_blocklisting.yaml
+      global-conf: conf/reef/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+    - name: "RADOS Test - Pool OSD Recovery"
+      suite: suites/reef/rados/tier-4_rados_test-pool-osd-recovery.yaml
+      global-conf: conf/reef/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name: "RADOS Test - Scrubbing"
+      suite: suites/reef/rados/tier-2_rados_test-scrubbing.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Tier4 tests"
+      suite: suites/reef/rados/tier-4_rados_tests.yaml
+      global-conf: conf/reef/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name: "RADOS Test - 4 Node EC Pools"
+      suite: suites/reef/rados/tier-3_rados_test-4-node-ecpools.yaml
+      global-conf: conf/reef/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "RADOS Test - Drain Customer Issue"
+      suite: suites/reef/rados/tier-2_rados_test-drain-customer-issue.yaml
+      global-conf: conf/reef/rados/11-node-cluster.yaml
+      # VM count: 11
+      # 7.1z0 -> latest
+    - name: "RADOS - Brownfield tests"
+      suite: suites/reef/rados/tier-2_rados_test-brownfield.yaml
+      global-conf: conf/reef/rados/7-node-cluster.yaml
+      # VM count: 7
+      # 7.1z1 -> 7.1z2 -> latest
+    - name: "RADOS Test - EC Pool Recovery"
+      suite: suites/reef/rados/tier-2_rados_ec-pool_recovery.yaml
+      global-conf: conf/reef/rados/11-node-cluster.yaml
+      # VM count: 11
+      # 6.1 GA -> latest
+    - name: "RADOS Test - Location Stretch Mode Upgrade"
+      suite: suites/reef/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
+      global-conf: conf/reef/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+      # 6.1 GA -> latest

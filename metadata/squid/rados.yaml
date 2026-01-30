@@ -51,6 +51,10 @@ regression:
       suite: suites/squid/rados/tier-2_rados_test_parameters.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
       # VM count: 7
+    - name: "RADOS Test - OSD Thrashing tests"
+      suite: suites/squid/rados/tier-3_rados_osd_thrashing_tests.yaml
+      global-conf: conf/squid/rados/9-node-ec-cluster-1-client.yaml
+      # VM count: 6
 weekly:
   metadata:
     cloud:
