@@ -139,7 +139,10 @@ def get_metadata(build, fg):
     file_path = ["metadata"]
 
     # Set major ceph version
-    if build.startswith("8."):
+    if build.startswith("7."):
+        file_path.append("reef")
+
+    elif build.startswith("8."):
         file_path.append("squid")
 
     elif build.startswith("9."):
