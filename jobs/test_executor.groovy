@@ -10,8 +10,12 @@ def generate_jobs(data) {
 
     // Set releases for Ceph versions
     def release = ["stable", "nightly"]
-    if (data.cephVersion.toLowerCase() == "squid") {
+    if (data.cephVersion.toLowerCase() == "reef") {
+        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8"]
+    } else if (data.cephVersion.toLowerCase() == "squid") {
         release += ["rc", "released", "z0", "z1", "z2", "z3", "z4"]
+    } else if (data.cephVersion.toLowerCase() == "tentacle") {
+        release += ["rc", "released", "z0"]
     }
 
     // Add the job configurations
@@ -27,6 +31,14 @@ def generate_jobs(data) {
         "buildType": buildType
     ])
 }
+
+// Create jobs specific to Ceph - Reef
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "reef",
+    buildVersion: ["7.1", "7.0"],
+    rhelVersion: ["rhel-9"]
+)
 
 // Create jobs specific to Ceph - Squid
 generate_jobs(
