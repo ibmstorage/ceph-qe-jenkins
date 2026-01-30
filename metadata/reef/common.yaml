@@ -3,16 +3,9 @@ bvt:
     cloud:
       - ibmc
   suites:
-    - name: "BVT Cluster Deployment"
-      suite: suites/compaction/deployments/bvt-deploy-and-configure.yaml
-      global-conf: conf/compaction/bvt/bvt-3node-1client.yaml
-      platform:
-        - rhel-9
-      tags:
-        - deploy-and-config
     - name: "Build Verification Test"
-      suite: suites/compaction/bvt/bvt.yaml
-      global-conf: conf/compaction/bvt/bvt-3node-1client.yaml
+      suite: suites/reef/smoke/bvt.yaml
+      global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
       platform:
         - rhel-9
       tags:
