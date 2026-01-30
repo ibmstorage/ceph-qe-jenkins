@@ -193,6 +193,12 @@ credentials:
               secret: "${readFile:/secrets/gsheet_id_rh_8.1}"
 
           - string:
+              description: "IBM Jira API token"
+              id: "jira-api-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibm_jira_token}"
+
+          - string:
               description: "Access Token - icr-stg"
               id: "stg-icr-token"
               scope: GLOBAL
