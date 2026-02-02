@@ -1,196 +1,92 @@
 // Job configuration placeholder
 def jobsConfiguration = []
 
-// Method to generate required job metadata
-def generate_jobs(data) {
-    def logLevel = ["ERROR", "INFO", "DEBUG"]
-    def vmFlavor = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
-    def buildType = ["IBM", "RH"]
-    def rhelVersion = []
-    def buildVersion = []
+def LOG_LEVELS = ["ERROR", "INFO", "DEBUG"]
+def VM_FLAVORS = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
 
-    // Set release specific variables
-    def release = ["stable", "nightly"]
-    if (data.cephVersion.toLowerCase() == "squid") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4"]
-        rhelVersion = ["rhel-9"]
-        buildVersion = ["8.1", "8.0"]
-    } else if (data.cephVersion.toLowerCase() == "tentacle") {
-        rhelVersion = ["rhel-10", "rhel-9"]
-        buildVersion = ["9.0"]
-    }
+// FG → VPC mapping
+def FG_VPC = [
+    "DMFG"       : ["ci-vpc-01"],
+    "callhome"   : ["ci-vpc-01"],
+    "smb"        : ["ci-vpc-01"],
+    "CephFS"     : ["vpc-cephfs"],
+    "RADOS"      : ["vpc-cephfs"],
+    "NFS-Ganesha": ["vpc-nfsg"],
+    "RBD"        : ["vpc-block"],
+    "NvmeOF"     : ["vpc-block"],
+    "RGW"        : ["vpc-rgw"]
+]
 
-    // Add cephci repo details
-    def cephciRepo = "https://github.com/red-hat-storage/cephci.git"
+// Ceph release specific configuration
+def CEPH_RELEASE_CONFIG = [
+    "Reef": [
+        buildVersion : ["7.1", "7.0"],
+        rhelVersion  : ["rhel-9"],
+        releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4","z5","z6","z7","z8"]
+    ],
+    "Squid": [
+        buildVersion : ["8.1", "8.0"],
+        rhelVersion  : ["rhel-9"],
+        releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4"]
+    ],
+    "Tentacle": [
+        buildVersion : ["9.0"],
+        rhelVersion  : ["rhel-10", "rhel-9"],
+        releaseExtra : ["rc", "released", "z0"]
+    ]
+]
+
+def generate_jobs(cfg, data) {
+
+    def ceph     = data.ceph
+    def fg       = data.fg
+    def config   = data.config
+    def vpc      = data.vpc
+    def logLevel = data.logLevel
+    def vmFlavor = data.vmFlavor
+
+
+    def cephciRepo   = "https://github.com/red-hat-storage/cephci.git"
     def cephciBranch = "main"
-    def buildDescription = "IBM or RH build"
-    if (data.fg == "callhome") {
-        cephciRepo = "https://github.ibm.com/ceph-qe-ng/cephci.git"
+
+    def buildType = ["IBM", "RH"]
+    def description  = "IBM or RH build"
+    if (fg == "callhome") {
+        cephciRepo   = "https://github.ibm.com/ceph-qe-ng/cephci.git"
         cephciBranch = "callhome"
-        buildType = ["IBM"]
-        buildDescription = "IBM build"
+        buildType    = ["IBM"]
+        description  = "IBM build"
     }
 
-    // Add the job configurations
-    data.jobsConfiguration.add([
-        "name": "${data.cephVersion.toLowerCase()}-${data.fg.toLowerCase()}-regression-ci",
-        "displayName": "${data.cephVersion} - ${data.fg} - Regression Test Pipeline",
-        "fg": [data.fg.toLowerCase()],
-        "cephciRepo": cephciRepo,
-        "cephciBranch": cephciBranch,
-        "logLevel": logLevel,
-        "vmFlavor": vmFlavor,
-        "vpc": data.vpc,
-        "buildVersion": buildVersion,
-        "rhelVersion": rhelVersion,
-        "release": release,
-        "buildType": buildType,
-        "buildDescription": buildDescription
+    cfg.add([
+        name            : "${ceph.toLowerCase()}-${fg.toLowerCase()}-regression-ci",
+        displayName     : "${ceph} - ${fg} - Regression Test Pipeline",
+        fg              : [fg.toLowerCase()],
+        cephciRepo      : cephciRepo,
+        cephciBranch    : cephciBranch,
+        logLevel        : logLevel,
+        vmFlavor        : vmFlavor,
+        vpc             : vpc,
+        buildVersion    : config.buildVersion,
+        rhelVersion     : config.rhelVersion,
+        release         : ["stable", "nightly"] + config.releaseExtra,
+        buildType       : buildType,
+        buildDescription: description
     ])
 }
 
-// Create jobs specific to Ceph - Squid - DMFG
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "DMFG",
-    vpc: ["ci-vpc-01"]
-)
-
-// Create jobs specific to Ceph - Squid - callhome
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "callhome",
-    vpc: ["ci-vpc-01"]
-)
-// Create jobs specific to Ceph - Squid - smb
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "smb",
-    vpc: ["ci-vpc-01"]
-)
-
-// Create jobs specific to Ceph - Squid - CephFS
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "CephFS",
-    vpc: ["vpc-cephfs"]
-)
-
-// Create jobs specific to Ceph - Squid - RADOS
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "RADOS",
-    vpc: ["vpc-cephfs"]
-)
-
-// Create jobs specific to Ceph - Squid - NFS-Ganesha
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "NFS-Ganesha",
-    vpc: ["vpc-nfsg"]
-)
-
-// Create jobs specific to Ceph - Squid - RBD
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "RBD",
-    vpc: ["vpc-block"]
-)
-
-// Create jobs specific to Ceph - Squid - NvmeOF
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "NvmeOF",
-    vpc: ["vpc-block"]
-)
-
-// Create jobs specific to Ceph - Squid - RGW
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Squid",
-    fg: "RGW",
-    vpc: ["vpc-rgw"]
-)
-
-// Create jobs specific to Ceph - Tentacle - DMFG
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "DMFG",
-    vpc: ["ci-vpc-01"]
-)
-
-// Create jobs specific to Ceph - Tentacle - callhome
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "callhome",
-    vpc: ["ci-vpc-01"]
-)
-
-// Create jobs specific to Ceph - Tentacle - smb
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "smb",
-    vpc: ["ci-vpc-01"]
-)
-
-// Create jobs specific to Ceph - Tentacle - CephFS
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "CephFS",
-    vpc: ["vpc-cephfs"]
-)
-
-// Create jobs specific to Ceph - Tentacle - RADOS
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "RADOS",
-    vpc: ["vpc-cephfs"]
-)
-
-// Create jobs specific to Ceph - Tentacle - NFS-Ganesha
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "NFS-Ganesha",
-    vpc: ["vpc-nfsg"]
-)
-
-// Create jobs specific to Ceph - Tentacle - RBD
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "RBD",
-    vpc: ["vpc-block"]
-)
-
-// Create jobs specific to Ceph - Tentacle - NvmeOF
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "NvmeOF",
-    vpc: ["vpc-block"]
-)
-
-// Create jobs specific to Ceph - Tentacle - RGW
-generate_jobs(
-    jobsConfiguration: jobsConfiguration,
-    cephVersion: "Tentacle",
-    fg: "RGW",
-    vpc: ["ci-vpc-01"]
-)
+CEPH_RELEASE_CONFIG.each { ceph, config ->
+    FG_VPC.each { fg, vpc ->
+        generate_jobs(jobsConfiguration, [
+            ceph: ceph,
+            fg  : fg,
+            vpc : vpc,
+            config: config,
+            logLevel  : LOG_LEVELS,
+            vmFlavor  : VM_FLAVORS
+        ])
+    }
+}
 
 // Create job for each configuration created
 for (jobConfig in jobsConfiguration) {
