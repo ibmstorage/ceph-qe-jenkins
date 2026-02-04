@@ -6,7 +6,8 @@ def view_list = [
   ["name": "Squid", "description": "Ceph Squid Jobs", "job_regex": ".*squid.*"],
   ["name": "Tentacle", "description": "Ceph Tentacle Jobs", "job_regex": ".*tentacle.*"],
   ["name": "Executor", "description": "Test executor jobs", "job_regex": ".*executor.*"],
-  ["name": "Infrastructure", "description": "Infrastructure and Maintenance Jobs", "job_regex": ".*(sync|dns-cleanup).*"]
+  ["name": "Infrastructure", "description": "Infrastructure and Maintenance Jobs", "job_regex": ".*(sync|dns-cleanup).*"],
+  ["name": "Reports", "description": "Reporter Jobs", "job_regex": "jira-reporter-.*"]
 ]
 
 for (view_config in view_list){
