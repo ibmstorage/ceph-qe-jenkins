@@ -37,6 +37,7 @@ jenkins:
               - "Overall/Read"
               - "Credentials/View"
               - "Job/Build"
+              - "Job/Configure"
               - "Job/Discover"
               - "Job/Read"
               - "Job/Cancel"
