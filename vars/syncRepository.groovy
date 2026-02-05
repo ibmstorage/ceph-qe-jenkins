@@ -16,17 +16,15 @@ def call(Map parameters) {
     def nginxRepoPath = "${ibmcConfigs.IBM_NGINX_REPO_PATH}"
     def nginxLogPath = "${ibmcConfigs.IBM_NGINX_LOG_PATH}"
 
-    // Set IBM Cloud Object Storage bucket
-    def ibmCosBucket = ""
-    if ( buildVersion.startsWith("8") ) {
-        ibmCosBucket = "ceph-8"
-        nginxRepoPath += "/8"
-    } else if ( buildVersion.startsWith("9") ) {
-        ibmCosBucket = "ceph-9"
-        nginxRepoPath += "/9"
-    } else {
-        error("Unsupported build version ${buildVersion}")
+    // Extract major version (7, 8, 9, 10, ...)
+    def majorVersion = buildVersion.tokenize('.')[0]
+
+    if (!majorVersion.isInteger()) {
+        error("Invalid build version ${buildVersion}")
     }
+
+    ibmCosBucket = "ceph-${majorVersion}"
+    nginxRepoPath += "/${majorVersion}"
 
     // Append the platform to the bucket name
     if ( platform == "rhel-8" ) {
