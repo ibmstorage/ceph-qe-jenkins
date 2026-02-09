@@ -94,7 +94,10 @@ pipeline {
                     // Check for ceph version
                     def jobName = ""
                     def platform = ""
-                    if (buildInfo.application == "ceph-8-1") {
+                    if (buildInfo.application == "ceph-7-1") {
+                        jobName = "reef-bvt-ci"
+                        platform = "rhel-9"
+                    } else if (buildInfo.application == "ceph-8-1") {
                         jobName = "squid-bvt-ci"
                         platform = "rhel-9"
                     } else if (buildInfo.application == "ceph-9-0") {
