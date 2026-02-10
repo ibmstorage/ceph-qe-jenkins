@@ -1,0 +1,166 @@
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: tier2 upgrade rhcs staggered 6x to 7x
+      suite: suites/reef/upgrades/tier2-upgrade-rhcs-staggered-6x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - rh
+    - name: tier2 upgrade rhcs standby mgr 5x to 7x
+      suite: suites/reef/upgrades/tier-2-upgrade-rhcs-5x-to-7x-standby-mgr.yaml
+      global-conf: conf/reef/upgrades/1admin-3node-1client-3mgr-upgrade.yaml
+      build:
+        - rh
+    - name: tier1 upgrade rhcs 6x to 7x
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-6x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - rh
+    - name: tier1 upgrade rhcs 5x to 7x
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-5x-to-7x.yaml
+      global-conf: conf/6-node-cluster-with-1-client.yaml
+      build:
+        - rh
+    - name: tier1 upgrade rhcs 5x to 7x mix os
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-5x-to-7x-mix-os.yaml
+      global-conf: conf/reef/upgrades/upgrade_8-node-cluster_mix_os.yaml
+      build:
+        - rh
+    - name: tier2 upgrade rhcs staggered 5x to 7x
+      suite: suites/reef/upgrades/tier2-upgrade-rhcs-staggered-5x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - rh
+    - name: tier1 upgrade rhcs 7x to 7x latest
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-7x-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - rh
+    - name: tier1 upgrade ibm 6x to 7x
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-6x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - ibm
+    - name: tier1 upgrade ibm 5x to 7x
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-5x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - ibm
+    - name: tier1 upgrade ibm 5x to 7x mix os
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-5x-to-7x-mix-os.yaml
+      global-conf: conf/reef/upgrades/upgrade_8-node-cluster_mix_os.yaml
+      build:
+        - ibm
+    - name: tier2 upgrade ibm staggered 5x to 7x
+      suite: suites/reef/upgrades/tier2-upgrade-ibm-staggered-5x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - ibm
+    - name: tier2 upgrade ibm staggered 6x to 7x
+      suite: suites/reef/upgrades/tier2-upgrade-ibm-staggered-6x-to-7x.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - ibm
+    - name: tier1 upgrade ibm 7x to 7x latest
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-7x-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      build:
+        - ibm
+
+regression:
+  Tier-1:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: tier1 cephadm ansible wrapper bootstrap with registry details
+        suite: suites/reef/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+      - name: tier-2 bootstrap along with spec file
+        suite: suites/reef/cephadm/tier-2-bootstrap-along-with-spec-file.yaml
+        global-conf: conf/reef/cephadm/1admin-4node-1client-cluster.yaml
+      - name: tier1 cephadm ansible wrapper bootstrap with custom ssh
+        suite: suites/reef/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-custom-ssh.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - rh
+      - name: tier1 cephapi auth api
+        suite: suites/reef/mgr/tier-1-cephapi-auth-api.yaml
+        global-conf: conf/reef/mgr/3node-1client-cluster.yaml
+      - name: tier1 cephadm ansible wrapper modules
+        suite: suites/reef/cephadm/tier1-cephadm-ansible-wrapper-modules.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      # - name: tier2 ceph-volume
+      #   suite: suites/reef/ceph_volume/tier-2-ceph-volume.yaml
+      #   global-conf: conf/reef/cephmgr/1admin-3node-1client-ceph-volume.yaml
+      - name: tier2 permissive mode scenarios
+        suite: suites/reef/cephadm/tier2-permissive-mode-scenarios.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+        build:
+          - rh
+      - name: tier1 cephadm clients
+        suite: suites/reef/cephadm/tier1-cephadm-clients.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      - name: tier1 remove cluster
+        suite: suites/reef/cephadm/tier1-remove-cluster.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      - name: tier4 service operations
+        suite: suites/reef/cephadm/tier4-service-operations.yaml
+        global-conf: conf/reef/cephadm/tier-0.yaml
+
+  Tier-2:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: tier2 rgw with warn state
+        suite: suites/reef/cephadm/tier2-rgw-with-warn-state.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      - name: tier2 verify custom container
+        suite: suites/reef/cephadm/tier2-verify-custom-container.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+        build:
+          - rh
+      - name: tier1 os tuning profiles
+        suite: suites/reef/cephadm/tier1-os-tuning-profiles.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      - name: tier1 mix os deployment
+        suite: suites/reef/cephadm/tier1-mix-os-deployment.yaml
+        global-conf: conf/reef/cephadm/1admin-4node-1client-mix-os.yaml
+      - name: tier1 container cli args rh
+        suite: suites/reef/cephadm/tier1-container-cli-args-rh.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+        build:
+          - rh
+      - name: tier1 ssl dashboard port
+        suite: suites/reef/cephadm/tier1-ssl-dashboard-port.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+      - name: tier2 osd scenarios
+        suite: suites/reef/cephadm/tier2-osd-scenarios.yaml
+        global-conf: conf/reef/cephadm/tier-0.yaml
+      # - name: tier1 ceph-volume sanity
+      #   suite: suites/reef/ceph_volume/tier1-ceph-volume-sanity.yaml
+      #   global-conf: conf/reef/cephmgr/tier-2-cephmgr-4node.yaml
+      - name: tier1 node exporter operation
+        suite: suites/reef/cephadm/tier1_node_exporter_operation.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+
+  Tier-3:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      # - name: tier2 ceph-volume redeploy
+      #   suite: suites/reef/ceph_volume/tier2-ceph-volume-redeploy.yaml
+      #   global-conf: conf/reef/ceph_volume/1admin-1clinet-5node-single-volume.yaml
+      # - name: tier2 ceph-volume non collocated
+      #   suite: suites/reef/ceph_volume/tier2-ceph-volume-non-collocated.yaml
+      #   global-conf: conf/reef/ceph_volume/1admin-1clinet-5node-single-volume.yaml
+      # - name: tier2 ceph-volume lvm
+      #   suite: suites/reef/ceph_volume/tier2-ceph-volume-lvm.yaml
+      #   global-conf: conf/reef/ceph_volume/tier-2_cephvolume_5node_.yaml
+      - name: tier1 osd crush device class
+        suite: suites/reef/cephadm/tier-1-osd-crush-device-class.yaml
+        global-conf: conf/reef/cephadm/tier-0.yaml
