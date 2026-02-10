@@ -1,0 +1,63 @@
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name:
+      suite: suites/reef/callhome/tier1-enable-callhome-post-upgrade-5x-to-7x.yaml
+      global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+      build:
+        - ibm
+    - name:
+      suite: suites/reef/callhome/tier1-enable-callhome-post-upgrade-6x-to-7x.yaml
+      global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+      build:
+        - ibm
+
+regression:
+  Tier-1:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name:
+        suite: suites/reef/callhome/tier1-cephadm-bootstrap-with-callhome-and-si.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - ibm
+      - name:
+        suite: suites/reef/callhome/tier1-cephadm-bootstrap-with-callhome.yaml
+        global-conf: conf/reef/cephadm/1admin-4node-1client-cluster.yaml
+        build:
+          - ibm
+      - name:
+        suite: suites/reef/callhome/tier1-enable-callhome-after-bootstrap.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - ibm
+
+  Tier-2:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name:
+        suite: suites/reef/callhome/tier2-perform-callhome-operations-using-callhome-commands.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - ibm
+      - name:
+        suite: suites/reef/callhome/tier2-validate-call-home-configuration-using-ceph-config.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - ibm
+      - name:
+        suite: suites/reef/callhome/tier2-validate-callhome-agent-configuration-using-ceph-config.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - ibm
+      - name:
+        suite: suites/reef/callhome/tier2-validate-storage-insights-configuration-using-ceph-config.yaml
+        global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
+        build:
+          - ibm
