@@ -1,0 +1,83 @@
+regression:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "Tier-2 rbd regression Image migration"
+        suite: suites/reef/rbd/tier-2_rbd_regression_Image_migration.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror image operations"
+        suite: suites/reef/rbd/tier-2_rbd_mirror_image_operations.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd encryption"
+        suite: suites/reef/rbd/tier-2_rbd_encryption.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd regression"
+        suite: suites/reef/rbd/tier-2_rbd_regression.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror snapshot regression"
+        suite: suites/reef/rbd/tier-2_rbd_mirror_snapshot_regression.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror failover recovery"
+        suite: suites/reef/rbd/tier-2_rbd_mirror_failover_recovery.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd namespace"
+        suite: suites/reef/rbd/tier-2_rbd_namespace.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd group"
+        suite: suites/reef/rbd/tier-2_rbd_group.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+
+weekly:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "tier-3 snap mirroring"
+        suite: suites/reef/rbd/tier-3_snap_mirroring.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd cache scenarios"
+        suite: suites/reef/rbd/tier-2_rbd_cache_scenarios.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 rbd mirror encrypted image"
+        suite: suites/reef/rbd/tier-3_rbd_mirror_encrypted_image.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror scale osd"
+        suite: suites/reef/rbd/tier-2_rbd_mirror_scale_osd.yaml
+        global-conf: conf/reef/rbd/rbd_mirror_large.yaml
+      - name: "tier-4 rbd negative scenarios"
+        suite: suites/reef/rbd/tier-4_rbd_negative_scenarios.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd rest"
+        suite: suites/reef/rbd/tier-2_rbd_rest.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 rbd mirror secondary ful"
+        suite: suites/reef/rbd/tier-3_rbd_mirror_secondary_full.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror metrics"
+        suite: suites/reef/rbd/tier-2_rbd_mirror_metrics.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-3 journal mirroring"
+        suite: suites/reef/rbd/tier-3_journal_mirroring.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd trash"
+        suite: suites/reef/rbd/tier-2_rbd_trash.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd trash purge"
+        suite: suites/reef/rbd/tier-2_rbd_trash_purge.yaml
+        global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror image trash purge"
+        suite: suites/reef/rbd/tier-2_rbd_mirror_image_trash_purge.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+
+upgrade:
+    metadata:
+      cloud:
+        - ibmc
+    suites:
+      - name: "Test RBD Mirror upgrade from 5x GA to 7x latest"
+        suite: suites/reef/rbd/tier-3_rbd_mirror_upgrade_5xto7x_scale.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
+      - name: "Test RBD Mirror upgrade from 6x GA to 7x latest"
+        suite: suites/reef/rbd/tier-3_rbd_mirror_upgrade_6xto7x_scale.yaml
+        global-conf: conf/reef/rbd/5-node-2-clusters.yaml
