@@ -43,6 +43,7 @@ sanity:
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/tentacle/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      vm-flavor: bx2-2x8
     - name: "tier-1 rbd"
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
       global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
