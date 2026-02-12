@@ -88,16 +88,24 @@ def call(Map parameters) {
 
     // Change directory to manifest repo
     dir(jobDir) {
-        // Check git status
-        sh("git status")
+        // Get diff and decide whether to commit based on diff results
+        def gitDiff = sh(
+            script: "git diff",
+            returnStdout: true
+        ).trim()
 
-        // Add new file to commit
-        sh("git add .")
+        if (gitDiff) {
+            echo "Changes detected:\n${gitDiff}"
+            // Add changed files
+            sh("git add .")
 
-        // Commit changes
-        sh("git commit -m '${commitMessage}'")
+            // Commit changes
+            sh("git commit -m '${commitMessage}'")
 
-        // Push changes to repo
-        sh("git push origin HEAD:main")
+            // Push changes to repo
+            sh("git push origin HEAD:main")
+        } else {
+            echo "No changes to commit"
+        }
     }
 }

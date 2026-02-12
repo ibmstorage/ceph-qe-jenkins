@@ -10,7 +10,7 @@
 
 // Create the job definition
 def job = pipelineJob("sync-mirror-os") {
-    displayName("Infra - Syncrhonize Mirror repo - RHEL rpms")
+    displayName("Infra - Synchronize Mirror repo - RHEL rpms")
 
     definition {
         cpsScm {

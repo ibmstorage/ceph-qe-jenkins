@@ -3,7 +3,7 @@
 // Create job konflux listener
 def job = pipelineJob("ceph-build-konflux-listener") {
     // Job display name
-    displayName("Ceph Build Konflux Listener")
+    displayName("Infra - Ceph Build Konflux Listener")
 
     // Job definition from git repo
     definition {
