@@ -270,6 +270,78 @@ credentials:
               username: jenkins
               usernameSecret: true
 
+          - string:
+              description: "AWS CI - Access Key Ceph Fringe Account"
+              id: "aws-ci-access-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/awsci_access_key_fringe_qe_account}"
+
+          - string:
+              description: "AWS CI - Secret Key Ceph Fringe Account"
+              id: "aws-ci-secret-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/awsci_secret_key_fringe_qe_account}"
+
+          - string:
+              description: "AWS Access Key for Ceph System Test Account"
+              id: "aws-access-key-ceph-sys-test-account"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/aws_access_key_ceph_sys_test_account}"
+
+          - string:
+              description: "AWS Secret Key for Ceph System Test Account"
+              id: "aws-secret-key-ceph-sys-test-account"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/aws_secret_key_ceph_sys_test_account}"
+
+          - string:
+              description: "Atlassian Jira - API Token"
+              id: "atlassian-jira-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/atlassian_jira_token}"
+
+          - string:
+              description: "IBM Cloud API Key"
+              id: "ibm-cloud-api-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibmc_api_key}"
+
+          - string:
+              description: "IBM Cloud COS HMAC Access Key"
+              id: "ibm-cloud-cos-hmac-access-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibmc_cos_hmac_access_key}"
+
+          - string:
+              description: "IBM Cloud COS HMAC Secret Key"
+              id: "ibm-cloud-cos-hmac-secret-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibmc_cos_hmac_secret_key}"
+
+          - file:
+              description: "OpenShift Data Foundation pull secret"
+              id: "odf-interop-pull-secret"
+              fileName: "odf_pull_secret.json"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/odf_interop_pull_secret}"
+
+          - file:
+              description: "CephCI AWS credential file (osp-cred-aws.yaml)."
+              id: "osp-cred-aws"
+              fileName: "osp-creds-aws.yaml"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/awsci_osp_cred}"
+
+          - basicSSHUserPrivateKey:
+              description: "SSH Private key for AWS agent access"
+              id: "jenkinsAWSAgentSSHKey"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:/secrets/aws_agent_ssh_key}"
+              scope: SYSTEM
+              username: jenkins
+              usernameSecret: false
+
 security:
   globalJobDslSecurityConfiguration:
     # Permit Job DSL to be run without the hassle of script security
