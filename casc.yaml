@@ -399,6 +399,11 @@ unclassified:
                 remote: "https://github.ibm.com/ceph-qe-ng/jenkins.git"
                 credentialsId: "ceph-qe-sa-pat"
 
+  gitSource:
+    installations:
+      - name: "Default"
+        home: "/usr/bin/git"
+
   location:
     adminAddress: "ceph-qe-sa@ibm.com"
     url: "https://149.81.216.83/"
@@ -414,12 +419,6 @@ unclassified:
     allPipelines: false
     elapsedTimeFormat: "'<b>'HH:mm:ss'</b>'"
     systemTimeFormat: "'<b>'HH:mm:ss'</b>'"
-
-tool:
-  git:
-    installations:
-      - name: "Default"
-        home: "git"
 
 jobs:
   - file: /usr/share/jenkins/seed.groovy
