@@ -157,12 +157,12 @@ def call(Map parameters) {
             2) Manifest defaults (fallback)
     ----------------------------------------------------------------------------- */
 
-    // Collect images that need to be synced
+    // Collect images that need to be synced (skip for AWS cloud type)
     def imagesToSync = []
 
     recipeContent."${params.RELEASE}".images.each { image, url ->
-        // Check if image exists in registry
-        if ( ! checkImageInRegistry(url) ) {
+        // Check if image exists in registry (skip skopeo check for AWS)
+        if ( jobConfig.cloudType != "aws" && ! checkImageInRegistry(url) ) {
             println("Image ${image}=${url} is not available in source registry, will sync...")
             imagesToSync << url
         }
@@ -185,8 +185,8 @@ def call(Map parameters) {
         }
     }
 
-    // Sync all missing images in batch using syncBlueImages
-    if ( imagesToSync.size() > 0 ) {
+    // Sync all missing images in batch using syncBlueImages (skip for AWS cloud type)
+    if ( jobConfig.cloudType != "aws" && imagesToSync.size() > 0 ) {
         println("Syncing ${imagesToSync.size()} missing image(s) to local registry...")
         
         try {
@@ -198,6 +198,8 @@ def call(Map parameters) {
             currentBuild.result = "ABORTED"
             error("Failed to sync images to local registry: ${e.getMessage()}")
         }
+    } else if ( jobConfig.cloudType == "aws" ) {
+        println("Skipping image sync to local registry for AWS cloud type")
     }
 
     // If repo is provided, use that repo instead of the manifestFile one.
@@ -286,3 +288,4 @@ def call(Map parameters) {
     // Return the job configuration
     return jobConfig
 }
+
