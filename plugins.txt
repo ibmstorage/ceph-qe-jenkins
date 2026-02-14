@@ -50,6 +50,7 @@ timestamper
 theme-manager
 throttle-concurrents
 token-macro
+uno-choice
 workflow-aggregator
 workflow-api
 workflow-basic-steps

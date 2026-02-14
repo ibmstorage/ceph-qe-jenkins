@@ -96,6 +96,19 @@ jenkins:
         numExecutors: 10
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
+    - permanent:
+        labelString: "agents-aws"
+        launcher:
+          ssh:
+            credentialsId: "awsAgentSSHKey"
+            host: 16.170.108.62
+            port: 22
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+        name: "infra-vm-jenkins-agent-aws-01"
+        nodeDescription: "Workflow executor for AWS jobs only."
+        numExecutors: 5
+        remoteFS: "/data/jenkins"
+        retentionStrategy: "always"
 
 appearance:
   consoleUrlProvider:
@@ -169,6 +182,13 @@ credentials:
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/repo_access}"
 
+          - file:
+              description: "CephCI Global Credentails file for AWS"
+              id: "aws-osp-cred"
+              fileName: "osp-cred"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/aws_global_creds}"
+
           - string:
               description: "Google Sheet ID for recording Ceph 9.0 test results."
               id: "gsheet-id-ibm-90"
@@ -210,6 +230,48 @@ credentials:
               id: "icr-token"
               scope: GLOBAL
               secret: "${readFile:/secrets/icr_io_passwd}"
+
+          - string:
+              description: "Atlassian Ceph Jira project access token"
+              id: "atlassian-jira-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/atlassian_jira_token}"
+
+          - string:
+              description: "AWS - Access Key Ceph Fringe Account"
+              id: "aws-ci-acces-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/aws_access_key}"
+
+          - string:
+              description: "AWS - Secret Access Key Ceph Fringe Account"
+              id: "aws-ci-secret-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/aws_secret_access_key}"
+
+          - string:
+              description: "IBM COS Access key"
+              id: "ibm-cos-acces-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibm_cos_access_key}"
+
+          - string:
+              description: "IBM COS Secret Access key"
+              id: "ibm-cos-secret-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibm_cos_secret_access_key}"
+
+          - string:
+              description: "IBM Clooud API Key for ODF Interop"
+              id: "ibmc-api-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/ibmc_api_key_for_odf}"
+
+          - string:
+              description: "OpenShift Pull Secret for ODF Interop"
+              id: "ocs-pull-secret"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/odf_interop_pull_secret}"
 
           - usernamePassword:
               description: "Brew Registry access"
@@ -266,6 +328,16 @@ credentials:
               privateKeySource:
                 directEntry:
                   privateKey: "${readFile:/secrets/agent_access_key}"
+              scope: SYSTEM
+              username: jenkins
+              usernameSecret: true
+
+          - basicSSHUserPrivateKey:
+              description: "SSH Private key for AWS agent access"
+              id: "awsAgentSSHKey"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:/secrets/aws_agent_access_key}"
               scope: SYSTEM
               username: jenkins
               usernameSecret: true
