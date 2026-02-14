@@ -6,6 +6,7 @@ def generate_jobs(data) {
     def vpc = ["vpc-cephci"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
     def vmFlavor = ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
+    def instanceType = ["t3.small", "t3.medium", "m5.xlarge"]
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
@@ -72,18 +73,20 @@ for (jobConfig in jobsConfiguration) {
 
             // Add the required parameters for the job
             parameters {
+                choiceParam("CLOUD_TYPE", ["ibmc", "aws"], "Cloud platform (aws runs on agents-aws agent)")
                 stringParam("PREFIX", "bvt", "Prefix for instance name")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
                 stringParam("BRANCH", "main", "Ceph CI git branch")
                 choiceParam("LOG_LEVEL", jobConfig.logLevel , "Ceph CI log level")
                 choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph Version")
                 choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL OS Version")
-                choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build")
+                choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build (AWS supports IBM only)")
                 choiceParam("RELEASE", jobConfig.release, "Release type")
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")
-                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud virtual machine profile")
+                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud only  virtual machine profile (ignored when CLOUD_TYPE=aws)")
+                choiceParam("INSTANCE_TYPE", jobConfig.instanceType, "AWS only  EC2 instance type (ignored when CLOUD_TYPE=ibmc)")
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")

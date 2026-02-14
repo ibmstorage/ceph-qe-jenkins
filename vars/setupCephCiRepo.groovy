@@ -10,6 +10,7 @@ def call(Map parameters) {
     def gitDir = parameters.get("gitDir")
     def gitBranch = parameters.get("gitBranch")
     def ibmcCredFile = parameters.get("ibmcCredFile")
+    def credentialId = parameters.get("credentialId", "osp-cred")
 
     // Get cloud type
     def cloudType = parameters.get("cloudType")
@@ -43,8 +44,8 @@ def call(Map parameters) {
 
     dir("${gitDir}") {
         echo "ibmcCredFile path is: ${ibmcCredFile}"
-        // Write the platform access file
-        withCredentials([file(credentialsId: "osp-cred", variable: "ospCred")]) {
+        // Write the platform access file (osp-cred for ibmc, osp-cred-aws for aws)
+        withCredentials([file(credentialsId: credentialId, variable: "ospCred")]) {
             sh("cp -n \$ospCred ${ibmcCredFile}")
         }
 

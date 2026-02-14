@@ -33,11 +33,18 @@ def call(Map parameters) {
     jobConfig.logLevel = params.LOG_LEVEL ?: cephciConfigs.LOG_LEVEL
     jobConfig.cloudType = params.CLOUD_TYPE ?: cephciConfigs.CLOUD_TYPE
     jobConfig.vmFlavor = params.VM_FLAVOR ?: cephciConfigs.VM_FLAVOR
+    jobConfig.instanceType = params.INSTANCE_TYPE ?: cephciConfigs.AWS_INSTANCE_TYPE
     jobConfig.python = cephciConfigs.PYTHON
     jobConfig.venvDir = cephciConfigs.VENV_DIR
 
     // Update dir paths based on build type
     jobConfig.buildType = params.BUILD_TYPE
+
+    // AWS supports IBM build only
+    if ( jobConfig.cloudType == "aws" && jobConfig.buildType?.toLowerCase() == "rh" ) {
+        currentBuild.result = "ABORTED"
+        error("AWS supports IBM build only. Please select BUILD_TYPE=IBM.")
+    }
     jobDir += [jobConfig.buildType]
     jobConfig.rpLaunchName = "[${jobConfig.buildType}]"
 
@@ -89,13 +96,17 @@ def call(Map parameters) {
         jobConfig.inventory = params.INVENTORY
     } else if ( jobConfig.cloudType == "ibmc" ) {
         jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
+    } else if ( jobConfig.cloudType == "aws" ) {
+        jobConfig.inventory = cephciConfigs.AWS_INVENTORY[jobConfig.platform] ?: cephciConfigs.AWS_INVENTORY["rhel-9"]
     } else {
         abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")
     }
 
-    // Get the VPC Name
+    // Get the VPC Name (IBM Cloud only; AWS uses credentials)
     if ( jobConfig.cloudType == "ibmc" ) {
         jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
+    } else if ( jobConfig.cloudType == "aws" ) {
+        jobConfig.vpcName = null  // Not used for AWS cleanup
     }
 
     // Get subscription manager execution
@@ -239,8 +250,10 @@ def call(Map parameters) {
     jobConfig.artifacts = [jobConfig.jobDir, jobConfigs.ARTIFACTS].join("/")
     jobConfig.emailBody = [jobConfig.jobDir, jobConfigs.EMAIL_BODY].join("/")
 
-    // Check for IBMC Credential ID
-    jobConfig.ibmcCredFile = [jobConfig.gitDir, "osp-cred"].join("/")
+    // Set credential file path and credential ID based on cloud type
+    def credFileName = ( jobConfig.cloudType == "aws" ) ? "osp-cred-aws" : "osp-cred"
+    jobConfig.ibmcCredFile = [jobConfig.gitDir, credFileName].join("/")
+    jobConfig.credentialId = ( jobConfig.cloudType == "aws" ) ? "osp-cred-aws" : "osp-cred"
 
     // Set report portal configs
     jobConfig.rpLaunchName += " ${jobConfig.job} Test Run"

@@ -232,6 +232,12 @@ def call(Map parameters) {
         ]
     }
 
+    // Add AWS instance config (instance_type passed via custom-config)
+    if ( cloudType == "aws" ) {
+        def instanceType = parameters.get("instanceType") ?: "t3.small"
+        args += ["--custom-config instance_type=${instanceType}"]
+    }
+
     // Check for sos report
     args += parameters.get("skipSosReport") ? ["--skip-sos-report"] : []
 

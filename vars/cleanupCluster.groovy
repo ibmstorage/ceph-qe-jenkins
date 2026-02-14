@@ -42,10 +42,10 @@ def call(Map parameters) {
         )
     }
 
-    // Check for VPC Name
+    // Check for VPC Name (IBM Cloud only; AWS uses credentials in osp-cred)
     def vpcName = parameters.get("vpcName")
-    if ( ! vpcName ) {
-        throw new RuntimeException("Ceph CI cleanup stage requires VPC Name.")
+    if ( cloudType == "ibmc" && ! vpcName ) {
+        throw new RuntimeException("Ceph CI cleanup stage requires VPC Name for IBM Cloud.")
     }
 
     // Create arguments for run.py
@@ -53,9 +53,13 @@ def call(Map parameters) {
         "${venvDir}/bin/python run.py",
         "--cloud ${cloudType}",
         "--osp-cred ${ibmcCredFile}",
-        "--cleanup ${instanceName}",
-        "--custom-config ibmc_vpc=${vpcName}"
+        "--cleanup ${instanceName}"
     ]
+
+    // Add IBM Cloud VPC config (not used for AWS)
+    if ( cloudType == "ibmc" && vpcName ) {
+        cmd += ["--custom-config ibmc_vpc=${vpcName}"]
+    }
 
     // Add optional parameters
     def logLevel = parameters.get("logLevel")

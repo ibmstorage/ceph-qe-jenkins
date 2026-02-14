@@ -19,8 +19,8 @@ pipeline {
     }
 
     agent {
-        // Use agent label
-        label "agents"
+        // Use agents-aws agent for AWS cloud, agents for IBM Cloud
+        label "${params.CLOUD_TYPE == 'aws' ? 'agents-aws' : 'agents'}"
     }
 
     stages {
@@ -47,7 +47,8 @@ pipeline {
                         gitDir: jobConfigs.gitDir,
                         gitBranch: jobConfigs.gitBranch,
                         cloudType: jobConfigs.cloudType,
-                        ibmcCredFile: jobConfigs.ibmcCredFile
+                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                        credentialId: jobConfigs.credentialId
                     )
 
                     // Debug
@@ -114,6 +115,7 @@ pipeline {
                                         containerImage: jobConfigs.containerImage,
                                         additionalArgs: jobConfigs.additionalArgs,
                                         vmFlavor: jobConfigs.vmFlavor,
+                                        instanceType: jobConfigs.instanceType,
                                         skipSosReport: skipSosReport,
                                         vpcName: jobConfigs.vpcName,
                                         skipSubscription: jobConfigs.skipSubscription,

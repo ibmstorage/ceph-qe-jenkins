@@ -24,4 +24,13 @@ class cephciConfigs {
         "rhel-9": "conf/inventory/ibm-eu-rhel-9-latest.yaml",
         "rhel-10": "conf/inventory/ibm-eu-rhel-10-latest.yaml"
     ]
+
+    // AWS inventory config (for --cloud aws)
+    static final Map AWS_INVENTORY = [
+        "rhel-9": "conf/inventory/aws-rhel-9.6-server-arm-64.yaml",
+        "rhel-10": "conf/inventory/aws-rhel-10.1-server-arm-64.yaml"
+    ]
+
+    // Default AWS EC2 instance type (e.g. t3.small, t3.medium, m5.xlarge)
+    static final String AWS_INSTANCE_TYPE = "t3.small"
 }

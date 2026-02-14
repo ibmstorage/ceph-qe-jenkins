@@ -2,6 +2,7 @@ bvt:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Build Verification Test"
       suite: suites/reef/smoke/bvt.yaml
