@@ -265,7 +265,7 @@ credentials:
               description: "IBM Clooud API Key for ODF Interop"
               id: "ibmc-api-key"
               scope: GLOBAL
-              secret: "${readFile:/secrets/ibmc_api_key_for_odf}"
+              secret: "${readFile:/secrets/ibmc_api_key_for_odf_interop}"
 
           - string:
               description: "OpenShift Pull Secret for ODF Interop"
@@ -395,14 +395,9 @@ unclassified:
         retriever:
           modernSCM:
             scm:
-              git:
+              gitSource:
                 remote: "https://github.ibm.com/ceph-qe-ng/jenkins.git"
                 credentialsId: "ceph-qe-sa-pat"
-
-  gitSource:
-    installations:
-      - name: "Default"
-        home: "/usr/bin/git"
 
   location:
     adminAddress: "ceph-qe-sa@ibm.com"
@@ -419,6 +414,12 @@ unclassified:
     allPipelines: false
     elapsedTimeFormat: "'<b>'HH:mm:ss'</b>'"
     systemTimeFormat: "'<b>'HH:mm:ss'</b>'"
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
 
 jobs:
   - file: /usr/share/jenkins/seed.groovy
