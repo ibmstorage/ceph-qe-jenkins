@@ -94,8 +94,23 @@ def call(Map parameters) {
             returnStdout: true
         ).trim()
 
+        env.CEPH_BASE_CHANGED = "false"
         if (gitDiff) {
             echo "Changes detected:\n${gitDiff}"
+
+            // Check git diff for actual changes (+/-) to ceph-base
+            def cephBaseChanged = sh(
+                script: """
+                    git diff |
+                    grep -qE '^[+-].*ceph-base:' &&
+                    echo true ||
+                    echo false
+                """,
+                returnStdout: true
+            ).trim()
+
+            env.CEPH_BASE_CHANGED = cephBaseChanged
+            
             // Add changed files
             sh("git add .")
 
