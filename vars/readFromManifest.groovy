@@ -34,7 +34,10 @@ def call(Map parameters) {
             [name:  "${manifestConfigs.MANIFEST_BRANCH}"]
         ],
         userRemoteConfigs: [
-            [url: "${manifestConfigs.MANIFEST_REPO}"]
+            [
+                url: "${manifestConfigs.MANIFEST_REPO}",
+                credentialsId: "ceph-qe-sa-pat"
+            ]
         ],
         extensions: [
             [

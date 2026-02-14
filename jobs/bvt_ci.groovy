@@ -18,6 +18,7 @@ def generate_jobs(data) {
         "displayName": "${data.cephVersion} - Build Verification Test Pipeline",
         "logLevel": logLevel,
         "vmFlavor": vmFlavor,
+        "instanceType": instanceType,
         "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
