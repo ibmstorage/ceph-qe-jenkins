@@ -7,8 +7,11 @@ def call(Map parameters) {
     // Get python script from jenkins resource
     def fetchTestSuites = "scripts/fetchTestSuites.py"
 
+    // Use venv python if provided, otherwise fall back to system python
+    def python = parameters.get("python", cephciConfigs.PYTHON)
+
     // Set command
-    def cmd = [cephciConfigs.PYTHON, "${fetchTestSuites}"]
+    def cmd = [python, "${fetchTestSuites}"]
 
     // Get mandatory parameters
     def build = parameters.get("rhBuild")

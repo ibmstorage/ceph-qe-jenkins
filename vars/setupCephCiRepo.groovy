@@ -44,7 +44,7 @@ def call(Map parameters) {
 
     dir("${gitDir}") {
         echo "ibmcCredFile path is: ${ibmcCredFile}"
-        // Write the platform access file (osp-cred for ibmc, osp-cred-aws for aws)
+        // Write the platform access file (osp-cred for ibmc, aws-osp-cred for aws)
         withCredentials([file(credentialsId: credentialId, variable: "ospCred")]) {
             sh("cp -n \$ospCred ${ibmcCredFile}")
         }

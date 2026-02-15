@@ -6,7 +6,7 @@ def generate_jobs(data) {
     def vpc = ["vpc-cephci"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
     def vmFlavor = ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
-    def instanceType = ["t3.small", "t3.medium", "m5.xlarge"]
+    def instanceType = ["t3.small", "t3.medium", "m5.xlarge", "t4g.small", "t4g.medium", "m6g.xlarge"]
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions

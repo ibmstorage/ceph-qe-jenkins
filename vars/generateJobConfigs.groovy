@@ -135,8 +135,9 @@ def call(Map parameters) {
         error("No build info found for the provided release: ${params.RELEASE}")
     }
 
-    // FixMe: This has to be dynamic
-    def repoDC = "eu-de"
+    // Select repository datacenter based on cloud type
+    // AWS uses "default" (public URLs), ibmc uses "eu-de" (internal mirror)
+    def repoDC = ( jobConfig.cloudType == "aws" ) ? manifestConfigs.DEFAULT_DC : "eu-de"
     // Get ceph downstream repo based on DC & platform
     jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDC}"."${jobConfig.platform}"
 
@@ -253,9 +254,9 @@ def call(Map parameters) {
     jobConfig.emailBody = [jobConfig.jobDir, jobConfigs.EMAIL_BODY].join("/")
 
     // Set credential file path and credential ID based on cloud type
-    def credFileName = ( jobConfig.cloudType == "aws" ) ? "osp-cred-aws" : "osp-cred"
+    def credFileName = ( jobConfig.cloudType == "aws" ) ? "aws-osp-cred" : "osp-cred"
     jobConfig.ibmcCredFile = [jobConfig.gitDir, credFileName].join("/")
-    jobConfig.credentialId = ( jobConfig.cloudType == "aws" ) ? "osp-cred-aws" : "osp-cred"
+    jobConfig.credentialId = ( jobConfig.cloudType == "aws" ) ? "aws-osp-cred" : "osp-cred"
 
     // Set report portal configs
     jobConfig.rpLaunchName += " ${jobConfig.job} Test Run"
@@ -288,4 +289,3 @@ def call(Map parameters) {
     // Return the job configuration
     return jobConfig
 }
-

@@ -65,7 +65,8 @@ pipeline {
                         job: job,
                         platform: jobConfigs.platform,
                         cloudType: jobConfigs.cloudType,
-                        buildType: jobConfigs.buildType
+                        buildType: jobConfigs.buildType,
+                        python: "${jobConfigs.gitDir}/${jobConfigs.venvDir}/bin/python"
                     )
                 }
             }
