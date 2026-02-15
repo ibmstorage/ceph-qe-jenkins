@@ -31,9 +31,9 @@ def call(Map parameters = [:]) {
         remoteConnection.identityFile = "$NGINX_ACCESS"
         
         // Command to run garbage collection using podman
-        def gcCommand = "sudo podman exec ceph-qe-registry bin/registry garbage-collect /etc/distribution/config.yml"
+        def gcCommand = "sudo podman exec ceph-qe-registry registry garbage-collect /etc/distribution/config.yml"
         
-        try:
+        try {
             echo "Executing garbage collection..."
             sshCommand remote: remoteConnection, command: gcCommand
             echo "✓ Garbage collection completed successfully"
