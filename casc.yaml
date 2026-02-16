@@ -273,6 +273,18 @@ credentials:
               scope: GLOBAL
               secret: "${readFile:/secrets/odf_interop_pull_secret}"
 
+          - string:
+              description: "AWS - Access key of SysTest account"
+              id: "aws-systest-access"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/aws_systest_access_key}"
+
+          - string:
+              description: "AWS - Secret Access key of SysTest account"
+              id: "aws-systest-secret-access"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/aws_systest_secret_access_key}"
+
           - usernamePassword:
               description: "Brew Registry access"
               id: "brew-access"
