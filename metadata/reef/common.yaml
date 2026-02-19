@@ -72,7 +72,7 @@ sanity:
     - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
       suite: suites/reef/nvmeof/tier-1_nvmeof_sanity.yaml
       global-conf: conf/reef/nvmeof/ceph_nvmeof_sanity.yaml
-      vm-flavor: cx2-8x16
+      vm-size: cx2-8x16
       platform:
         - rhel-9
       build:
@@ -80,7 +80,7 @@ sanity:
     - name: "Basic E2E-Test with FIPS mode enabled"
       suite: suites/reef/nvmeof/tier-2_nvmeof_e2e_fips.yaml
       global-conf: conf/reef/nvmeof/ceph_nvmeof_sanity.yaml
-      vm-flavor: cx2-8x16
+      vm-size: cx2-8x16
       # custom-config:
       #   enable-fips-mode: true
       platform:
@@ -90,7 +90,7 @@ sanity:
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/reef/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/reef/nvmeof/ceph_nvmeof_ha_cluster.yaml
-      vm-flavor: cx2-8x16
+      vm-size: cx2-8x16
       platform:
         - rhel-9
       build:
@@ -98,6 +98,6 @@ sanity:
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/reef/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/reef/rados/4-node-ec-cluster-1-client.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
       platform:
         - rhel-9

@@ -6,7 +6,7 @@ regression:
       - name: "NVMeoTCP functional regression tests"
         suite: suites/reef/nvmeof/tier-2_nvmeof_functional_Regression.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -14,7 +14,7 @@ regression:
       - name: "Tests on restart operations"
         suite: suites/reef/nvmeof/tier-3_nvmeof_restart_operations.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -22,7 +22,7 @@ regression:
       - name: "HA Test - 4 NVMeoF Gateway failover and failback scenarios"
         suite: suites/reef/nvmeof/tier-2_nvmeof_4nodes_gateway_ha_tests.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -30,7 +30,7 @@ regression:
       - name: "Tests on NVMe gateway CLI operations"
         suite: suites/reef/nvmeof/tier-2_nvmeof_gateway_operations.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -38,7 +38,7 @@ regression:
       - name: "Tests on bdev and cluster operations"
         suite: suites/reef/nvmeof/tier-3_nvmeof_bdev_fio_operations.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -46,7 +46,7 @@ regression:
       - name: "Operations on NVMeoF namespaces"
         suite: suites/reef/nvmeof/tier-4_nvmeof_namespace_operations.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -54,7 +54,7 @@ regression:
       - name: "Negative tests on NVMe gateway CLI operations"
         suite: suites/reef/nvmeof/tier-4_nvmeof_neg_tests.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_functional.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -62,7 +62,7 @@ regression:
       - name: "NVMeOF Upgrade tests"
         suite: suites/reef/nvmeof/tier-2_nvmeof_b2b_upgrade.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:
@@ -70,7 +70,7 @@ regression:
       - name: "NVMeOF Upgrade tests with mtls"
         suite: suites/reef/nvmeof/tier-2_nvmeof_b2b_upgrade_with_mtls.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
-        vm-flavor: cx2-8x16
+        vm-size: cx2-8x16
         build:
          - ibm
         platform:

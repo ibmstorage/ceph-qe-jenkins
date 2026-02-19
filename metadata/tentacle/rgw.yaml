@@ -12,7 +12,7 @@ regression:
     - name: "Tier2 RGW regression test" # 198 mins, 0 secs
       suite: suites/tentacle/rgw/tier-2_rgw_regression_test.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
     - name: "Tier-2 RGW MS regression tests" # 193 mins, 8 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_regression_test.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
@@ -28,15 +28,15 @@ regression:
     - name: "Tier-2 RGW regression extended" # 300 mins, 37 secs
       suite: suites/tentacle/rgw/tier-2_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
     # - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
     #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
     #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    #   vm-flavor: bx2-2x8
+    #   vm-size: bx2-2x8
     # - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
     #   suite: suites/tentacle/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
     #   global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    #   vm-flavor: bx2-2x8
+    #   vm-size: bx2-2x8
     - name: "Tier-3 archivezone colocated datazone" # 95 mins, 43 secs
       suite: suites/tentacle/rgw/tier-3_archive_zone_colocate_data_zone.yaml
       global-conf: conf/tentacle/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
@@ -49,7 +49,7 @@ regression:
     - name: "Tier-2 SSL RGW regression" # 217 mins, 1 secs
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_test.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
     - name: "Tier-2 RGW sanity with d3n enabled" # 105 mins, 13 secs
       suite: suites/tentacle/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
@@ -68,7 +68,7 @@ weekly:
     - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms-archive.yaml
       global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     - name: "Migrate default single to multisite" # 150 mins, 35 secs
       suite: suites/tentacle/rgw/migrate_default_single_to_multisite.yaml
       global-conf: conf/tentacle/rgw/migrate_default_single_to_multisite.yaml
@@ -96,11 +96,11 @@ weekly:
     # - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
     #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
     #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    #   vm-flavor: bx2-2x8
+    #   vm-size: bx2-2x8
     - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
     - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
@@ -111,15 +111,15 @@ weekly:
     #     gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
     #     gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
     #     gklm-endpoint-ibmc: "10.243.36.4"
-    #   vm-flavor: bx2-4x16
+    #   vm-size: bx2-4x16
     # - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
     #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
     #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    #   vm-flavor: bx2-2x8
+    #   vm-size: bx2-2x8
     - name: "Tier-2 rgw single site regression extended" 
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
     - name: "Tier-2 rgw ms archive with haproxy" # 470 mins, 30 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_archive_with_haproxy.yaml
       global-conf: conf/tentacle/rgw/tier-2_rgw_ms_archive_with_haproxy_conf.yaml

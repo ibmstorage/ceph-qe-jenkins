@@ -56,7 +56,7 @@ sanity:
     - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
       suite: suites/squid/nvmeof/tier-1_nvmeof_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
       platform:
         - rhel-9
       build:
@@ -66,7 +66,7 @@ sanity:
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
       custom-config:
         enable-fips-mode: true
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
       platform:
         - rhel-9
       build:
@@ -74,7 +74,7 @@ sanity:
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/squid/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
       platform:
         - rhel-9
       build:
@@ -82,7 +82,7 @@ sanity:
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/squid/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
-      vm-flavor: bx2-2x8
+      vm-size: bx2-2x8
       platform:
         - rhel-9
     - name: "Tier-1 RBD"

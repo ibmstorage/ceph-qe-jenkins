@@ -12,7 +12,7 @@ regression:
     - name: "Tier-2 RGW Regression test" # 198 mins, 0 secs
       suite: suites/squid/rgw/tier-2_rgw_regression_test.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     - name: "Tier-2 RGW MS Regression test" # 390 mins, 45 secs
       suite: suites/squid/rgw/tier-2_rgw_ms_regression_test.yaml
       global-conf: conf/squid/rgw/rgw_multisite.yaml
@@ -28,15 +28,15 @@ regression:
     - name: "Tier-2 RGW regression extended" # 93 mins, 37 secs
       suite: suites/squid/rgw/tier-2_rgw_regression_extended.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     # - name: "Tier-2 RGW test bucket notifications kafka sasl" # 102 mins, 16 secs
     #   suite: suites/squid/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
     #   global-conf: conf/squid/rgw/tier-0_rgw.yaml
-    #   vm-flavor: bx2-4x16
+    #   vm-size: bx2-4x16
     # - name: "Tier-2 rgw ms test bucket notifications" # 134 mins, 42 secs
     #   suite: suites/squid/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
     #   global-conf: conf/squid/rgw/rgw_multisite.yaml
-    #   vm-flavor: bx2-4x16
+    #   vm-size: bx2-4x16
     - name: "Tier-3 archive zone colocate data zone" # 92 mins, 52 secs
       suite: suites/squid/rgw/tier-3_archive_zone_colocate_data_zone.yaml
       global-conf: conf/squid/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
@@ -49,7 +49,7 @@ regression:
     - name: "Tier-2 ssl rgw regression test" # 81 mins, 4 secs
       suite: suites/squid/rgw/tier-2_ssl_rgw_regression_test.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     - name: "Tier-2 rgw test basic sanity with d3n enabled" # 74 mins, 45 secs
       suite: suites/squid/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
@@ -71,7 +71,7 @@ weekly:
     - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
       suite: suites/squid/rgw/tier-2_rgw_ms-archive.yaml
       global-conf: conf/squid/rgw/rgw_ms_archive.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     - name: "migrate default single to multisite" # 150 mins, 35 secs
       suite: suites/squid/rgw/migrate_default_single_to_multisite.yaml
       global-conf: conf/squid/rgw/migrate_default_single_to_multisite.yaml
@@ -96,7 +96,7 @@ weekly:
     # - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
     #   suite: suites/squid/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
     #   global-conf: conf/squid/rgw/tier-0_rgw.yaml
-    #   vm-flavor: bx2-4x16
+    #   vm-size: bx2-4x16
     - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
       suite: suites/squid/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
       global-conf: conf/squid/rgw/rgw_multisite.yaml
@@ -107,11 +107,11 @@ weekly:
     #     gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
     #     gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
     #     gklm-endpoint-ibmc: "10.245.36.4"
-    #   vm-flavor: bx2-4x16
+    #   vm-size: bx2-4x16
     # - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
     #   suite: suites/squid/rgw/tier-2_rgw_test_bucket_notifications.yaml
     #   global-conf: conf/squid/rgw/tier-0_rgw.yaml
-    #   vm-flavor: bx2-4x16
+    #   vm-size: bx2-4x16
     - name: "Tier-2 rgw ms archive with haproxy" # 470 mins, 30 secs
       suite: suites/squid/rgw/tier-2_rgw_ms_archive_with_haproxy.yaml
       global-conf: conf/squid/rgw/tier-2_rgw_ms_archive_with_haproxy_conf.yaml
@@ -121,11 +121,11 @@ weekly:
     - name: "Tier-2 rgw single site regression extended" 
       suite: suites/squid/rgw/tier-2_rgw_single_site_regression_extended.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
       suite: suites/squid/rgw/tier-2_rgw_single_site_regression.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
-      vm-flavor: bx2-4x16
+      vm-size: bx2-4x16
     - name: "Tier-2 ssl rgw ms ecpool test" # 155 mins, 21 secs
       suite: suites/squid/rgw/tier-2_ssl_rgw_ms_ecpool_test.yaml
       global-conf: conf/squid/rgw/ms-ec-profile-4+2-cluster.yaml
