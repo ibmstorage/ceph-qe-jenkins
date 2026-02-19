@@ -97,7 +97,7 @@ def call(Map parameters) {
                 "--service-account /home/jenkins/.gcp_service_account.json",
                 "--version ${cephVersion}",
                 "--resultdir ${resultsDir}",
-                "--gsheet ${gsheetName}"
+                "--gsheet \"${gsheetName}\""
             ].join(" "))
         }
     }
