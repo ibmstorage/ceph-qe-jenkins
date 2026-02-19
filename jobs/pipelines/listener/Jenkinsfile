@@ -126,6 +126,16 @@ pipeline {
                     // read manifest to get compose
                     repoBuild = readFromManifest(recipe: buildInfo.recipe, job: job)
 
+                    // Create repo url and check if it is available in the manifest
+
+                    def repoUrl = repoBuild?."${buildTag}"?.repositories?."${repoDc}"?."${platform}"
+                    if (!repoUrl) {
+                        error(
+                            "Missing repo in manifest for tag=${buildTag}, " +
+                            "dc=${repoDc}, platform=${platform}, recipe=${buildInfo.recipe}"
+                        )
+                    }
+
                     // Trigger BVT job
                     build ([
                         wait: false,
@@ -138,7 +148,7 @@ pipeline {
                             string(name: "BUILD_TYPE", value: buildType),
                             string(
                                 name: "REPO",
-                                value: repoBuild."${buildTag}".repositories."${repoDc}"."${platform}"
+                                value: repoUrl
                             ),
                             string(name: "CONTAINER_IMAGE", value: cephBase),
                             string(
