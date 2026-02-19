@@ -32,13 +32,13 @@ Reference:
   https://developers.google.com/sheets/api/guides/concepts
 
 Usage:
-  xunit2gsheet.py --version <ver> --resultdir <path> --gsheet <id> --service-account <path_to_credentials>
+  xunit2gsheet.py --version <ver> --resultdir <path> --gsheet <name> --service-account <path_to_credentials>
   xunit2gsheet.py (-h | --help)
 
 Options:
   -v --version <ver>                          Ceph version (e.g. 19.2.0-190).
   -d --resultdir <path>                       Path to logs directory.
-  -s --gsheet <id>                            Google Sheet ID to update.
+  -s --gsheet <name>                          Google Sheet name to update.
   -a --service-account <path>                 Path to Google service account JSON file.
   -h --help                                   Show this help message.
 """
@@ -62,7 +62,7 @@ SHEET_TEST_STATUS = "Test Case Status"
 SHEET_TEST_TIMINGS = "Test Case Timings"
 
 # Magna log-server base URL
-MAGNA_BASE_URL = "http://magna002.ceph.redhat.com/cephci-jenkins/results/"
+MAGNA_BASE_URL = "http://magna002.ceph.redhat.com/cephci-jenkins/ibm-cos/"
 JENKINS_LOG_DIR_PREFIX = "/data/jenkins/ceph-builds/"
 
 
@@ -1094,7 +1094,7 @@ def parse_xml_attributes(root, filename, ceph_version):
 
 
 def update_gsheet(
-    google_credentials, sheet_id, properties, stats, testcases, timings, ceph_version
+    google_credentials, sheet_name, properties, stats, testcases, timings, ceph_version
 ):
     """Update all four worksheets in the Google Sheet."""
     if properties and stats and testcases and timings:
@@ -1109,7 +1109,7 @@ def update_gsheet(
             f"Time (seconds)",
         ]
         client = get_gsheet_client(google_credentials)
-        spreadsheet = client.open_by_key(sheet_id)
+        spreadsheet = client.open(sheet_name)
 
         update_worksheet(spreadsheet, SHEET_PROPERTIES, properties)
         update_worksheet(spreadsheet, SHEET_SUMMARY, stats, columns_order=columns)
@@ -1121,12 +1121,12 @@ def update_gsheet(
         print("Error: Missing data to update Gsheet.")
 
 
-def main(ceph_version, resultdir, gsheet_id, google_credentials):
+def main(ceph_version, resultdir, gsheet_name, google_credentials):
     results_dir = os.path.join(resultdir, "results")
 
     print(f"\nParsing results from: {results_dir}")
     print(f"Ceph Version: {ceph_version}")
-    print(f"Google Sheet ID: {gsheet_id}\n")
+    print(f"Google Sheet Name: {gsheet_name}\n")
 
     if not os.path.exists(google_credentials):
         print(f"Error: Google credentials file not found at '{google_credentials}'")
@@ -1161,7 +1161,7 @@ def main(ceph_version, resultdir, gsheet_id, google_credentials):
 
     update_gsheet(
         google_credentials,
-        gsheet_id,
+        gsheet_name,
         all_properties,
         all_stats,
         all_testcases,
@@ -1175,7 +1175,7 @@ if __name__ == "__main__":
 
     ceph_version = args["--version"]
     resultdir = args["--resultdir"]
-    gsheet_id = args["--gsheet"]
+    gsheet_name = args["--gsheet"]
     google_credentials = args["--service-account"]
 
-    main(ceph_version, resultdir, gsheet_id, google_credentials)
+    main(ceph_version, resultdir, gsheet_name, google_credentials)

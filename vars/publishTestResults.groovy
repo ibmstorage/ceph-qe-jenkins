@@ -83,38 +83,22 @@ def call(Map parameters) {
     }
 
     // Post results to Google Sheet
-    def gsheetId = null
-    def product = buildType.toLowerCase()
-    def release = rhBuild.replace(".", "")
-    
-    // Build dynamic credential ID: gsheet-id-{product}-{release}
-    def credId = "gsheet-id-${product}-${release}"
+    def product = buildType.toUpperCase()
+    def release = rhBuild
+    def gsheetName = "${product}CS Test Results (${release})"
     
     if (enableGoogleSheet) {
-        try {
-            gsheetId = withCredentials([string(credentialsId: credId, variable: 'GSHEET_ID')]) {
-                return GSHEET_ID
-            }
-            echo "Successfully retrieved Google Sheet ID for ${product}-${release}"
-        } catch(Exception ex) {
-            echo "Warning: Could not find Google Sheet credentials for '${credId}': ${ex.message}"
-            echo "Skipping Google Sheet update for this build."
-            gsheetId = null
-        }
+        withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_SERVICE_ACCOUNT')]) {
+            def gsheetScript = "scripts/xunit2gsheet.py"
 
-        if (gsheetId) {
-            withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_SERVICE_ACCOUNT')]) {
-                def gsheetScript = "scripts/xunit2gsheet.py"
-
-                sh("cp -n \$GCP_SERVICE_ACCOUNT /home/jenkins/.gcp_service_account.json")
-                sh([
-                    "${jobConfigs.PYTHON} ${gsheetScript}",
-                    "--service-account /home/jenkins/.gcp_service_account.json",
-                    "--version ${cephVersion}",
-                    "--resultdir ${resultsDir}",
-                    "--gsheet ${gsheetId}"
-                ].join(" "))
-            }
+            sh("cp -n \$GCP_SERVICE_ACCOUNT /home/jenkins/.gcp_service_account.json")
+            sh([
+                "${jobConfigs.PYTHON} ${gsheetScript}",
+                "--service-account /home/jenkins/.gcp_service_account.json",
+                "--version ${cephVersion}",
+                "--resultdir ${resultsDir}",
+                "--gsheet ${gsheetName}"
+            ].join(" "))
         }
     }
 
