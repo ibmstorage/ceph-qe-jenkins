@@ -127,8 +127,8 @@ upgrade:
       # 7.1 GA -> latest
     - name: "RADOS Test - Location Stretch Mode Upgrade"
       suite: suites/tentacle/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
-      global-conf: conf/tentacle/rados/13-node-cluster-4-clients.yaml
-      # VM count: 17
+      global-conf: conf/tentacle/rados/stretch-mode-host-location-attrs.yaml
+      # VM count: 8
       # 7.1 GA -> 8.1 GA -> latest
     - name: "RADOS Test - 3 AZ Cluster"
       suite: suites/tentacle/rados/tier-3_rados_test-3-AZ-Cluster.yaml

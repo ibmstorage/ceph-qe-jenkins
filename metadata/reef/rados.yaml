@@ -102,6 +102,6 @@ upgrade:
       # 6.1 GA -> latest
     - name: "RADOS Test - Location Stretch Mode Upgrade"
       suite: suites/reef/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
-      global-conf: conf/reef/rados/13-node-cluster-4-clients.yaml
-      # VM count: 17
+      global-conf: conf/reef/rados/stretch-mode-host-location-attrs.yaml
+      # VM count: 8
       # 6.1 GA -> latest
