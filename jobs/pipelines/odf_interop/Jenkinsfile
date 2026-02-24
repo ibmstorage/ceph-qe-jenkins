@@ -1,29 +1,22 @@
 // ODF Interop: OCP + ODF Deployment Pipeline on IBM Cloud
 // Loaded from the Jenkins shared repo; clones ceph-interop as a build step.
 //
-// ACTION modes:
-//   all       → deploy + workload + teardown (default, end-to-end)
-//   deploy    → deploy OCP + ODF only (cluster stays up)
-//   teardown  → tear down an existing cluster
-//   validate  → validate configuration without deployment (dry-run)
-//
 // Pipeline Stages:
 //   1. Validate Parameters - Check all required parameters and credentials
 //   2. Clone ceph-interop - Fetch the deployment automation repository
 //   3. Setup Environment - Create Python venv and install dependencies
 //   4. Prepare Credentials - Write credentials file from Jenkins secrets
 //   5. Update Config - Apply job parameters to deployment.yaml
-//   6. Validate/Deploy/Teardown - Execute selected action
-//   7. Verify - Check cluster health (deploy/all only)
-//   8. Run IO Workloads - Execute FIO tests on RBD and CephFS (deploy/all only)
-//   9. Teardown - Clean up resources (all only)
+//   6. Deploy OCP + ODF - Deploy cluster with OpenShift and ODF
+//   7. Run IO Workloads - Execute FIO tests on RBD and CephFS
+//   8. Teardown - Clean up resources (mandatory)
 //
 // Post Actions:
 //   - Archive cluster artifacts and state files
 //   - Send HTML email notification with results
 //   - Clean up sensitive credentials
 
-@Library("ceph-qe-libs@main") _
+@Library("ceph-qe-libs@main")_
 
 pipeline {
     agent { label "agents" }
@@ -31,8 +24,7 @@ pipeline {
     options {
         timeout(time: 5, unit: 'HOURS')
         timestamps()
-        ansiColor('xterm')
-        buildDiscarder(logRotator(numToKeepStr: "30", daysToKeepStr: "30"))
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
     }
 
     environment {
@@ -46,12 +38,33 @@ pipeline {
 
         // Python virtualenv location
         VENV_DIR = "${WORKSPACE}/ceph-interop/.venv"
-
-        // Cluster name (generated in pipeline for deploy/all, provided for teardown)
-        CLUSTER_NAME = ""
     }
 
     stages {
+
+        // ──────────────────────────────────────────────────────────
+        // Initialize cluster name early in the pipeline
+        // ──────────────────────────────────────────────────────────
+        stage("Initialize Cluster Name") {
+            steps {
+                script {
+                    if (params.CLUSTER_NAME?.trim()) {
+                        // Use cluster name from parameter if provided
+                        env.CLUSTER_NAME = params.CLUSTER_NAME.trim()
+                        echo "Using cluster name from parameter: ${env.CLUSTER_NAME}"
+                    } else {
+                        // Generate unique cluster name
+                        def buildNum = env.BUILD_NUMBER
+                        def randomHex = sh(
+                            script: 'printf "%04x" $((RANDOM % 4096))',
+                            returnStdout: true
+                        ).trim()
+                        env.CLUSTER_NAME = "ocp-ibmc-${buildNum}${randomHex}"
+                        echo "Generated cluster name: ${env.CLUSTER_NAME}"
+                    }
+                }
+            }
+        }
 
         // ──────────────────────────────────────────────────────────
         // Validate parameters before doing any work
@@ -71,16 +84,11 @@ pipeline {
                         errors << "OCP_VERSION is required — provide the OpenShift version to deploy"
                     }
 
-                    // CLUSTER_NAME is required for teardown, optional for deploy/all (will be generated)
-                    if (params.ACTION == 'teardown' && !params.CLUSTER_NAME?.trim()) {
-                        errors << "CLUSTER_NAME is required for teardown action"
+                    // ODF_CHANNEL is always required
+                    if (!params.ODF_CHANNEL?.trim()) {
+                        errors << "ODF_CHANNEL is required — provide the ODF operator channel (e.g., stable-4.20)"
                     }
 
-                    // Warn if CLUSTER_NAME provided for deploy/all (will be ignored)
-                    if (params.ACTION in ['deploy', 'all'] && params.CLUSTER_NAME?.trim()) {
-                        echo "!!  WARNING: CLUSTER_NAME parameter will be ignored for ${params.ACTION} action"
-                        echo "!!  A unique cluster name will be auto-generated instead"
-                    }
 
                     // Worker count must be >= 3 for ODF
                     def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
@@ -116,7 +124,7 @@ pipeline {
                     echo "╔══════════════════════════════════════════════════╗"
                     echo "║           PARAMETER VALIDATION PASSED            ║"
                     echo "╚══════════════════════════════════════════════════╝"
-                    echo "  ACTION       : ${params.ACTION}"
+                    echo "  WORKFLOW     : Deploy → Workload → Teardown"
                     echo "  OCP_VERSION  : ${params.OCP_VERSION}"
                     echo "  OCP_CHANNEL  : ${params.OCP_CHANNEL}"
                     echo "  ODF_CHANNEL  : ${params.ODF_CHANNEL ?: '(default)'}"
@@ -129,27 +137,31 @@ pipeline {
                     echo "  DEVICE_COUNT : ${params.DEVICE_COUNT}"
                     echo "  SSH_KEY_NAMES: ${params.SSH_KEY_NAMES}"
                     echo "  PVC_COUNT    : ${params.PVC_COUNT}"
-                    // Generate or use cluster name
-                    if (params.ACTION in ['deploy', 'all']) {
-                        // Generate unique cluster name: ocp-ibmc-<4-char-hex>
-                        def timestamp = System.currentTimeMillis()
-                        def randomHex = String.format("%04x", new Random(timestamp).nextInt(0x10000))
-                        env.CLUSTER_NAME = "ocp-ibmc-${randomHex}"
-                        echo "  CLUSTER_NAME : ${env.CLUSTER_NAME} (auto-generated)"
-                    } else if (params.ACTION == 'teardown') {
-                        env.CLUSTER_NAME = params.CLUSTER_NAME?.trim()
-                        echo "  CLUSTER_NAME : ${env.CLUSTER_NAME}"
+
+                    // Display cluster name (already set in Initialize stage)
+                    if (env.CLUSTER_NAME) {
+                        def source = params.CLUSTER_NAME?.trim() ? "(from parameter)" : "(auto-generated)"
+                        echo "  CLUSTER_NAME : ${env.CLUSTER_NAME} ${source}"
                     }
 
-                    // Set build description with key parameters
+                    // Set build description and display name with key parameters
                     def cephImageShort = params.CEPH_IMAGE.split('/')[-1].take(40)
-                    def clusterInfo = env.CLUSTER_NAME ? "<b>Cluster:</b> ${env.CLUSTER_NAME}<br/>" : ""
-                    currentBuild.description = """
-                        <b>Action:</b> ${params.ACTION}<br/>
-                        ${clusterInfo}
-                        <b>OCP:</b> ${params.OCP_VERSION} (${params.OCP_CHANNEL})<br/>
-                        <b>Ceph:</b> ${cephImageShort}
-                    """.stripIndent().trim()
+
+                    if (env.CLUSTER_NAME) {
+                        currentBuild.displayName = "#${env.BUILD_NUMBER} - ${env.CLUSTER_NAME}"
+                    }
+
+                    // Build simple, clean description with triggering user
+                    def triggeredBy = currentBuild.getBuildCauses()[0]?.userId ?: 'automated'
+                    def descParts = []
+                    descParts << "User: ${triggeredBy}"
+                    if (env.CLUSTER_NAME) {
+                        descParts << "Cluster: ${env.CLUSTER_NAME}"
+                    }
+                    descParts << "OCP: ${params.OCP_VERSION} (${params.OCP_CHANNEL})"
+                    descParts << "Ceph: ${cephImageShort}"
+
+                    currentBuild.description = descParts.join(' | ')
 
                     // Log build metadata for monitoring
                     echo ""
@@ -167,9 +179,12 @@ pipeline {
         stage("Clone ceph-interop") {
             steps {
                 dir("ceph-interop") {
+                    echo "Repo: '${params.CEPH_INTEROP_REPO}'"
+                    echo "Branch: '${params.CEPH_INTEROP_BRANCH.trim()}'"
+
                     git(
                         url: params.CEPH_INTEROP_REPO,
-                        branch: params.CEPH_INTEROP_BRANCH,
+                        branch: params.CEPH_INTEROP_BRANCH.trim(),
                         credentialsId: "ceph-qe-sa-pat"
                     )
                 }
@@ -193,17 +208,17 @@ pipeline {
                         echo "✓ Python \$PYTHON_VERSION meets requirement (>= \$REQUIRED_VERSION)"
                         
                         # Create virtual environment
-                        python3 -m venv ${VENV_DIR}
+                        python3.12 -m venv ${VENV_DIR}
                         
                         # Upgrade pip and install build tools with setuptools version constraint
-                        ${VENV_DIR}/bin/pip install --upgrade pip "setuptools<71" wheel
+                        ${VENV_DIR}/bin/pip3.12 install --upgrade pip "setuptools<71" wheel
                         
                         # Install dependencies with --no-build-isolation flag as specified in requirements.txt
-                        ${VENV_DIR}/bin/pip install --no-build-isolation -r requirements.txt
+                        ${VENV_DIR}/bin/pip3.12 install --no-build-isolation -r requirements.txt
                         
                         echo "✓ Python environment setup complete"
                         echo "✓ Installed packages:"
-                        ${VENV_DIR}/bin/pip list | grep -E "(ibm-|boto3|kubernetes|jinja2|pyyaml|requests|paramiko)"
+                        ${VENV_DIR}/bin/pip3.12 list | grep -E "(ibm-|boto3|kubernetes|jinja2|pyyaml|requests|paramiko)"
                     """
                 }
             }
@@ -215,21 +230,44 @@ pipeline {
         stage("Prepare Credentials") {
             steps {
                 dir("ceph-interop") {
-                    sh '''
-                        mkdir -p configs
-                        cp "${PULL_SECRET}" configs/pull-secret.json
-                        chmod 600 configs/pull-secret.json
-                        cat > configs/credentials.yaml << CRED_EOF
-ibmcloud:
-  api_key: "${IBM_CLOUD_API_KEY}"
-  cos_hmac_access_key_id: "${IBM_COS_HMAC_ACCESS_KEY}"
-  cos_hmac_secret_access_key: "${IBM_COS_HMAC_SECRET_KEY}"
-aws:
-  access_key_id: "${AWS_ACCESS_KEY_ID}"
-  secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
-pull_secret_path: "${WORKSPACE}/ceph-interop/configs/pull-secret.json"
-CRED_EOF
-                    '''
+                    script {
+                        // Create configs directory
+                        sh 'mkdir -p configs'
+
+                        def secretPath = "${env.WORKSPACE}/ceph-interop/configs/pull-secret.json"
+                        // Write pull-secret.json using writeFile
+                        writeFile(
+                            file: secretPath,
+                            text: env.PULL_SECRET,
+                            overwrite: true
+                        )
+
+                        // Set restrictive permissions on pull-secret
+                        sh "chmod 600 ${secretPath}"
+
+                        // Write credentials.yaml using writeYaml
+                        def creds = 'configs/credentials.yaml'
+                        def credentialsData = [
+                            ibmcloud: [
+                                api_key: env.IBM_CLOUD_API_KEY,
+                                cos_hmac_access_key_id: env.IBM_COS_HMAC_ACCESS_KEY,
+                                cos_hmac_secret_access_key: env.IBM_COS_HMAC_SECRET_KEY
+                            ],
+                            aws: [
+                                access_key_id: env.AWS_ACCESS_KEY_ID,
+                                secret_access_key: env.AWS_SECRET_ACCESS_KEY
+                            ],
+                            pull_secret_path: "${secretPath}"
+                        ]
+
+                        writeYaml(
+                            file: creds,
+                            data: credentialsData,
+                            overwrite: true
+                        )
+
+                        echo "✓ Credentials files created successfully"
+                    }
                 }
             }
         }
@@ -241,167 +279,109 @@ CRED_EOF
             steps {
                 dir("ceph-interop") {
                     script {
-                        def masterCount = params.MASTER_COUNT?.trim() ?: '3'
-                        def workerCount = params.WORKER_COUNT?.trim() ?: '3'
-                        def deviceSize  = params.DEVICE_SIZE?.trim() ?: '50'
-                        def deviceCount = params.DEVICE_COUNT?.trim() ?: '3'
+                        def masterCount = (params.MASTER_COUNT?.trim() ?: '3') as Integer
+                        def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
+                        def deviceSize  = (params.DEVICE_SIZE?.trim() ?: '50') as Integer
+                        def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
                         def cephImage   = params.CEPH_IMAGE?.trim() ?: ''
                         def odfChannel  = params.ODF_CHANNEL?.trim() ?: ''
                         def nightly     = params.ODF_NIGHTLY_INDEX?.trim() ?: ''
                         def sshKeyNames = params.SSH_KEY_NAMES?.trim() ?: 'ceph-qe-sa,ceph-qe-sa-svc'
 
-                        sh """
-                            ${VENV_DIR}/bin/python3 -c "
-import yaml
+                        // Read existing deployment configuration
+                        def config = readYaml(file: 'configs/deployment.yaml')
 
-# Load existing deployment configuration
-with open('configs/deployment.yaml', 'r') as f:
-    config = yaml.safe_load(f)
+                        // ── Cluster / OCP Configuration ──────────────────────
+                        // Set OpenShift version and release channel (released/nightly)
+                        config.cluster.ocp_version = params.OCP_VERSION
+                        config.cluster.ocp_channel = params.OCP_CHANNEL
 
-# ── Cluster / OCP Configuration ──────────────────────
-# Set OpenShift version and release channel (released/nightly)
-config['cluster']['ocp_version'] = '${params.OCP_VERSION}'
-config['cluster']['ocp_channel'] = '${params.OCP_CHANNEL}'
+                        // ── IBM Cloud Infrastructure ─────────────────────────
+                        // Configure IBM Cloud region, COS region, and VPC
+                        config.ibmcloud.region = params.IBM_REGION
+                        config.ibmcloud.cos_region = 'au-syd'  // Fixed COS region for object storage
+                        config.ibmcloud.vpc_name = params.VPC_NAME
 
-# ── IBM Cloud Infrastructure ─────────────────────────
-# Configure IBM Cloud region, COS region, and VPC
-config['ibmcloud']['region']     = '${params.IBM_REGION}'
-config['ibmcloud']['cos_region'] = 'au-syd'  # Fixed COS region for object storage
-config['ibmcloud']['vpc_name']   = '${params.VPC_NAME}'
+                        // ── Cluster Node Configuration ───────────────────────
+                        // Set master (control plane) and worker node counts
+                        config.ibmcloud.master.count = masterCount
+                        config.ibmcloud.worker.count = workerCount
 
-# ── Cluster Node Configuration ───────────────────────
-# Set master (control plane) and worker node counts
-config['ibmcloud']['master']['count'] = ${masterCount}
-config['ibmcloud']['worker']['count'] = ${workerCount}
+                        // ── Storage Configuration (OSD Disks) ────────────────
+                        // Configure data volumes attached to each worker node for Ceph OSDs
+                        config.ibmcloud.worker.data_volumes.capacity_gb = deviceSize
+                        config.ibmcloud.worker.data_volumes.count = deviceCount
 
-# ── Storage Configuration (OSD Disks) ────────────────
-# Configure data volumes attached to each worker node for Ceph OSDs
-config['ibmcloud']['worker']['data_volumes']['capacity_gb'] = ${deviceSize}
-config['ibmcloud']['worker']['data_volumes']['count']       = ${deviceCount}
+                        // ── ODF Operator Configuration ───────────────────────
+                        // Set ODF operator channel (e.g., stable-4.20) or use default
+                        if (odfChannel) {
+                            config.odf.channel = odfChannel
+                        } else {
+                            config.odf.channel = ''  // Use default channel
+                        }
 
-# ── ODF Operator Configuration ───────────────────────
-# Set ODF operator channel (e.g., stable-4.20) or use default
-odf_channel = '${odfChannel}'.strip()
-if odf_channel:
-    config['odf']['channel'] = odf_channel
-else:
-    config['odf']['channel'] = ''  # Use default channel
+                        // Set ODF nightly catalog index if testing pre-release builds
+                        if (nightly) {
+                            config.odf.nightly_index_image = nightly
+                        }
 
-# Set ODF nightly catalog index if testing pre-release builds
-nightly_index = '${nightly}'.strip()
-if nightly_index:
-    config['odf']['nightly_index_image'] = nightly_index
+                        // Set Ceph container image to test (required parameter)
+                        if (cephImage) {
+                            config.odf.ceph_image = cephImage
+                        }
 
-# Set Ceph container image to test (required parameter)
-ceph_image = '${cephImage}'.strip()
-if ceph_image:
-    config['odf']['ceph_image'] = ceph_image
+                        // ── SSH Access Configuration ─────────────────────────
+                        // Parse comma-separated SSH key names for VSI access
+                        if (sshKeyNames) {
+                            config.ibmcloud.ssh_key_names = sshKeyNames.split(',').collect { it.trim() }.findAll { it }
+                        }
 
-# ── SSH Access Configuration ─────────────────────────
-# Parse comma-separated SSH key names for VSI access
-ssh_keys_raw = '${sshKeyNames}'.strip()
-if ssh_keys_raw:
-    config['ibmcloud']['ssh_key_names'] = [k.strip() for k in ssh_keys_raw.split(',') if k.strip()]
+                        // ── ODF Storage Cluster Sizing ───────────────────────
+                        // Device set count matches worker count (one device set per worker)
+                        // OSD size matches the data volume size configured above
+                        config.odf.device_set_count = workerCount
+                        config.odf.osd_size = "${deviceSize}Gi"
 
-# ── ODF Storage Cluster Sizing ───────────────────────
-# Device set count matches worker count (one device set per worker)
-# OSD size matches the data volume size configured above
-config['odf']['device_set_count'] = ${workerCount}
-config['odf']['osd_size']         = '${deviceSize}Gi'
+                        // Write updated configuration back to file using writeYaml
+                        def configFile = 'configs/deployment.yaml'
+                        writeYaml(
+                            file: configFile,
+                            data: config,
+                            overwrite: true
+                        )
 
-# Write updated configuration back to file
-with open('configs/deployment.yaml', 'w') as f:
-    yaml.dump(config, f, default_flow_style=False)
-
-print('Updated deployment.yaml:')
-print(f'  OCP version   : {config[\"cluster\"][\"ocp_version\"]}')
-print(f'  OCP channel   : {config[\"cluster\"][\"ocp_channel\"]}')
-print(f'  ODF channel   : {config[\"odf\"][\"channel\"] or \"(default)\"}')
-print(f'  Ceph image    : {config[\"odf\"].get(\"ceph_image\", \"\") or \"(none)\"}')
-print(f'  IBM region    : {config[\"ibmcloud\"][\"region\"]}')
-print(f'  VPC           : {config[\"ibmcloud\"][\"vpc_name\"]}')
-print(f'  Masters       : {config[\"ibmcloud\"][\"master\"][\"count\"]}')
-print(f'  Workers       : {config[\"ibmcloud\"][\"worker\"][\"count\"]}')
-print(f'  Device size   : {config[\"ibmcloud\"][\"worker\"][\"data_volumes\"][\"capacity_gb\"]} GB')
-print(f'  Device count  : {config[\"ibmcloud\"][\"worker\"][\"data_volumes\"][\"count\"]} per worker')
-print(f'  SSH keys      : {config[\"ibmcloud\"].get(\"ssh_key_names\", [])}')
-print(f'  OSD size      : {config[\"odf\"][\"osd_size\"]}')
-if nightly_index:
-    print(f'  ODF nightly   : {nightly_index}')
-"
-                        """
+                        // Display updated configuration
+                        echo 'Updated deployment.yaml:'
+                        echo "  OCP version   : ${config.cluster.ocp_version}"
+                        echo "  OCP channel   : ${config.cluster.ocp_channel}"
+                        echo "  ODF channel   : ${config.odf.channel ?: '(default)'}"
+                        echo "  Ceph image    : ${config.odf.ceph_image ?: '(none)'}"
+                        echo "  IBM region    : ${config.ibmcloud.region}"
+                        echo "  VPC           : ${config.ibmcloud.vpc_name}"
+                        echo "  Masters       : ${config.ibmcloud.master.count}"
+                        echo "  Workers       : ${config.ibmcloud.worker.count}"
+                        echo "  Device size   : ${config.ibmcloud.worker.data_volumes.capacity_gb} GB"
+                        echo "  Device count  : ${config.ibmcloud.worker.data_volumes.count} per worker"
+                        echo "  SSH keys      : ${config.ibmcloud.ssh_key_names}"
+                        echo "  OSD size      : ${config.odf.osd_size}"
+                        if (nightly) {
+                            echo "  ODF nightly   : ${nightly}"
+                        }
                     }
                 }
             }
         }
 
         // ──────────────────────────────────────────────────────────
-        // Validate configuration only (ACTION=validate)
-        // ──────────────────────────────────────────────────────────
-        stage("Validate Configuration") {
-            when {
-                expression { return params.ACTION == 'validate' }
-            }
-            steps {
-                script {
-                    echo "╔══════════════════════════════════════════════════╗"
-                    echo "║         CONFIGURATION VALIDATION MODE            ║"
-                    echo "╚══════════════════════════════════════════════════╝"
-                    echo ""
-                    echo "✓ All parameters validated successfully"
-                    echo "✓ All required credentials are available"
-                    echo "✓ Configuration file updated successfully"
-                    echo ""
-                    echo "Configuration Summary:"
-                    echo "  • OCP ${params.OCP_VERSION} (${params.OCP_CHANNEL})"
-                    echo "  • ODF Channel: ${params.ODF_CHANNEL ?: '(default)'}"
-                    echo "  • Ceph Image: ${params.CEPH_IMAGE}"
-                    echo "  • Cluster: ${params.MASTER_COUNT}m / ${params.WORKER_COUNT}w"
-                    echo "  • Storage: ${params.DEVICE_COUNT} x ${params.DEVICE_SIZE}GB per worker"
-                    echo "  • Region: ${params.IBM_REGION}"
-                    echo "  • VPC: ${params.VPC_NAME}"
-                    echo ""
-                    echo "No deployment will be performed in validation mode."
-                    echo "To deploy, run with ACTION=deploy or ACTION=all"
-                }
-            }
-        }
-
-        // ──────────────────────────────────────────────────────────
-        // Teardown only (ACTION=teardown)
-        // ──────────────────────────────────────────────────────────
-        stage("Teardown Only") {
-            when {
-                expression { return params.ACTION == 'teardown' }
-            }
-            steps {
-                dir("ceph-interop") {
-                    script {
-                        def clusterName = params.CLUSTER_NAME?.trim()
-                        sh """
-                            ${VENV_DIR}/bin/python3 run.py teardown \
-                                --cluster-name '${clusterName}' \
-                                --verbose
-                        """
-                    }
-                }
-            }
-        }
-
-        // ──────────────────────────────────────────────────────────
-        // Deploy OCP + ODF (ACTION=all or ACTION=deploy)
+        // Deploy OCP + ODF
         // ──────────────────────────────────────────────────────────
         stage("Deploy OCP + ODF") {
-            when {
-                expression { return params.ACTION in ['all', 'deploy'] }
-            }
             steps {
                 dir("ceph-interop") {
                     script {
-                        // Use the cluster name generated in validation stage
                         echo "Deploying cluster: ${env.CLUSTER_NAME}"
                         sh """
-                            ${VENV_DIR}/bin/python3 run.py deploy \
+                            ${VENV_DIR}/bin/python3.12 run.py deploy \
                                 --cluster-name '${env.CLUSTER_NAME}' \
                                 --verbose
                         """
@@ -412,19 +392,16 @@ if nightly_index:
         }
 
         // ──────────────────────────────────────────────────────────
-        // Run IO Workloads (ACTION=all or ACTION=deploy)
+        // Run IO Workloads
         // ──────────────────────────────────────────────────────────
         stage("Run IO Workloads") {
-            when {
-                expression { return params.ACTION in ['all', 'deploy'] }
-            }
             steps {
                 dir("ceph-interop") {
                     script {
                         def pvcCount = params.PVC_COUNT?.trim() ?: "1"
                         echo "Running IO workloads on cluster: ${env.CLUSTER_NAME} (pvc-count: ${pvcCount})"
                         sh """
-                            ${VENV_DIR}/bin/python3 run.py workload \
+                            ${VENV_DIR}/bin/python3.12 run.py workload \
                                 --cluster-name '${env.CLUSTER_NAME}' \
                                 --pvc-count ${pvcCount} \
                                 --verbose
@@ -435,18 +412,15 @@ if nightly_index:
         }
 
         // ──────────────────────────────────────────────────────────
-        // Teardown after workloads (ACTION=all only)
+        // Teardown (mandatory)
         // ──────────────────────────────────────────────────────────
         stage("Teardown") {
-            when {
-                expression { return params.ACTION == 'all' }
-            }
             steps {
                 dir("ceph-interop") {
                     script {
                         echo "Tearing down cluster: ${env.CLUSTER_NAME}"
                         sh """
-                            ${VENV_DIR}/bin/python3 run.py teardown \
+                            ${VENV_DIR}/bin/python3.12 run.py teardown \
                                 --cluster-name '${env.CLUSTER_NAME}' \
                                 --verbose
                         """
@@ -457,24 +431,9 @@ if nightly_index:
     }
 
     post {
-        failure {
-            script {
-                if (params.TEARDOWN_ON_FAILURE && params.ACTION in ['all', 'deploy'] && env.CLUSTER_NAME) {
-                    dir("ceph-interop") {
-                        echo "Tearing down after failure: ${env.CLUSTER_NAME}"
-                        sh """
-                            ${VENV_DIR}/bin/python3 run.py teardown \
-                                --cluster-name '${env.CLUSTER_NAME}' \
-                                --verbose || true
-                        """
-                    }
-                }
-            }
-        }
-
         always {
             script {
-                // Use the cluster name from environment (generated or provided)
+                // Use cluster name from environment
                 def clusterName = env.CLUSTER_NAME ?: ""
                 def hasCluster = clusterName ? true : false
 
@@ -482,14 +441,13 @@ if nightly_index:
                 try {
                     dir("ceph-interop") {
                         if (hasCluster) {
-                            // Archive the specific state file for this cluster
+                            // Archive the specific state file for this cluster (legacy location)
                             archiveArtifacts artifacts: "configs/${clusterName}-state.json", allowEmptyArchive: true
 
                             sh """
                                 if [ -d "work/clusters/${clusterName}" ]; then
                                     tar czf "cluster-artifacts-${clusterName}.tar.gz" \
                                         --exclude='bin' \
-                                        --exclude='*.ign' \
                                         -C work/clusters \
                                         "${clusterName}" 2>/dev/null || true
                                     echo "Created cluster-artifacts-${clusterName}.tar.gz"
@@ -526,12 +484,7 @@ if nightly_index:
                     def odfCh  = params.ODF_CHANNEL ?: 'default'
                     def subject = "CEPH-ODF INTEROP TESTING — OCP ${ocpVer} / ODF ${odfCh} — ${status}"
 
-                    def actionLabels = [
-                        'all':      'Deploy \u2192 Workload \u2192 Teardown',
-                        'deploy':   'Deploy OCP + ODF',
-                        'teardown': 'Teardown Cluster',
-                    ]
-                    def actionLabel = actionLabels[params.ACTION] ?: (params.ACTION ?: 'N/A')
+                    def actionLabel = 'Deploy \u2192 Workload \u2192 Teardown'
 
                     // Build version links (safe for null params)
                     def ocpVersion = params.OCP_VERSION ?: ''
@@ -566,10 +519,17 @@ if nightly_index:
                     def cephVersion = ""
                     if (hasCluster) {
                         try {
-                            cephVersion = sh(
-                                script: "grep -oP 'ceph version \\K[^ ]+' ceph-interop/work/clusters/${clusterName}/workload-report-*.txt 2>/dev/null | head -1 || echo ''",
+                            def rawVersion = sh(
+                                script: "grep 'ceph version' ceph-interop/work/clusters/${clusterName}/workload-report-*.txt 2>/dev/null | head -1 || echo ''",
                                 returnStdout: true
                             ).trim()
+                            // Extract just the version number (e.g., "19.2.1-331.el9cp" from full line)
+                            if (rawVersion) {
+                                def matcher = (rawVersion =~ /ceph version (\S+)/)
+                                if (matcher.find()) {
+                                    cephVersion = matcher.group(1)
+                                }
+                            }
                         } catch (Exception ignored) { /* workload report may not exist */ }
                     }
                     def cephVersionRow = ""
@@ -577,15 +537,22 @@ if nightly_index:
                         cephVersionRow = """
                     <tr>
                         <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph Version</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;"><a href="https://docs.ceph.com/en/latest/releases/">${cephVersion}</a></td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${cephVersion}</td>
                     </tr>"""
                     }
+
+                    // Infrastructure row (always present)
+                    def infrastructureRow = """
+                    <tr>
+                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Infrastructure</b></td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">IBM Cloud</td>
+                    </tr>"""
 
                     // Cluster sizing summary
                     def sizingRow = """
                     <tr>
                         <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Cluster Size</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${params.MASTER_COUNT ?: '3'}m / ${params.WORKER_COUNT ?: '3'}w — ${params.DEVICE_COUNT ?: '3'} x ${params.DEVICE_SIZE ?: '50'}G OSD per worker</td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${params.MASTER_COUNT ?: '3'} master / ${params.WORKER_COUNT ?: '3'} worker — ${params.DEVICE_COUNT ?: '3'} x ${params.DEVICE_SIZE ?: '50'}GB OSD per worker</td>
                     </tr>"""
 
                     def duration = 'N/A'
@@ -599,10 +566,6 @@ if nightly_index:
                             ${colors.mark} CEPH-ODF INTEROP TESTING — ${status}
                         </caption>
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px; width: 160px;"><b>Workflow</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${actionLabel}</td>
-                        </tr>
-                        <tr>
                             <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Cluster</b></td>
                             <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${hasCluster ? clusterName : 'N/A (not created)'}</td>
                         </tr>
@@ -613,7 +576,15 @@ if nightly_index:
                         <tr>
                             <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>ODF Channel</b></td>
                             <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${odfCell}</td>
-                        </tr>${cephImageRow}${cephVersionRow}${sizingRow}
+                        </tr>
+${cephImageRow}
+${cephVersionRow}
+${sizingRow}
+${infrastructureRow}
+                        <tr>
+                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px; width: 160px;"><b>Workflow</b></td>
+                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${actionLabel}</td>
+                        </tr>
                         <tr>
                             <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>IBM Region</b></td>
                             <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${params.IBM_REGION ?: 'N/A'}</td>
@@ -636,7 +607,7 @@ if nightly_index:
                     """.stripIndent()
 
                     def attachPattern = hasCluster
-                        ? "ceph-interop/cluster-artifacts-${clusterName}.tar.gz"
+                        ? "ceph-interop/cluster-artifacts-${clusterName}.tar.gz, ceph-interop/configs/${clusterName}-state.json"
                         : ''
 
                     emailext(

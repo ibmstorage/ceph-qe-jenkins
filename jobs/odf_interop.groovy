@@ -13,8 +13,7 @@
         - Installs ODF operator and creates internal Ceph StorageCluster
         - Patches Ceph image on StorageCluster
         - Runs IO verification workloads (FIO on RBD + CephFS)
-        - Tears down all resources (ACTION=all)
-        - Supports teardown-only mode
+        - Tears down all resources (mandatory)
 */
 def job = pipelineJob("odf-interop") {
     // Job display name
@@ -54,7 +53,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "OCP_VERSION",
                 "4.20.13",
-                "OpenShift version to deploy (e.g. 4.16.3, 4.20.13)"
+                "OpenShift version to deploy (example: 4.20.13)"
             )
 
             choiceParam(
@@ -66,8 +65,8 @@ def job = pipelineJob("odf-interop") {
             // ── ODF Configuration ─────────────────────────────────────
             stringParam(
                 "ODF_CHANNEL",
-                "",
-                "ODF operator channel (e.g. stable-4.20). Leave empty to use default."
+                "stable-4.20",
+                "ODF operator channel (REQUIRED). example: stable-4.20, ensure compatibility with OCP version"
             )
 
             stringParam(
@@ -79,7 +78,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "CEPH_IMAGE",
                 "",
-                "Ceph version image to test (REQUIRED). e.g. registry.stage.redhat.io/rhceph/rhceph-9-rhel9:9-1768259913"
+                "Ceph version image to test (REQUIRED). e.g. registry.stage.redhat.io/rhceph/rhceph-9-rhel9:9-1768259913 or quay.io/rhceph-ci/rhceph@sha256:..."
             )
 
             // ── IBM Cloud Environment ────────────────────────────────
@@ -130,13 +129,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "CLUSTER_NAME",
                 "",
-                "Cluster name — REQUIRED for teardown action. For deploy/all, cluster name is auto-generated (leave empty)."
-            )
-
-            choiceParam(
-                "ACTION",
-                ["all", "deploy", "teardown", "validate"],
-                "Pipeline action: all (deploy+workload+teardown), deploy (OCP+ODF only), teardown (cleanup), validate (config check only)"
+                "Cluster name — auto-generated (leave empty). Pipeline always runs: deploy → workload → teardown"
             )
 
             stringParam(
@@ -145,15 +138,9 @@ def job = pipelineJob("odf-interop") {
                 "Number of PVCs per storage type (RBD and CephFS) for IO workloads"
             )
 
-            booleanParam(
-                "TEARDOWN_ON_FAILURE",
-                false,
-                "Tear down all resources if deploy/all fails (does not apply to teardown action)"
-            )
-
             stringParam(
                 "EMAIL_ADDRESS",
-                "ibm-ceph-qe-devops-alerts-dg@wwpdl.vnet.ibm.com",
+                "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com",
                 "Notification email recipients (comma-separated)"
             )
         }
