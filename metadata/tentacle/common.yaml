@@ -94,3 +94,26 @@ sanity:
     - name: "Tier-1 DMFG Service Apply Spec"
       suite: suites/tentacle/cephadm/tier1-service-apply-spec.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+
+
+live:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    # DMFG test suites
+    - name: "Tier-1 upgrade rhcs 8x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      build:
+        - rh
+      platform:
+        - rhel-9
+    - name: "Tier-1 upgrade ibm 8x to 9x"
+      suite: suites/tentacle/upgrades/tier1-upgrade-ibm-8x-to-9x.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      build:
+        - ibm
+      platform:
+        - rhel-9
