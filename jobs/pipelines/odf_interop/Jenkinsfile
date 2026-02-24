@@ -34,7 +34,6 @@ pipeline {
         IBM_COS_HMAC_SECRET_KEY = credentials('ibm-cos-secret-key')
         AWS_ACCESS_KEY_ID       = credentials('aws-systest-access')
         AWS_SECRET_ACCESS_KEY   = credentials('aws-systest-secret-access')
-        PULL_SECRET             = credentials('ocs-pull-secret')
 
         // Python virtualenv location
         VENV_DIR = "${WORKSPACE}/ceph-interop/.venv"
@@ -234,16 +233,15 @@ pipeline {
                         // Create configs directory
                         sh 'mkdir -p configs'
 
-                        def secretPath = "${env.WORKSPACE}/ceph-interop/configs/pull-secret.json"
-                        // Write pull-secret.json using writeFile
-                        writeFile(
-                            file: secretPath,
-                            text: env.PULL_SECRET,
-                            overwrite: true
-                        )
-
-                        // Set restrictive permissions on pull-secret
-                        sh "chmod 600 ${secretPath}"
+                        // Copy pull-secret.json from Jenkins file credential
+                        def secretPath = "configs/pull-secret.json"
+                        withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                            sh """
+                                cp "\${PULL_SECRET_FILE}" ${secretPath}
+                                chmod 600 ${secretPath}
+                                echo "✓ pull-secret.json copied from Jenkins credential"
+                            """
+                        }
 
                         // Write credentials.yaml using writeYaml
                         def creds = 'configs/credentials.yaml'
@@ -257,7 +255,7 @@ pipeline {
                                 access_key_id: env.AWS_ACCESS_KEY_ID,
                                 secret_access_key: env.AWS_SECRET_ACCESS_KEY
                             ],
-                            pull_secret_path: "${secretPath}"
+                            pull_secret_path: "${env.WORKSPACE}/ceph-interop/${secretPath}"
                         ]
 
                         writeYaml(
@@ -266,7 +264,21 @@ pipeline {
                             overwrite: true
                         )
 
-                        echo "✓ Credentials files created successfully"
+                        // Validate that files were created
+                        sh """
+                            echo "Validating credential files..."
+                            if [ ! -f "${secretPath}" ]; then
+                                echo "ERROR: pull-secret.json was not created"
+                                exit 1
+                            fi
+                            if [ ! -f "${creds}" ]; then
+                                echo "ERROR: credentials.yaml was not created"
+                                exit 1
+                            fi
+                            echo "✓ pull-secret.json created (size: \$(stat -f%z ${secretPath} 2>/dev/null || stat -c%s ${secretPath}) bytes)"
+                            echo "✓ credentials.yaml created (size: \$(stat -f%z ${creds} 2>/dev/null || stat -c%s ${creds}) bytes)"
+                            echo "✓ Credentials files validated successfully"
+                        """
                     }
                 }
             }
@@ -466,7 +478,13 @@ pipeline {
                     echo "Artifact archival failed (non-fatal): ${e.message}"
                 } finally {
                     // Always clean up credentials — even if archival failed
-                    sh 'rm -f ceph-interop/configs/credentials.yaml ceph-interop/configs/pull-secret.json 2>/dev/null || true'
+                    dir("ceph-interop") {
+                        sh '''
+                            echo "Cleaning up credential files..."
+                            rm -f configs/credentials.yaml configs/pull-secret.json 2>/dev/null || true
+                            echo "✓ Credential files cleaned up"
+                        '''
+                    }
                 }
 
                 // ── Build email (always sent, even on abort/failure) ──
