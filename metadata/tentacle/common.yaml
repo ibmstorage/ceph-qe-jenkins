@@ -117,3 +117,38 @@ live:
         - ibm
       platform:
         - rhel-9
+    # NVMEoF tests
+    - name: "Basic E2E NVMeoF Sanity tests"
+      suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
+      build:
+        - ibm
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Basic E2E-Test with FIPS mode enabled"
+      suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_fips.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
+      build:
+        - ibm
+      custom-config:
+        enable-fips-mode: true
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "NVMeoTCP functional regression tests"
+      suite: suites/tentacle/nvmeof/tier-2_nvmeof_functional_Regression.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
+      build:
+        - ibm
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "HA test - 2 NVMe Gateway High availability Sanity"
+      suite: suites/tentacle/nvmeof/tier-1_nvmeof_ha_sanity.yaml
+      global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      build:
+        - ibm
+      platform:
+        - rhel-9
+        - rhel-10
