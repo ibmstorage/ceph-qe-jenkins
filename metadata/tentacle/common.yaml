@@ -105,7 +105,6 @@ live:
     - name: "Tier-1 upgrade rhcs 8x to 9x"
       suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-8x-to-9x.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
       build:
         - rh
       platform:
