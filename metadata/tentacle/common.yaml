@@ -143,3 +143,20 @@ live:
       build:
         - ibm
       vm-size: cx2-8x16
+
+    # RBD and RBD Mirror tests
+    - name: "RBD Functional regression tests"
+      suite: suites/tentacle/rbd/tier-1_rbd.yaml
+      global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
+      build:
+        - ibm
+    - name: "RBD Mirror Functional regression tests"
+      suite: suites/tentacle/rbd/tier-1_rbd_mirror.yaml
+      global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+      build:
+        - ibm
+    - name: "tier-2 rbd group mirror tests"
+      suite: suites/tentacle/rbd/tier-2_rbd_group_mirror.yaml
+      global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+      build:
+        - ibm
