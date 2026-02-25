@@ -68,7 +68,7 @@ def job = pipelineJob("sync-manifest-images") {
         stringParam(
             "RELEASE_VERSION",
             "",
-            "Release version to sync (e.g., 9.0, 8.1). Leave empty to sync all available releases."
+            "Release version to sync (e.g., 9.1, 9.0, 8.1). Leave empty to sync all available releases."
         )
         stringParam(
             "VENDOR",

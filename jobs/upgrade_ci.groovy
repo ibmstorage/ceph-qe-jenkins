@@ -28,7 +28,7 @@ def CEPH_RELEASE_CONFIG = [
         rhelVersion : ["rhel-9"]
     ],
     "tentacle": [
-        buildVersion: ["9.0"],
+        buildVersion: ["9.1", "9.0"],
         rhelVersion : ["rhel-10", "rhel-9"]
     ]
 ]
