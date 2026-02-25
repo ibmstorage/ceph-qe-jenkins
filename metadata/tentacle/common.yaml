@@ -160,3 +160,17 @@ live:
       global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
       vm-size: bx2-2x8
 
+    # CephFS tests
+    - name: "Tier-1 CephFS Test"
+      suite: suites/tentacle/cephfs/tier-0_fs.yaml
+      global-conf: conf/tentacle/cephfs/tier-0_fs.yaml
+      build:
+        - rh
+    - name: "Test Cephfs Upgrade 8.1x to 9x"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_81_to_9x.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
+      build:
+        - ibm
+      platform:
+        - rhel-9
+      vm-size: bx2-2x8
