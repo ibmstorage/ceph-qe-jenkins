@@ -149,12 +149,10 @@ live:
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
       global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
       vm-size: bx2-2x8
-
     - name: "RBD Mirror Functional regression tests"
       suite: suites/tentacle/rbd/tier-1_rbd_mirror.yaml
       global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
       vm-size: bx2-2x8
-
     - name: "tier-2 rbd group mirror tests"
       suite: suites/tentacle/rbd/tier-2_rbd_group_mirror.yaml
       global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
@@ -174,3 +172,18 @@ live:
       platform:
         - rhel-9
       vm-size: bx2-2x8
+
+    # NFS-Ganesha tests
+    - name: "Tier-0 NFS Ganesha"
+      suite: suites/tentacle/nfs/tier0-nfs-ganesha-sanity.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v3"
+      suite: suites/tentacle/nfs/tier0-nfs-ganesha-v3-sanity.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v4"
+      suite: suites/tentacle/nfs/tier0-nfs-ganesha-vers-4-2-sanity.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha functional Sanity"
+      suite: suites/tentacle/nfs/tier0-nfs-ganesha-func-sanity.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+
