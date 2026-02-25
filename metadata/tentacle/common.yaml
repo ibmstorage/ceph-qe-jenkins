@@ -187,3 +187,10 @@ live:
       suite: suites/tentacle/nfs/tier0-nfs-ganesha-func-sanity.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
 
+    # RGW tests
+    - name: "Tier-1 rgw"
+      suite: suites/tentacle/rgw/tier-1_rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw multisite"
+      suite: suites/tentacle/rgw/tier-1_rgw_multisite.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
