@@ -217,3 +217,9 @@ live:
       build:
         - ibm
       vm-size: cx2-8x16
+
+    # RADOS tests
+    - name: "Tier-2 RADOS Basic Regression"
+      suite: suites/tentacle/rados/tier-2-rados-basic-regression.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      vm-size: bx2-2x8

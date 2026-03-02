@@ -144,3 +144,14 @@ sanity:
         - rhel-9
       build:
         - ibm
+
+live:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    # RADOS tests
+    - name: "Tier-2 RADOS Basic Regression"
+      suite: suites/squid/rados/tier-2-rados-basic-regression.yaml
+      global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size: bx2-2x8
