@@ -123,6 +123,7 @@ def call(Map parameters) {
     def buildType = parameters.get("buildType")
     if ( buildType.toLowerCase() == "ibm" ) {
         args += ["--product ibm"]
+        args += ["--custom-config ibm-build=True"]
     } else {
         args += ["--product redhat"]
     }
