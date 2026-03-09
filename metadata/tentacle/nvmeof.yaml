@@ -105,6 +105,18 @@ weekly:
         vm-size: cx2-8x16
         build:
          - ibm
+      - name: "Deploy NVMeOf with hugepages enabled"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_hugepages_operations.yaml
+        global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+        vm-size: cx2-8x16
+        build:
+         - ibm
+      - name: "QoS tests on NVMeoF namespaces"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_qos_sanity_tests.yaml
+        global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+        vm-size: cx2-8x16
+        build:
+         - ibm
 
 upgrade:
     metadata:
