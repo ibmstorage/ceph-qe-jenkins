@@ -2,7 +2,7 @@
 @Library("ceph-qe-libs@main") _
 
 // Set job parameters
-def job = "weekly"
+def job = "extended_regression"
 def jobConfigs = [:]
 
 // Set suite parameters
@@ -75,7 +75,7 @@ pipeline {
             steps {
                 script {
                     // Iterate over suite list
-                    suites.weekly.suites.each { suite ->
+                    suites.extended_regression.suites.each { suite ->
                         // Debug
                         echo "Executing suite: ${suite.suite} with config: ${suite.global_conf}"
 

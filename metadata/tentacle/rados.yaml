@@ -72,7 +72,7 @@ regression:
       suite: suites/tentacle/rados/tier-3_rados_osd_thrashing_tests.yaml
       global-conf: conf/tentacle/rados/9-node-ec-cluster-1-client.yaml
       # VM count: 6
-weekly:
+extended_regression:
   metadata:
     cloud:
       - ibmc

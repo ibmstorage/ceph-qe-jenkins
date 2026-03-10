@@ -221,7 +221,7 @@ def call(Map parameters) {
     // Update job path with ceph version
     jobDir += [jobConfig.job, jobConfig.cephVersion]
 
-    // Update path with FG for regression & weekly jobs
+    // Update path with FG for regression & extended regression jobs
     if (params.FG) {
         jobConfig.fg = params.FG
         jobDir += [jobConfig.fg]

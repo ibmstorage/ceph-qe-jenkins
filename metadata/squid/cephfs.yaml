@@ -21,7 +21,7 @@ regression:
     - name: "Test Cephfs with Erasure"
       suite: suites/squid/cephfs/tier-2_fs_erasure.yaml
       global-conf: conf/squid/cephfs/tier-0_fs.yaml
-weekly:
+extended_regression:
   metadata:
     cloud:
       - ibmc

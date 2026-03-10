@@ -57,7 +57,7 @@ regression:
       suite: suites/reef/rgw/tier-1_rgw_sw_qat.yaml
       global-conf: conf/reef/rgw/tier-0_rgw.yaml
 
-weekly:
+extended_regression:
   metadata:
     cloud:
       - ibmc

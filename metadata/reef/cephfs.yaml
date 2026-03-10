@@ -38,7 +38,7 @@ regression:
         global-conf: conf/reef/cephfs/tier-2_cephfs_9-node-cluster.yaml
 
 
-weekly:
+extended_regression:
   metadata:
     cloud:
       - ibmc

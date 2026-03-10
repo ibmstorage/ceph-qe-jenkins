@@ -94,7 +94,7 @@ regression:
         build:
          - ibm
 
-weekly:
+extended_regression:
     metadata:
       cloud:
         - ibmc

@@ -21,8 +21,8 @@ def generate_jobs(data) {
     }
     // Add the job configurations
     data.jobsConfiguration.add([
-        "name": "${data.cephVersion.toLowerCase()}-${data.fg.toLowerCase()}-weekly-ci",
-        "displayName": "${data.cephVersion} - ${data.fg} - Weekly Test Pipeline",
+        "name": "${data.cephVersion.toLowerCase()}-${data.fg.toLowerCase()}-extended-regression-ci",
+        "displayName": "${data.cephVersion} - ${data.fg} - Extended Regression Test Pipeline",
         "fg": [data.fg.toLowerCase()],
         "logLevel": logLevel,
         "vmFlavor": vmFlavor,
@@ -164,13 +164,13 @@ for (jobConfig in jobsConfiguration) {
                         branch("*/main")
                     }
                 }
-                scriptPath("jobs/pipelines/weekly_ci/Jenkinsfile")
+                scriptPath("jobs/pipelines/extended_regression_ci/Jenkinsfile")
                 lightweight(false)
             }
 
             // Add the required parameters for the job
             parameters {
-                stringParam("PREFIX", "${jobConfig.fg[0]}-weekly", "Prefix for instance name")
+                stringParam("PREFIX", "${jobConfig.fg[0]}-extended-regression", "Prefix for instance name")
                 choiceParam("FG", jobConfig.fg, "Ceph Component")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
                 stringParam("BRANCH", "main", "Ceph CI git branch")

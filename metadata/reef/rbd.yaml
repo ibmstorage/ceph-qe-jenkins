@@ -28,7 +28,7 @@ regression:
         suite: suites/reef/rbd/tier-2_rbd_group.yaml
         global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
 
-weekly:
+extended_regression:
     metadata:
       cloud:
         - ibmc

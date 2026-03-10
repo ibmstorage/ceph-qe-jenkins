@@ -47,7 +47,7 @@ regression:
       suite: suites/reef/rados/tier-2_rados_test_parameters.yaml
       global-conf: conf/reef/rados/7-node-cluster.yaml
       # VM count: 7
-weekly:
+extended_regression:
   metadata:
     cloud:
       - ibmc

@@ -46,7 +46,7 @@ regression:
         suite: suites/tentacle/rbd/tier-2_non_default_namespace_mirroring.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
 
-weekly:
+extended_regression:
     metadata:
       cloud:
         - ibmc

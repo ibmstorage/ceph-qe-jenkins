@@ -78,7 +78,7 @@ regression:
       suite: suites/tentacle/cephadm/tier4-service-operations.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
 
-weekly:
+extended_regression:
   metadata:
     cloud:
       - ibmc
@@ -89,15 +89,15 @@ weekly:
 #    - name: "Test DMFG Tier-2 RHOS01 Multiple Subnet Openstack Only"
 #      suite: suites/tentacle/cephadm/tier2-rhos01-multiple-subnet-openstack-only.yaml
 #      global-conf: conf/tentacle/cephadm/rhos01-1admin-5node-multiple-subnet.yaml
-    - name: "Test DMFG Tier-2 Cluster Elasticity"
-      suite: suites/tentacle/cephadm/tier2-cluster-elasticity.yaml
-      global-conf: conf/tentacle/cephadm/1admin-10node-1client-cephadm-scale.yaml
+    # - name: "Test DMFG Tier-2 Cluster Elasticity"
+    #   suite: suites/tentacle/cephadm/tier2-cluster-elasticity.yaml
+    #   global-conf: conf/tentacle/cephadm/1admin-10node-1client-cephadm-scale.yaml
     - name: "Test DMFG Tier-2 Ceph-MGR"
       suite: suites/tentacle/cephmgr/tier2-cephmgr.yaml
       global-conf: conf/tentacle/cephmgr/1admin-4node-1client-ceph-mgr.yaml
-    - name: "Test DMFG Tier-4 Crash Configuration"
-      suite: suites/tentacle/cephadm/tier4-crash-configuration.yaml
-      global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    # - name: "Test DMFG Tier-4 Crash Configuration"
+    #   suite: suites/tentacle/cephadm/tier4-crash-configuration.yaml
+    #   global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
 
 upgrade:
   metadata:

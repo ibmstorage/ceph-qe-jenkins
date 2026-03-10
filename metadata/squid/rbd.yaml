@@ -56,7 +56,7 @@ regression:
         version:
           - 8.1
 
-weekly:
+extended_regression:
     metadata:
       cloud:
         - ibmc
