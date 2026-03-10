@@ -100,7 +100,7 @@ pipeline {
                     } else if (buildInfo.application == "ceph-8-1") {
                         jobName = "squid-bvt-ci"
                         platform = "rhel-9"
-                    } else if (buildInfo.application == "ceph-9-0") {
+                    } else if (buildInfo.application in ("ceph-9-0", "ceph-9-1")) {
                         jobName = "tentacle-bvt-ci"
                         platform = "rhel-10"
                     } else {
