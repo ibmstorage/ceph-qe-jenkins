@@ -2,7 +2,6 @@
 def jobsConfiguration = []
 
 def LOG_LEVELS = ["ERROR", "INFO", "DEBUG"]
-def VM_FLAVORS = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
 
 // FG → VPC mapping
 def FG_VPC = [
@@ -43,8 +42,6 @@ def generate_jobs(cfg, data) {
     def config   = data.config
     def vpc      = data.vpc
     def logLevel = data.logLevel
-    def vmFlavor = data.vmFlavor
-
 
     def cephciRepo   = "https://github.com/red-hat-storage/cephci.git"
     def cephciBranch = "main"
@@ -65,7 +62,6 @@ def generate_jobs(cfg, data) {
         cephciRepo      : cephciRepo,
         cephciBranch    : cephciBranch,
         logLevel        : logLevel,
-        vmFlavor        : vmFlavor,
         vpc             : vpc,
         buildVersion    : config.buildVersion,
         rhelVersion     : config.rhelVersion,
@@ -82,8 +78,7 @@ CEPH_RELEASE_CONFIG.each { ceph, config ->
             fg  : fg,
             vpc : vpc,
             config: config,
-            logLevel  : LOG_LEVELS,
-            vmFlavor  : VM_FLAVORS
+            logLevel  : LOG_LEVELS
         ])
     }
 }
@@ -124,7 +119,21 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")
-                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud virtual machine profile")
+                
+                // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
+                activeChoiceReactiveParam("VM_FLAVOR") {
+                    description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")
+                    choiceType("SINGLE_SELECT")
+                    groovyScript {
+                        script("""
+                            if ("aws".equals(CLOUD_TYPE)) { return ["t4g.medium", "m6g.xlarge"] }
+                            return ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
+                        """)
+                        fallbackScript("return [\"bx2-2x8\", \"cx2-4x8\", \"cx2-8x16\"]")
+                    }
+                    referencedParameter("CLOUD_TYPE")
+                }
+
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")

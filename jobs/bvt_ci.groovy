@@ -5,8 +5,6 @@ def jobsConfiguration = []
 def generate_jobs(data) {
     def vpc = ["vpc-cephci"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
-    def vmFlavor = ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
-    def instanceType = ["t3.small", "t3.medium", "m5.xlarge", "t4g.small", "t4g.medium", "m6g.xlarge"]
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
@@ -17,8 +15,6 @@ def generate_jobs(data) {
         "name": "${data.cephVersion}-bvt-ci",
         "displayName": "${data.cephVersion} - Build Verification Test Pipeline",
         "logLevel": logLevel,
-        "vmFlavor": vmFlavor,
-        "instanceType": instanceType,
         "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
@@ -86,8 +82,21 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")
-                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud only  virtual machine profile (ignored when CLOUD_TYPE=aws)")
-                choiceParam("INSTANCE_TYPE", jobConfig.instanceType, "AWS only  EC2 instance type (ignored when CLOUD_TYPE=ibmc)")
+                
+                // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
+                activeChoiceReactiveParam("VM_FLAVOR") {
+                    description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")
+                    choiceType("SINGLE_SELECT")
+                    groovyScript {
+                        script("""
+                            if ("aws".equals(CLOUD_TYPE)) { return ["t4g.medium", "m6g.xlarge"] }
+                            return ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
+                        """)
+                        fallbackScript("return [\"bx2-2x8\", \"cx2-4x8\", \"cx2-8x16\"]")
+                    }
+                    referencedParameter("CLOUD_TYPE")
+                }
+
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")

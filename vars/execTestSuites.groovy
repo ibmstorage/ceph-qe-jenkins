@@ -235,7 +235,7 @@ def call(Map parameters) {
 
     // Add AWS instance config (instance_type passed via custom-config)
     if ( cloudType == "aws" ) {
-        def instanceType = parameters.get("instanceType") ?: "t3.small"
+        def instanceType = parameters.get("vmFlavor")
         args += ["--custom-config instance_type=${instanceType}"]
     }
 

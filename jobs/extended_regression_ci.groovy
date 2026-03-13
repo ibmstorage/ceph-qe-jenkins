@@ -4,7 +4,6 @@ def jobsConfiguration = []
 // Method to generate required job metadata
 def generate_jobs(data) {
     def logLevel = ["ERROR", "INFO", "DEBUG"]
-    def vmFlavor = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
     def buildType = ["IBM", "RH"]
     def rhelVersion = []
     def buildVersion = []
@@ -25,7 +24,6 @@ def generate_jobs(data) {
         "displayName": "${data.cephVersion} - ${data.fg} - Extended Regression Test Pipeline",
         "fg": [data.fg.toLowerCase()],
         "logLevel": logLevel,
-        "vmFlavor": vmFlavor,
         "vpc": data.vpc,
         "buildVersion": buildVersion,
         "rhelVersion": rhelVersion,
@@ -182,7 +180,21 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")
-                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud virtual machine profile")
+                
+                // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
+                activeChoiceReactiveParam("VM_FLAVOR") {
+                    description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")
+                    choiceType("SINGLE_SELECT")
+                    groovyScript {
+                        script("""
+                            if ("aws".equals(CLOUD_TYPE)) { return ["t4g.medium", "m6g.xlarge"] }
+                            return ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
+                        """)
+                        fallbackScript("return [\"bx2-2x8\", \"cx2-4x8\", \"cx2-8x16\"]")
+                    }
+                    referencedParameter("CLOUD_TYPE")
+                }
+                
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")

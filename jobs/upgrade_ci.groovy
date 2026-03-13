@@ -37,7 +37,6 @@ def CEPH_RELEASE_CONFIG = [
 def generate_jobs(data) {
 
     def logLevel  = ["ERROR", "DEBUG", "INFO"]
-    def vmFlavor  = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
     def buildType = ["IBM", "RH"]
     def release   = "stable"
 
@@ -60,7 +59,6 @@ def generate_jobs(data) {
         "cephciRepo"      : cephciRepo,
         "cephciBranch"    : cephciBranch,
         "logLevel"        : logLevel,
-        "vmFlavor"        : vmFlavor,
         "vpc"             : data.vpc,
         "buildVersion"    : buildVersion,
         "rhelVersion"     : rhelVersion,
@@ -132,10 +130,22 @@ jobsConfiguration.each { jobConfig ->
             stringParam("CONTAINER_IMAGE", "", "Container image URL")
             stringParam("CUSTOM_CONFIG", "", "Custom config key=value pairs")
             stringParam("CUSTOM_IMAGES", "", "Custom images")
+            
+            // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
+            activeChoiceReactiveParam("VM_FLAVOR") {
+                description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")
+                choiceType("SINGLE_SELECT")
+                groovyScript {
+                    script("""
+                        if ("aws".equals(CLOUD_TYPE)) { return ["t4g.medium", "m6g.xlarge"] }
+                        return ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
+                    """)
+                    fallbackScript("return [\"bx2-2x8\", \"cx2-4x8\", \"cx2-8x16\"]")
+                }
+                referencedParameter("CLOUD_TYPE")
+            }
 
-            choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud VM flavor")
             choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC")
-
             booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
             booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
             booleanParam("SKIP_SUBSCRIPTION", true, "Skip RHEL subscription")

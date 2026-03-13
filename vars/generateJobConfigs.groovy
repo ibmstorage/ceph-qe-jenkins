@@ -32,8 +32,7 @@ def call(Map parameters) {
     jobConfig.gitBranch = params.BRANCH ?: cephciConfigs.GIT_BRANCH
     jobConfig.logLevel = params.LOG_LEVEL ?: cephciConfigs.LOG_LEVEL
     jobConfig.cloudType = params.CLOUD_TYPE ?: cephciConfigs.CLOUD_TYPE
-    jobConfig.vmFlavor = params.VM_FLAVOR ?: cephciConfigs.VM_FLAVOR
-    jobConfig.instanceType = params.INSTANCE_TYPE ?: cephciConfigs.AWS_INSTANCE_TYPE
+    jobConfig.vmFlavor = params.VM_FLAVOR ?: (jobConfig.cloudType == "aws" ? cephciConfigs.AWS_INSTANCE_TYPE : cephciConfigs.VM_FLAVOR)
     jobConfig.python = cephciConfigs.PYTHON
     jobConfig.venvDir = cephciConfigs.VENV_DIR
 

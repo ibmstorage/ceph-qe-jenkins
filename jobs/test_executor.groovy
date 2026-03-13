@@ -5,7 +5,6 @@ def jobsConfiguration = []
 def generate_jobs(data) {
     def vpc = ["vpc-block", "vpc-cephci", "vpc-cephfs", "vpc-dmfg", "vpc-nfsg", "vpc-rgw"]
     def logLevel = ["ERROR", "INFO", "DEBUG"]
-    def vmFlavor = ["cx2-2x4", "bx2-2x8", "cx2-4x8", "cx2-8x16"]
     def buildType = ["IBM", "RH"]
 
     // Set releases for Ceph versions
@@ -23,7 +22,6 @@ def generate_jobs(data) {
         "name": "${data.cephVersion}-test-executor",
         "displayName": "${data.cephVersion} - Manual Test Suite Execution",
         "logLevel": logLevel,
-        "vmFlavor": vmFlavor,
         "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
@@ -80,13 +78,14 @@ for (jobConfig in jobsConfiguration) {
 
             // Add the required parameters for the job
             parameters {
+                choiceParam("CLOUD_TYPE", ["ibmc", "aws"], "Cloud platform (aws runs on agents-aws agent)")
                 stringParam("PREFIX", "mte", "Prefix for instance name")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
                 stringParam("BRANCH", "main", "Ceph CI git branch")
                 choiceParam("LOG_LEVEL", jobConfig.logLevel , "Ceph CI log level")
                 choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph Version")
                 choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL OS Version")
-                choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build")
+                choiceParam("BUILD_TYPE", jobConfig.buildType , "RH or IBM build (AWS supports IBM only)")
                 choiceParam("RELEASE", jobConfig.release, "Release type")
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
@@ -94,7 +93,21 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("SUITE", "", "Ceph CI suite")
                 stringParam("GLOBAL_CONF", "", "Ceph CI global conf")
                 stringParam("INVENTORY", "", "Ceph CI Inventory file name")
-                choiceParam("VM_FLAVOR", jobConfig.vmFlavor, "IBM Cloud virtual machine profile")
+                
+                // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
+                activeChoiceReactiveParam("VM_FLAVOR") {
+                    description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")
+                    choiceType("SINGLE_SELECT")
+                    groovyScript {
+                        script("""
+                            if ("aws".equals(CLOUD_TYPE)) { return ["t4g.medium", "m6g.xlarge"] }
+                            return ["bx2-2x8", "cx2-4x8", "cx2-8x16"]
+                        """)
+                        fallbackScript("return [\"bx2-2x8\", \"cx2-4x8\", \"cx2-8x16\"]")
+                    }
+                    referencedParameter("CLOUD_TYPE")
+                }
+
                 booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")
