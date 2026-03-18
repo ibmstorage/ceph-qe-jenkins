@@ -114,6 +114,7 @@ jobsConfiguration.each { jobConfig ->
         }
 
         parameters {
+            choiceParam("CLOUD_TYPE", ["ibmc", "aws"], "Cloud platform (aws runs on agents-aws agent)")
             stringParam("PREFIX", "${jobConfig.fg[0]}-upgrade", "Prefix for instance name")
             choiceParam("FG", jobConfig.fg, "Ceph Component")
             choiceParam("LOG_LEVEL", jobConfig.logLevel, "Ceph CI log level")

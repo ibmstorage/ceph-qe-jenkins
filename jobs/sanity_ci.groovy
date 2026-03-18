@@ -81,6 +81,7 @@ for (jobConfig in jobsConfiguration) {
 
             // Add the required parameters for the job
             parameters {
+                choiceParam("CLOUD_TYPE", ["ibmc", "aws"], "Cloud platform (aws runs on agents-aws agent)")
                 stringParam("PREFIX", "sanity", "Prefix for instance name")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
                 stringParam("BRANCH", "main", "Ceph CI git branch")

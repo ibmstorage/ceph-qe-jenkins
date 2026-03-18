@@ -88,7 +88,7 @@ pipeline {
                         hotfixRepo: jobConfigs.hotfixRepo,
                         containerImage: jobConfigs.containerImage,
                         additionalArgs: jobConfigs.additionalArgs,
-                        vmFlavor: suite.vm_flavor ?: jobConfigs.vmFlavor,
+                        vmFlavor: jobConfigs.vmFlavor,
                         vpcName: jobConfigs.vpcName,
                         skipSosReport: jobConfigs.skipSosReport,
                         skipSubscription: jobConfigs.skipSubscription,

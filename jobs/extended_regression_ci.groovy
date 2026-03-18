@@ -168,6 +168,7 @@ for (jobConfig in jobsConfiguration) {
 
             // Add the required parameters for the job
             parameters {
+                choiceParam("CLOUD_TYPE", ["ibmc", "aws"], "Cloud platform (aws runs on agents-aws agent)")
                 stringParam("PREFIX", "${jobConfig.fg[0]}-extended-regression", "Prefix for instance name")
                 choiceParam("FG", jobConfig.fg, "Ceph Component")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
