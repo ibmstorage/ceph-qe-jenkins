@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
       - name: "Tier-0 Basic FS Tests"
         suite: suites/reef/cephfs/tier-2_fs.yaml
@@ -42,6 +43,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
       - name: "Test Cephfs Top"
         suite: suites/reef/cephfs/tier-3_cephfs_test_cephfs-top.yaml
@@ -97,6 +99,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test Cephfs Upgrade 7x Latest to 7.1x Latest"
       suite: suites/reef/cephfs/tier-0_cephfs_upgrade_7x_latest_to_71x_latest.yaml

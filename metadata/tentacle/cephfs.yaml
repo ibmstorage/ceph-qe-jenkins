@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Regression Suite 1"
       suite: suites/tentacle/cephfs/regression_suite_1.yaml
@@ -28,6 +29,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test cephfs top"
       suite: suites/tentacle/cephfs/tier-3_cephfs_test_cephfs-top.yaml
@@ -81,6 +83,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test Cephfs Upgrade 8.1x to 9x"
       suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_81_to_9x.yaml

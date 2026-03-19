@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
       # VM count: 11
     - name: "RADOS Test - OSD Rebalance"
@@ -76,6 +77,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "RADOS Test - Pool Functionalities"
       suite: suites/tentacle/rados/tier-2_rados_test-pool-functionalities.yaml
@@ -109,6 +111,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "RADOS Test - Drain Customer Issue"
       suite: suites/tentacle/rados/tier-2_rados_test-drain-customer-issue.yaml

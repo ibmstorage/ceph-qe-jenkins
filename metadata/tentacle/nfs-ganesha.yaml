@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 NFS Ganesha Phase-2 v4.2"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-phase2-v4-2.yaml
@@ -29,6 +30,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 9.0 Latest"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-7-1x-to-9x-latest.yaml

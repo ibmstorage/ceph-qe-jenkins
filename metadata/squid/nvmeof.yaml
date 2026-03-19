@@ -2,6 +2,7 @@ regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "NVMeoTCP functional regression tests"
         suite: suites/squid/nvmeof/tier-2_nvmeof_functional_Regression.yaml
@@ -109,6 +110,7 @@ extended_regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "Scale to 4 GW groups with 2 GWs having 128 subsystems to 1024 namespaces"
         suite: suites/squid/nvmeof/tier-3_4-group_2-gw_128-sub_1024-NS.yaml
@@ -127,6 +129,7 @@ upgrade:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "TEST NVMe Upgrade from 7.1x to 8.x Latest"
         suite: suites/squid/nvmeof/tier-2_nvmeof_7x-to-8x_upgrade.yaml

@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Regression Suite 1"
       suite: suites/squid/cephfs/regression_suite_1.yaml
@@ -25,6 +26,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test cephfs top"
       suite: suites/squid/cephfs/tier-3_cephfs_test_cephfs-top.yaml
@@ -78,6 +80,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test Cephfs Upgrade 6x to 8x"
       suite: suites/squid/cephfs/tier-0_cephfs_upgrade_6x_to_8x.yaml

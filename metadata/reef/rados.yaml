@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "RADOS Test - OSD Rebalance"
       suite: suites/reef/rados/tier-2_rados_test-osd-rebalance.yaml
@@ -51,6 +52,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "RADOS Test - Pool Functionalities"
       suite: suites/reef/rados/tier-2_rados_test-pool-functionalities.yaml
@@ -84,6 +86,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "RADOS Test - Drain Customer Issue"
       suite: suites/reef/rados/tier-2_rados_test-drain-customer-issue.yaml

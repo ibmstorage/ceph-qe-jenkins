@@ -2,6 +2,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: tier2 upgrade rhcs staggered 6x to 7x
       suite: suites/reef/upgrades/tier2-upgrade-rhcs-staggered-6x-to-7x.yaml
@@ -73,6 +74,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: tier1 cephadm ansible wrapper bootstrap with registry details
       suite: suites/reef/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml

@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test CallHome Tier-1 Cephadm Bootstrap with CallHome and Storage Insights"
       suite: suites/squid/callhome/tier1-cephadm-bootstrap-with-callhome-and-si.yaml

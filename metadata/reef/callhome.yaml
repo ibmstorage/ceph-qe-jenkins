@@ -2,6 +2,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name:
       suite: suites/reef/callhome/tier1-enable-callhome-post-upgrade-5x-to-7x.yaml
@@ -19,6 +20,7 @@ regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name:
         suite: suites/reef/callhome/tier1-cephadm-bootstrap-with-callhome-and-si.yaml
@@ -40,6 +42,7 @@ regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name:
         suite: suites/reef/callhome/tier2-perform-callhome-operations-using-callhome-commands.yaml

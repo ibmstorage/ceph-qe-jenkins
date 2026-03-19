@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier1 RGW MS ecpool regression test" # 169 mins, 20 secs
       suite: suites/tentacle/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
@@ -67,6 +68,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms-archive.yaml
@@ -172,6 +174,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 rgw ms upgrade ssl 81GA to 9x latest" 
       suite: suites/tentacle/rgw/tier-1_rgw_ssl_multisite_test_upgrade_81GA_to_9x_latest.yaml

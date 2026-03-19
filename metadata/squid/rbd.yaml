@@ -1,7 +1,8 @@
 regression:
     metadata:
       cloud:
-        - ibmc
+          - ibmc
+          - aws
     suites:
       - name: "Tier-2 rbd regression Image migration"
         suite: suites/squid/rbd/tier-2_rbd_regression_Image_migration.yaml
@@ -60,6 +61,7 @@ extended_regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "tier-3 snap mirroring"
         suite: suites/squid/rbd/tier-3_snap_mirroring.yaml
@@ -119,6 +121,7 @@ upgrade:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "Test RBD Mirror upgrade from 6x GA to 8x latest"
         suite: suites/squid/rbd/tier-3_ibm_rbd_mirror_upgrade_6x_to_8x.yaml

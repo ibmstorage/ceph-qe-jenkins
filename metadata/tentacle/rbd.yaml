@@ -2,6 +2,7 @@ regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "tier-2 rbd regression Image migration"
         suite: suites/tentacle/rbd/tier-2_rbd_regression_Image_migration.yaml
@@ -50,6 +51,7 @@ extended_regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "tier-3 snap mirroring"
         suite: suites/tentacle/rbd/tier-3_snap_mirroring.yaml
@@ -107,6 +109,7 @@ upgrade:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "Test RBD Mirror upgrade from 7x GA to 9x latest"
         suite: suites/tentacle/rbd/tier-3_rbd_mirror_upgrade_7x_to_9x.yaml

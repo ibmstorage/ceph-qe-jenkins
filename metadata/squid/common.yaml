@@ -27,6 +27,7 @@ sanity:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 Service Apply Spec"
       suite: suites/squid/cephadm/tier1-service-apply-spec.yaml
@@ -149,6 +150,7 @@ live:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     # RADOS tests
     - name: "Tier-2 RADOS Basic Regression"

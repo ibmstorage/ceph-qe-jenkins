@@ -16,6 +16,7 @@ sanity:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier0 Filesystem Test suite"
       suite: suites/reef/cephfs/tier-0_fs.yaml

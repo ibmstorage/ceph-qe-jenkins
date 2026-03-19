@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Registry Details"
       suite: suites/squid/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
@@ -83,6 +84,7 @@ upgrade:
     cloud:
       - openstack
       - ibmc
+      - aws
     testrun-template:
       rh: rh-squid-upgrade
       ibm: ibm-squid-upgrade

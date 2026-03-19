@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 NFS Ganesha Phase-2"
       suite: suites/reef/nfs/tier1-nfs-ganesha-phase2.yaml
@@ -20,6 +21,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Upgrade Ceph 7(GA) cluster to Ceph 7(Latest) with NFS-Ganesha in RHEL9"
       suite: suites/reef/nfs/tier1-nfs-ganesha-upgrade-7x-to-7x-latest.yaml

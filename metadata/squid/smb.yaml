@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test SMB Tier-1 Test Cases"
       suite: suites/squid/smb/tier-1-smb.yaml

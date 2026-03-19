@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Registry Details"
       suite: suites/tentacle/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
@@ -82,6 +83,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test DMFG Tier-0 Cephadm"
       suite: suites/tentacle/cephadm/tier0-cephadm.yaml
@@ -103,6 +105,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test DMFG upgrade RHCS 7x to 9x"
       suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-7x-to-9x.yaml

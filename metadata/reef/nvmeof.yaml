@@ -2,6 +2,7 @@ regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "NVMeoTCP functional regression tests"
         suite: suites/reef/nvmeof/tier-2_nvmeof_functional_Regression.yaml

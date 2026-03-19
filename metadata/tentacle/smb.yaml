@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test SMB Tier-1 Test Cases"
       suite: suites/tentacle/smb/tier-1-smb.yaml
@@ -35,6 +36,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Test SMB upgrade IBMSC 8x to 9x latest"
       suite: suites/tentacle/smb/tier-0-smb-upgrade-ibm-8x-to-9x-latest.yaml

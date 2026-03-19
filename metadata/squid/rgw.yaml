@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 RGW MS ECPOOL Regression Tests"
       suite: suites/squid/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
@@ -67,6 +68,7 @@ extended_regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
       suite: suites/squid/rgw/tier-2_rgw_ms-archive.yaml
@@ -173,6 +175,7 @@ upgrade:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 rgw ms upgrade ssl 71GA to 8x latest" 
       suite: suites/squid/rgw/tier-1_rgw_ssl_multisite_test_upgrade_71GA_to_8x_latest.yaml

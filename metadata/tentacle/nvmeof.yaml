@@ -2,6 +2,7 @@ regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "NVMeoTCP functional regression tests"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_functional_Regression.yaml
@@ -98,6 +99,7 @@ extended_regression:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "Scale to 4 GW groups with 2 GWs having 128 subsystems to 1024 namespaces"
         suite: suites/tentacle/nvmeof/tier-3_4-group_2-gw_128-sub_1024-NS.yaml
@@ -122,6 +124,7 @@ upgrade:
     metadata:
       cloud:
         - ibmc
+        - aws
     suites:
       - name: "TEST NVMe Upgrade from 8.1x to 9.1 Latest"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_8x-to-9x_upgrade.yaml

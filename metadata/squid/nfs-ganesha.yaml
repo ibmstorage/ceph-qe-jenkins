@@ -2,6 +2,7 @@ regression:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Tier-1 NFS Ganesha Phase-2 v4.2"
       suite: suites/squid/nfs/tier1-nfs-ganesha-phase2-v4-2.yaml

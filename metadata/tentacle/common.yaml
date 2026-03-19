@@ -23,6 +23,7 @@ sanity:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
@@ -100,6 +101,7 @@ live:
   metadata:
     cloud:
       - ibmc
+      - aws
   suites:
     # DMFG test suites
     - name: "Test DMFG Tier-0 Cephadm"
