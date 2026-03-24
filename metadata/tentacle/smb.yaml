@@ -31,6 +31,9 @@ regression:
     - name: "Test SMB QoS Test Cases"
       suite: suites/tentacle/smb/tier-1-smb-qos.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+    - name: "Test SMB Service Sepration"
+      suite: suites/tentacle/smb/tier-1-smb-exo.yaml
+      global-conf: conf/tentacle/smb/2admin-8node-2client-2cluster.yaml
 
 upgrade:
   metadata:
