@@ -10,7 +10,7 @@ def call(Map parameters = [:]) {
     
     if (dryRun) {
         echo "\n[DRY_RUN] Would trigger garbage collection on ${registryHost}"
-        echo "[DRY_RUN] Command: podman exec registry bin/registry garbage-collect /etc/distribution/config.yml"
+        echo "[DRY_RUN] Command: podman exec registry bin/registry garbage-collect /etc/distribution/config.yaml"
         return
     }
     
@@ -31,7 +31,7 @@ def call(Map parameters = [:]) {
         remoteConnection.identityFile = "$NGINX_ACCESS"
         
         // Command to run garbage collection using podman
-        def gcCommand = "sudo podman exec ceph-qe-registry registry garbage-collect /etc/distribution/config.yml"
+        def gcCommand = "sudo podman exec ceph-qe-registry registry garbage-collect /etc/distribution/config.yaml"
         
         try {
             echo "Executing garbage collection..."
