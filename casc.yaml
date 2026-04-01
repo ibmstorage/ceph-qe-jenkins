@@ -189,6 +189,19 @@ credentials:
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/aws_global_creds}"
 
+          - file:
+              description: "gklm certificate"
+              id: "rgw-gklm-auth"
+              fileName: "rgw-gklm-auth-crt"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/rgw-gklm-auth-crt}"
+          - file:
+              description: "gklm key"
+              id: "rgw-gklm-key"
+              fileName: "rgw-gklm-auth-key"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/rgw-gklm-auth-key}"
+
           - string:
               description: "Google Sheet ID for recording Ceph 9.0 test results."
               id: "gsheet-id-ibm-90"
