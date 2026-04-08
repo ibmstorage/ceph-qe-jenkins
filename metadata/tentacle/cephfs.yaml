@@ -79,6 +79,9 @@ extended_regression:
     - name: "Test cephfs Kernel"
       suite: suites/tentacle/cephfs/tier-1_fs_kernel_pipeline.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
+    - name: "Test cephfs Mirroring System"
+      suite: suites/tentacle/cephfs/tier-2_cephfs_mirroring_system.yaml
+      global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
 upgrade:
   metadata:
     cloud:
