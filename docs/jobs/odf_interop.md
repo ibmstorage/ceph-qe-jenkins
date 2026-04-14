@@ -58,7 +58,7 @@ The pipeline always executes the complete end-to-end workflow:
 | `DEVICE_COUNT` | `3` | Number of OSD disks per worker |
 | `PVC_COUNT` | `10` | PVCs per storage type for workload tests |
 | `SSH_KEY_NAMES` | `ceph-qe-sa,ceph-qe-sa-svc` | IBM Cloud SSH keys |
-| `EMAIL_ADDRESS` | (default DL) | Notification email recipients |
+| `EMAIL_ADDRESS` | devops DL + ndevos, ebenahar, pbalogh @ibm.com | Notification email recipients (comma-separated) |
 
 ### Repository Configuration
 
@@ -126,6 +126,9 @@ The pipeline always executes the complete end-to-end workflow:
 ### Email Notifications
 - Sent for all build results (success, failure, aborted)
 - Includes cluster details, versions, build links, and triggering user
+- **Ceph image metadata** from `cephadm version --verbose` (Ceph version string, git commit, release name) when the Ceph image metadata stage succeeds
+- **Tests executed** subsection parsed from `workload-report-*.txt` (storage-class-related lines vs FIO/workload lines; falls back to a short excerpt if no lines match)
+- Default `EMAIL_ADDRESS` includes the devops alerts list plus `ndevos@ibm.com`, `ebenahar@ibm.com`, and `pbalogh@ibm.com` (override per run via job parameter)
 - Attaches cluster artifacts archive and state.json file
 - Color-coded status indicators
 
@@ -166,7 +169,7 @@ User: john.doe | Cluster: ocp-ibmc-29031a | OCP: 4.20.13 (released) | Ceph: rhce
 - `ibm-cos-secret-key` - IBM COS HMAC secret key
 - `aws-systest-access` - AWS access key (for Route53)
 - `aws-systest-secret-access` - AWS secret key (for Route53)
-- `ocs-pull-secret` - OCP pull secret
+- `ocs-pull-secret` - OCP pull secret (Jenkins **file** credential; JSON content, CasC `secretBytes` from base64-encoded file)
 - `ceph-qe-sa-pat` - GitHub PAT for repository access
 
 ### IBM Cloud Resources

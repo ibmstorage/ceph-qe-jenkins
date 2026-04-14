@@ -5,11 +5,12 @@
 //   1. Validate Parameters - Check all required parameters and credentials
 //   2. Clone ceph-interop - Fetch the deployment automation repository
 //   3. Setup Environment - Create Python venv and install dependencies
-//   4. Prepare Credentials - Write credentials file from Jenkins secrets
-//   5. Update Config - Apply job parameters to deployment.yaml
-//   6. Deploy OCP + ODF - Deploy cluster with OpenShift and ODF
-//   7. Run IO Workloads - Execute FIO tests on RBD and CephFS
-//   8. Teardown - Clean up resources (mandatory)
+//   4. Ceph image metadata - cephadm version --verbose JSON (for email)
+//   5. Prepare Credentials - Write credentials file from Jenkins secrets
+//   6. Update Config - Apply job parameters to deployment.yaml
+//   7. Deploy OCP + ODF - Deploy cluster with OpenShift and ODF
+//   8. Run IO Workloads - Execute FIO tests on RBD and CephFS
+//   9. Teardown - Clean up resources (mandatory)
 //
 // Post Actions:
 //   - Archive cluster artifacts and state files
@@ -219,6 +220,40 @@ pipeline {
                         echo "✓ Installed packages:"
                         ${VENV_DIR}/bin/pip3.12 list | grep -E "(ibm-|boto3|kubernetes|jinja2|pyyaml|requests|paramiko)"
                     """
+                }
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────
+        // Ceph container: cephadm version --verbose (JSON for email)
+        // ──────────────────────────────────────────────────────────
+        stage("Ceph image metadata") {
+            steps {
+                script {
+                    def img = params.CEPH_IMAGE?.trim()
+                    if (!img) {
+                        echo "Skipping Ceph image metadata: CEPH_IMAGE empty"
+                        return
+                    }
+                    env.CEPH_IMAGE_PODMAN = img
+                    sh '''
+                        set +e
+                        rm -f ceph-interop/.cephadm-version.json
+                        if ! command -v podman >/dev/null 2>&1; then
+                            echo "podman not found — skipping cephadm version metadata"
+                            exit 0
+                        fi
+                        podman run --rm "${CEPH_IMAGE_PODMAN}" bash -c "cephadm version --verbose" > ceph-interop/.cephadm-version.json 2>/tmp/cephadm-version.err
+                        ec=$?
+                        if [ "$ec" -ne 0 ]; then
+                            echo "cephadm version --verbose failed (exit $ec)"
+                            cat /tmp/cephadm-version.err 2>/dev/null || true
+                            rm -f ceph-interop/.cephadm-version.json
+                        else
+                            echo "✓ Wrote ceph-interop/.cephadm-version.json"
+                        fi
+                        exit 0
+                    '''
                 }
             }
         }
@@ -476,15 +511,6 @@ pipeline {
                     }
                 } catch (Exception e) {
                     echo "Artifact archival failed (non-fatal): ${e.message}"
-                } finally {
-                    // Always clean up credentials — even if archival failed
-                    dir("ceph-interop") {
-                        sh '''
-                            echo "Cleaning up credential files..."
-                            rm -f configs/credentials.yaml configs/pull-secret.json 2>/dev/null || true
-                            echo "✓ Credential files cleaned up"
-                        '''
-                    }
                 }
 
                 // ── Build email (always sent, even on abort/failure) ──
@@ -533,29 +559,104 @@ pipeline {
                     </tr>"""
                     }
 
-                    // Try to extract Ceph version from workload report
-                    def cephVersion = ""
+                    def htmlEsc = { s ->
+                        if (s == null) { return '' }
+                        return s.toString().replace('&', '&amp;')
+                            .replace('<', '&lt;')
+                            .replace('>', '&gt;')
+                            .replace('"', '&quot;')
+                    }
+
+                    // Ceph version / commit / release from cephadm JSON (Ceph image metadata stage)
+                    def cephNice = 'N/A'
+                    def cephCommit = 'N/A'
+                    def cephRelName = 'N/A'
+                    try {
+                        if (fileExists('ceph-interop/.cephadm-version.json')) {
+                            def meta = new groovy.json.JsonSlurper().parseText(
+                                readFile('ceph-interop/.cephadm-version.json'))
+                            if (meta.ceph_git_nice_ver) { cephNice = meta.ceph_git_nice_ver.toString() }
+                            if (meta.ceph_git_ver) { cephCommit = meta.ceph_git_ver.toString() }
+                            if (meta.ceph_release_name) { cephRelName = meta.ceph_release_name.toString() }
+                        }
+                    } catch (Exception ignored) {
+                        /* JSON missing or invalid */
+                    }
+                    def cephMetaRows = """
+                    <tr>
+                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph version</b></td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${htmlEsc(cephNice)}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph commit</b></td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${htmlEsc(cephCommit)}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph release name</b></td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${htmlEsc(cephRelName)}</td>
+                    </tr>"""
+
+                    // Workload report: storage classes vs workloads (best-effort parsing)
+                    def workloadExecRow = ""
                     if (hasCluster) {
                         try {
-                            def rawVersion = sh(
-                                script: "grep 'ceph version' ceph-interop/work/clusters/${clusterName}/workload-report-*.txt 2>/dev/null | head -1 || echo ''",
+                            def reportPath = sh(
+                                script: "ls ceph-interop/work/clusters/${clusterName}/workload-report-*.txt 2>/dev/null | head -1",
                                 returnStdout: true
                             ).trim()
-                            // Extract just the version number (e.g., "19.2.1-331.el9cp" from full line)
-                            if (rawVersion) {
-                                def matcher = (rawVersion =~ /ceph version (\S+)/)
-                                if (matcher.find()) {
-                                    cephVersion = matcher.group(1)
+                            if (reportPath && fileExists(reportPath)) {
+                                def text = readFile(reportPath)
+                                def storageLines = new LinkedHashSet()
+                                def workloadLines = new LinkedHashSet()
+                                text.split('\n').each { line ->
+                                    def t = line.trim()
+                                    if (!t) { return }
+                                    def u = t.toLowerCase()
+                                    if (u.contains('storageclass') || u.contains('storage class') ||
+                                            u.contains('ocs-storagecluster') || u.contains('storageclassname')) {
+                                        storageLines << t
+                                    }
+                                    if (u.contains('fio') || u.contains('workload') ||
+                                            (u.contains('pvc') && (u.contains('create') || u.contains('bound') || u.contains('test'))) ||
+                                            u.contains('cephfs') || u.contains('ceph-fs') ||
+                                            (u.contains('rbd') && u.length() < 200)) {
+                                        workloadLines << t
+                                    }
                                 }
-                            }
-                        } catch (Exception ignored) { /* workload report may not exist */ }
-                    }
-                    def cephVersionRow = ""
-                    if (cephVersion) {
-                        cephVersionRow = """
+                                def sHtml
+                                def wHtml
+                                if (storageLines.isEmpty() && workloadLines.isEmpty()) {
+                                    def preview = text.split('\n').take(20).collect { htmlEsc(it) }.join('<br/>\n')
+                                    sHtml = '<i>(unparsed — report excerpt)</i><br/>' + preview
+                                    wHtml = '<i>(no matching lines)</i>'
+                                } else {
+                                    sHtml = storageLines ? new ArrayList(storageLines).take(30).collect { htmlEsc(it) }.join('<br/>\n') : '<i>(no matching lines)</i>'
+                                    wHtml = workloadLines ? new ArrayList(workloadLines).take(30).collect { htmlEsc(it) }.join('<br/>\n') : '<i>(no matching lines)</i>'
+                                }
+                                workloadExecRow = """
                     <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph Version</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${cephVersion}</td>
+                        <td colspan="2" style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">
+                            <b>Tests executed</b> (from workload report)
+                            <table style="width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 6px;">
+                                <tr>
+                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top; width: 50%; background-color: ${colors.labelBg};"><b>Storage classes / PVC context</b></td>
+                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top; background-color: ${colors.labelBg};"><b>Workloads / IO</b></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top;">${sHtml}</td>
+                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top;">${wHtml}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>"""
+                            }
+                        } catch (Exception ignored) { /* no report */ }
+                    }
+                    if (!workloadExecRow) {
+                        workloadExecRow = """
+                    <tr>
+                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Tests executed</b></td>
+                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">N/A (workload report not available)</td>
                     </tr>"""
                     }
 
@@ -596,9 +697,10 @@ pipeline {
                             <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${odfCell}</td>
                         </tr>
 ${cephImageRow}
-${cephVersionRow}
+${cephMetaRows}
 ${sizingRow}
 ${infrastructureRow}
+${workloadExecRow}
                         <tr>
                             <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px; width: 160px;"><b>Workflow</b></td>
                             <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${actionLabel}</td>
@@ -637,6 +739,15 @@ ${infrastructureRow}
                     )
                 } catch (Exception e) {
                     echo "Email notification failed: ${e.message}"
+                } finally {
+                    // After email (needs .cephadm-version.json for Ceph rows); always remove secrets
+                    dir("ceph-interop") {
+                        sh '''
+                            echo "Cleaning up credential files..."
+                            rm -f configs/credentials.yaml configs/pull-secret.json .cephadm-version.json 2>/dev/null || true
+                            echo "✓ Credential files cleaned up"
+                        '''
+                    }
                 }
             }
         }

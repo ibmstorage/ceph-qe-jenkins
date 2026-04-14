@@ -140,7 +140,7 @@ def job = pipelineJob("odf-interop") {
 
             stringParam(
                 "EMAIL_ADDRESS",
-                "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com",
+                "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com,ndevos@ibm.com,ebenahar@ibm.com,pbalogh@ibm.com",
                 "Notification email recipients (comma-separated)"
             )
         }

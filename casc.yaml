@@ -201,6 +201,12 @@ credentials:
               fileName: "rgw-gklm-auth-key"
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/rgw-gklm-auth-key}"
+          - file:
+              description: "OpenShift Pull Secret for ODF Interop (JSON file)"
+              id: "ocs-pull-secret"
+              fileName: "pull-secret.json"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/odf_interop_pull_secret}"
 
           - string:
               description: "Google Sheet ID for recording Ceph 9.0 test results."
@@ -279,12 +285,6 @@ credentials:
               id: "ibmc-api-key"
               scope: GLOBAL
               secret: "${readFile:/secrets/ibmc_api_key_for_odf_interop}"
-
-          - string:
-              description: "OpenShift Pull Secret for ODF Interop"
-              id: "ocs-pull-secret"
-              scope: GLOBAL
-              secret: "${readFile:/secrets/odf_interop_pull_secret}"
 
           - string:
               description: "AWS - Access key of SysTest account"
