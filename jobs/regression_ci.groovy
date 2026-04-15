@@ -13,7 +13,7 @@ def FG_VPC = [
     "NFS-Ganesha": ["vpc-nfsg"],
     "RBD"        : ["vpc-block"],
     "NvmeOF"     : ["vpc-block"],
-    "RGW"        : ["vpc-rgw"]
+    "RGW"        : ["ci-vpc-01"]
 ]
 
 // Ceph release specific configuration
