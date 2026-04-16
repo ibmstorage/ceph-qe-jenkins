@@ -21,17 +21,17 @@ def CEPH_RELEASE_CONFIG = [
     "Reef": [
         buildVersion : ["7.1", "7.0"],
         rhelVersion  : ["rhel-9"],
-        releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4","z5","z6","z7","z8"]
+        releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4","z5","z6","z7","z8","z9"]
     ],
     "Squid": [
         buildVersion : ["8.1", "8.0"],
         rhelVersion  : ["rhel-9"],
-        releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4"]
+        releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4","z5"]
     ],
     "Tentacle": [
         buildVersion : ["9.1", "9.0"],
         rhelVersion  : ["rhel-10", "rhel-9"],
-        releaseExtra : ["rc", "released", "z0"]
+        releaseExtra : ["rc", "released", "z0", "z1", "z2"]
     ]
 ]
 

@@ -10,11 +10,11 @@ def generate_jobs(data) {
     // Set releases for Ceph versions
     def release = ["stable", "nightly"]
     if (data.cephVersion.toLowerCase() == "reef") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8"]
+        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
     } else if (data.cephVersion.toLowerCase() == "squid") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4"]
+        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5"]
     } else if (data.cephVersion.toLowerCase() == "tentacle") {
-        release += ["rc", "released", "z0"]
+        release += ["rc", "released", "z0", "z1", "z2"]
     }
 
     // Add the job configurations
