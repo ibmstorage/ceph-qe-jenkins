@@ -42,6 +42,7 @@ rebuild
 resource-disposer
 role-strategy
 script-security
+strict-crumb-issuer
 ssh-credentials
 ssh-slaves
 ssh-steps

@@ -10,8 +10,11 @@ jenkins:
   quietPeriod: 0
 
   crumbIssuer:
-    standard:
-      excludeClientIPFromCrumb: true
+    strict:
+      checkSessionMatch: true
+      hoursValid: 2
+      checkClientIP: false
+      xorMasking: true
 
   securityRealm:
     github:
@@ -67,7 +70,7 @@ jenkins:
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "infra-vm-jenkins-agent-01"
         nodeDescription: "Workflow executor"
-        numExecutors: 10
+        numExecutors: 5
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
     - permanent:
@@ -93,7 +96,7 @@ jenkins:
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "infra-vm-jenkins-agent-03"
         nodeDescription: "Workflow executor"
-        numExecutors: 10
+        numExecutors: 5
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
     - permanent:
