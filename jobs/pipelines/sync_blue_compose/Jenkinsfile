@@ -1,0 +1,34 @@
+/*
+    Copy the give compose archive from IBM Artifactory hosted by IBM Tools.
+
+    We pick only what is required and not all packages.
+*/
+@Library("ceph-qe-libs@main") _
+
+pipeline {
+    agent { label "infra" }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "5", daysToKeepStr: "5"))
+    }
+
+    stages {
+
+        stage("Validate") {
+            steps {
+                script {
+                    println("The compose ID received is " + params.COMPOSE_NAME)
+                    if ( params.COMPOSE_NAME == null || params.COMPOSE_NAME.trim().isEmpty() ) {
+                        error("Required parameter COMPOSE_NAME is empty.")
+                    }
+                }
+            }
+        }
+
+        stage("Copy") {
+            steps {
+                script { copyBlueCompose(params.COMPOSE_NAME) }
+            }
+        }
+    }
+}

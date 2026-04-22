@@ -198,18 +198,32 @@ credentials:
               fileName: "rgw-gklm-auth-crt"
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/rgw-gklm-auth-crt}"
+
           - file:
               description: "gklm key"
               id: "rgw-gklm-key"
               fileName: "rgw-gklm-auth-key"
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/rgw-gklm-auth-key}"
+
           - file:
               description: "OpenShift Pull Secret for ODF Interop (JSON file)"
               id: "ocs-pull-secret"
               fileName: "pull-secret.json"
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/odf_interop_pull_secret}"
+
+          - string:
+              description: "IBM Taas Artifactory access token"
+              id: "artifactory-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/taas_artifactory}"
+
+          - string:
+              description: "GitHub.com Personal access token - ceph-qe-sa"
+              id: "gh-ceph-qe-sa-pat"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/gh_ceph_qe_sa_pat}"
 
           - string:
               description: "Google Sheet ID for recording Ceph 9.0 test results."
