@@ -112,6 +112,19 @@ jenkins:
         numExecutors: 5
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
+    - permanent:
+        labelString: "agents-interop"
+        launcher:
+          ssh:
+            credentialsId: "jenkinsAgentSSHKey"
+            host: 10.243.81.142
+            port: 22
+            sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+        name: "agent-interop"
+        nodeDescription: "interop Workflow executor"
+        numExecutors: 5
+        remoteFS: "/data/jenkins"
+        retentionStrategy: "always"
 
 appearance:
   consoleUrlProvider:
