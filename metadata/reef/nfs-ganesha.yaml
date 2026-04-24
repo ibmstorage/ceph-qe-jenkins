@@ -23,6 +23,6 @@ upgrade:
       - ibmc
       - aws
   suites:
-    - name: "Upgrade Ceph 7(GA) cluster to Ceph 7(Latest) with NFS-Ganesha in RHEL9"
+    - name: "Upgrade Ceph 7GA cluster to Ceph 7Latest with NFS-Ganesha in RHEL9"
       suite: suites/reef/nfs/tier1-nfs-ganesha-upgrade-7x-to-7x-latest.yaml
       global-conf: conf/reef/nfs/1admin-3client-7node.yaml

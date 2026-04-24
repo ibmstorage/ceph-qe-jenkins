@@ -20,9 +20,9 @@ upgrade:
       - ibmc
       - aws
   suites:
-    - name: "Upgrade Ceph 7.1(latest) cluster to Ceph 8.1(Latest) with NFS-Ganesha in RHEL9"
+    - name: "Upgrade Ceph 7.1 latest cluster to Ceph 8.1 Latest  with NFS-Ganesha in RHEL9"
       suite: suites/squid/nfs/tier1-nfs-ganesha-upgrade-7x-to-8x-latest.yaml
       global-conf: conf/squid/nfs/1admin-7node-3client.yaml
-    - name: "Upgrade Ceph 8.1(GA) cluster to Ceph 8.1(Latest) with NFS-Ganesha in RHEL9"
+    - name: "Upgrade Ceph 8.1 GA  cluster to Ceph 8.1 Latest  with NFS-Ganesha in RHEL9"
       suite: suites/squid/nfs/tier1-nfs-ganesha-upgrade-8x-to-8x-latest.yaml
       global-conf: conf/squid/nfs/1admin-7node-3client.yaml
