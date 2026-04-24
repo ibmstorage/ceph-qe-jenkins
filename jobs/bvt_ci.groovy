@@ -105,6 +105,12 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com, ibmceph-build@wwpdl.vnet.ibm.com", "Email Address")
+
+                booleanParam(
+                    "TRIGGER_ODF_INTEROP",
+                    false,
+                    "Enabling this parameter flag will trigger odf-interop pipeline when BUILD_TYPE=RH and this BVT succeeds"
+                )
             }
         }
     }

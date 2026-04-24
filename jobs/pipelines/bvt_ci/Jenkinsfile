@@ -159,10 +159,33 @@ pipeline {
     post {
         always {
             script {
-                // Debug
-                echo "Send results to ${params.EMAIL_ADDRESS}"
+                try {
+                    echo "Check for ODF interop pipeline trigger"
+                    def result = currentBuild.currentResult ?: currentBuild.result
+                    def cephImage = jobConfigs.containerImage?.toString()?.trim()
+                    if (result == 'SUCCESS' &&
+                        params.BUILD_TYPE?.toLowerCase() == 'rh' &&
+                        params.TRIGGER_ODF_INTEROP &&
+                        cephImage) {
+                        def downstreamJob = 'odf-interop'
+                        def triggered = build(
+                            job: downstreamJob,
+                            wait: false,
+                            parameters: [
+                                string(name: 'CEPH_IMAGE', value: cephImage),
+                                string(name: 'RHCS_BUILD_VERSION', value: (jobConfigs.rhBuild ?: params.BUILD_VERSION ?: '').toString()),
+                            ]
+                        )
+                        echo "Triggered downstream job '${downstreamJob}' (queued or running): build #${triggered?.number ?: 'n/a'}"
+                    } else {
+                        echo "Skipping odf-interop downstream (need SUCCESS, BUILD_TYPE=rh, TRIGGER_ODF_INTEROP, non-empty Ceph image) " +
+                            "| result=${result} BUILD_TYPE=${params.BUILD_TYPE} TRIGGER_ODF_INTEROP=${params.TRIGGER_ODF_INTEROP} image=${cephImage ? 'set' : 'empty'}"
+                    }
+                } catch (Exception e) {
+                    echo "ODF interop trigger failed (non-fatal; publishTestResults still runs): ${e.message}"
+                }
 
-                // Always run this block
+                echo "Send results to ${params.EMAIL_ADDRESS}"
                 publishTestResults(
                     cephVersion: jobConfigs.cephVersion,
                     rhsCephRepo: jobConfigs.rhsCephRepo,

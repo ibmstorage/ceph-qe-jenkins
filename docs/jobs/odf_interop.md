@@ -41,13 +41,16 @@ The pipeline always executes the complete end-to-end workflow:
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `CEPH_IMAGE` | Ceph container image to test (REQUIRED) | `quay.io/rhceph-ci/rhceph@sha256:abc123...` |
-| `OCP_VERSION` | OpenShift version to deploy | `4.20.13` |
+| `OCP_VERSION` | OpenShift version (optional if auto-resolved) | `4.21.10` |
 | `OCP_CHANNEL` | OCP release channel | `released` or `nightly` |
+
+**Digest-only images** (e.g. `quay.io/.../rhceph@sha256:...` with no `rhceph-N-rhel*` in the path) cannot infer the stream from the URL alone. Set **`RHCS_BUILD_VERSION`** (e.g. `9.1`); the pipeline maps the major digit to reef/squid/tentacle and picks OCP/ODF from the matrix. **bvt-ci** passes **`CEPH_IMAGE`** and **`RHCS_BUILD_VERSION`** (from **`BUILD_VERSION`**).
 
 ### Optional Configuration
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
+| `RHCS_BUILD_VERSION` | (empty) | RHCS line (e.g. `9.1`); required for digest-only auto OCP/ODF; optional with `rhceph-N-rhel*` image path |
 | `ODF_CHANNEL` | (auto) | ODF operator channel (e.g., `stable-4.20`) |
 | `ODF_NIGHTLY_INDEX` | - | ODF nightly catalog index image |
 | `IBM_REGION` | `eu-de` | IBM Cloud region |
@@ -127,8 +130,8 @@ The pipeline always executes the complete end-to-end workflow:
 - Sent for all build results (success, failure, aborted)
 - Includes cluster details, versions, build links, and triggering user
 - **Ceph image metadata** from `cephadm version --verbose` (Ceph version string, git commit, release name) when the Ceph image metadata stage succeeds
-- **Tests executed** subsection parsed from `workload-report-*.txt` (storage-class-related lines vs FIO/workload lines; falls back to a short excerpt if no lines match)
-- Default `EMAIL_ADDRESS` includes the devops alerts list plus `ndevos@ibm.com`, `ebenahar@ibm.com`, and `pbalogh@ibm.com` (override per run via job parameter)
+- **Test case execution** (same HTML table as the status rows, appended after **Duration**): a full-width **Test case execution** header row, then rows with columns **Test** (short title only) | **Result** (Pass / Fail / Partial / Not run). Includes deployment, per–storage-class lines when the workload report lists allowed SCs, and **IO metrics (FIO / workload)** inferred from `workload-report-*.txt`
+- Default `EMAIL_ADDRESS` includes the devops alerts list plus stakeholders (override per run via job parameter)
 - Attaches cluster artifacts archive and state.json file
 - Color-coded status indicators
 

@@ -52,8 +52,8 @@ def job = pipelineJob("odf-interop") {
             // ── OCP Configuration ─────────────────────────────────────
             stringParam(
                 "OCP_VERSION",
-                "4.20.13",
-                "OpenShift version to deploy (example: 4.20.13)"
+                "",
+                "OpenShift version (e.g. 4.21.10). Leave empty with ODF_CHANNEL empty to auto-resolve via CEPH_IMAGE / RHCS_BUILD_VERSION"
             )
 
             choiceParam(
@@ -65,8 +65,8 @@ def job = pipelineJob("odf-interop") {
             // ── ODF Configuration ─────────────────────────────────────
             stringParam(
                 "ODF_CHANNEL",
-                "stable-4.20",
-                "ODF operator channel (REQUIRED). example: stable-4.20, ensure compatibility with OCP version"
+                "",
+                "ODF operator channel (e.g. stable-4.21). Leave empty with OCP_VERSION empty for auto-resolve via CEPH_IMAGE / RHCS_BUILD_VERSION"
             )
 
             stringParam(
@@ -78,7 +78,13 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "CEPH_IMAGE",
                 "",
-                "Ceph version image to test (REQUIRED). e.g. registry.stage.redhat.io/rhceph/rhceph-9-rhel9:9-1768259913 or quay.io/rhceph-ci/rhceph@sha256:..."
+                "Ceph version image to test (REQUIRED). e.g. registry.stage.redhat.io/rhceph/rhceph-9-rhel9:9-1768259913"
+            )
+
+            stringParam(
+                "RHCS_BUILD_VERSION",
+                "",
+                "RHCS build version (e.g. 9.1, 8.0) (OPTIONAL)"
             )
 
             // ── IBM Cloud Environment ────────────────────────────────
@@ -140,7 +146,7 @@ def job = pipelineJob("odf-interop") {
 
             stringParam(
                 "EMAIL_ADDRESS",
-                "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com,ndevos@ibm.com,ebenahar@ibm.com,pbalogh@ibm.com",
+                "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com,Mudit.Agarwal2@ibm.com,ebenahar@ibm.com,pbalogh@ibm.com",
                 "Notification email recipients (comma-separated)"
             )
         }

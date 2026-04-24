@@ -14,10 +14,11 @@
 //
 // Post Actions:
 //   - Archive cluster artifacts and state files
-//   - Send HTML email notification with results
+//   - Send HTML email: status rows + Test case execution rows (Test | Result) in one table
 //   - Clean up sensitive credentials
 
-@Library("ceph-qe-libs@main")_
+// Import shared library
+@Library("ceph-qe-libs@main") _
 
 pipeline {
     agent { label "agents" }
@@ -74,21 +75,40 @@ pipeline {
                 script {
                     def errors = []
 
-                    // CEPH_IMAGE is always required
-                    if (!params.CEPH_IMAGE?.trim()) {
+                    def cephImg = params.CEPH_IMAGE?.trim()
+                    def ocpVer = params.OCP_VERSION?.trim()
+                    def odfCh = params.ODF_CHANNEL?.trim()
+                    def ocpChParam = params.OCP_CHANNEL ?: 'released'
+
+                    if (!cephImg) {
                         errors << "CEPH_IMAGE is required — provide the Ceph version image to test"
+                    } else if (ocpVer && odfCh) {
+                        env.RESOLVED_OCP_VERSION = ocpVer
+                        env.RESOLVED_ODF_CHANNEL = odfCh
+                        env.RESOLVED_OCP_CHANNEL = ocpChParam
+                        echo "Using explicit OCP_VERSION / ODF_CHANNEL from parameters"
+                    } else if (!ocpVer && !odfCh) {
+                        try {
+                            def inf = null
+                            withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                                inf = resolveOdfInteropParams(
+                                    inferAuto: true,
+                                    cephImage: cephImg,
+                                    rhcsBuildVersion: params.RHCS_BUILD_VERSION?.trim(),
+                                    pullSecretFile: env.PULL_SECRET_FILE
+                                )
+                            }
+                            env.RESOLVED_OCP_VERSION = inf.ocpVersion
+                            env.RESOLVED_ODF_CHANNEL = inf.odfChannel
+                            env.RESOLVED_OCP_CHANNEL = inf.ocpChannel
+                            echo "Auto-resolved OCP/ODF (matrix key: ${inf.matrixKey})"
+                        } catch (Exception e) {
+                            errors << "Could not auto-resolve OCP/ODF: ${e.message}. " +
+                                "Set OCP_VERSION and ODF_CHANNEL, or RHCS_BUILD_VERSION (7/8/9.x), or ensure podman can run cephadm on the image (digest refs need pull secret + metadata)."
+                        }
+                    } else {
+                        errors << "Set both OCP_VERSION and ODF_CHANNEL, or leave both empty to infer from CEPH_IMAGE"
                     }
-
-                    // OCP_VERSION is always required
-                    if (!params.OCP_VERSION?.trim()) {
-                        errors << "OCP_VERSION is required — provide the OpenShift version to deploy"
-                    }
-
-                    // ODF_CHANNEL is always required
-                    if (!params.ODF_CHANNEL?.trim()) {
-                        errors << "ODF_CHANNEL is required — provide the ODF operator channel (e.g., stable-4.20)"
-                    }
-
 
                     // Worker count must be >= 3 for ODF
                     def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
@@ -124,10 +144,9 @@ pipeline {
                     echo "╔══════════════════════════════════════════════════╗"
                     echo "║           PARAMETER VALIDATION PASSED            ║"
                     echo "╚══════════════════════════════════════════════════╝"
-                    echo "  WORKFLOW     : Deploy → Workload → Teardown"
-                    echo "  OCP_VERSION  : ${params.OCP_VERSION}"
-                    echo "  OCP_CHANNEL  : ${params.OCP_CHANNEL}"
-                    echo "  ODF_CHANNEL  : ${params.ODF_CHANNEL ?: '(default)'}"
+                    echo "  OCP_VERSION  : ${env.RESOLVED_OCP_VERSION}"
+                    echo "  OCP_CHANNEL  : ${env.RESOLVED_OCP_CHANNEL}"
+                    echo "  ODF_CHANNEL  : ${env.RESOLVED_ODF_CHANNEL}"
                     echo "  CEPH_IMAGE   : ${params.CEPH_IMAGE}"
                     echo "  IBM_REGION   : ${params.IBM_REGION}"
                     echo "  VPC_NAME     : ${params.VPC_NAME}"
@@ -151,14 +170,33 @@ pipeline {
                         currentBuild.displayName = "#${env.BUILD_NUMBER} - ${env.CLUSTER_NAME}"
                     }
 
-                    // Build simple, clean description with triggering user
-                    def triggeredBy = currentBuild.getBuildCauses()[0]?.userId ?: 'automated'
+                    // Build simple, clean description with triggering user (first cause is not always UserIdCause)
+                    def triggeredBy = 'automated'
+                    def causes = currentBuild.getBuildCauses()
+                    if (causes) {
+                        def uid = causes.findResult { c -> c?.userId ? c.userId.toString().trim() : null }
+                        if (uid) {
+                            triggeredBy = uid
+                        } else {
+                            def fromDesc = causes.findResult { c ->
+                                def sd = c?.shortDescription?.toString()
+                                if (!sd) {
+                                    return null
+                                }
+                                def m = (sd =~ /Started by user (.+)/)
+                                m.find() ? m.group(1).trim() : null
+                            }
+                            if (fromDesc) {
+                                triggeredBy = fromDesc
+                            }
+                        }
+                    }
                     def descParts = []
                     descParts << "User: ${triggeredBy}"
                     if (env.CLUSTER_NAME) {
                         descParts << "Cluster: ${env.CLUSTER_NAME}"
                     }
-                    descParts << "OCP: ${params.OCP_VERSION} (${params.OCP_CHANNEL})"
+                    descParts << "OCP: ${env.RESOLVED_OCP_VERSION} (${env.RESOLVED_OCP_CHANNEL})"
                     descParts << "Ceph: ${cephImageShort}"
 
                     currentBuild.description = descParts.join(' | ')
@@ -170,7 +208,7 @@ pipeline {
                     echo "  Build ID     : ${env.BUILD_ID}"
                     echo "  Job Name     : ${env.JOB_NAME}"
                     echo "  Workspace    : ${env.WORKSPACE}"
-                    echo "  Started By   : ${currentBuild.getBuildCauses()[0]?.userId ?: 'automated'}"
+                    echo "  Started By   : ${triggeredBy}"
                 }
             }
         }
@@ -236,24 +274,38 @@ pipeline {
                         return
                     }
                     env.CEPH_IMAGE_PODMAN = img
-                    sh '''
-                        set +e
-                        rm -f ceph-interop/.cephadm-version.json
-                        if ! command -v podman >/dev/null 2>&1; then
-                            echo "podman not found — skipping cephadm version metadata"
+                    withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                        sh '''
+                            set +e
+                            rm -f ceph-interop/.cephadm-version.json /tmp/cephadm-version.raw
+                            if ! command -v podman >/dev/null 2>&1; then
+                                echo "podman not found — skipping cephadm version metadata"
+                                exit 0
+                            fi
+                            podman run --rm --authfile "${PULL_SECRET_FILE}" "${CEPH_IMAGE_PODMAN}" \
+                                bash -c "cephadm version --verbose" > /tmp/cephadm-version.raw 2>/tmp/cephadm-version.err
+                            ec=$?
+                            if [ "$ec" -ne 0 ]; then
+                                echo "cephadm version --verbose failed (exit $ec)"
+                                cat /tmp/cephadm-version.err 2>/dev/null || true
+                                rm -f ceph-interop/.cephadm-version.json
+                                exit 0
+                            fi
+                            # Full stdout is one JSON object (indent=2) with nested keys e.g. bundled_packages.
+                            # Do not slice with awk on lone "}" lines — that truncated JSON and broke email Ceph rows.
+                            if [ ! -s /tmp/cephadm-version.raw ]; then
+                                echo "cephadm version --verbose produced empty stdout"
+                                rm -f ceph-interop/.cephadm-version.json
+                            elif command -v python3 >/dev/null 2>&1 && ! python3 -c "import json,sys; json.load(open('/tmp/cephadm-version.raw'))" 2>/dev/null; then
+                                echo "cephadm stdout is not valid JSON — skipping .cephadm-version.json"
+                                rm -f ceph-interop/.cephadm-version.json
+                            else
+                                cp /tmp/cephadm-version.raw ceph-interop/.cephadm-version.json
+                                echo "✓ Wrote ceph-interop/.cephadm-version.json"
+                            fi
                             exit 0
-                        fi
-                        podman run --rm "${CEPH_IMAGE_PODMAN}" bash -c "cephadm version --verbose" > ceph-interop/.cephadm-version.json 2>/tmp/cephadm-version.err
-                        ec=$?
-                        if [ "$ec" -ne 0 ]; then
-                            echo "cephadm version --verbose failed (exit $ec)"
-                            cat /tmp/cephadm-version.err 2>/dev/null || true
-                            rm -f ceph-interop/.cephadm-version.json
-                        else
-                            echo "✓ Wrote ceph-interop/.cephadm-version.json"
-                        fi
-                        exit 0
-                    '''
+                        '''
+                    }
                 }
             }
         }
@@ -331,7 +383,7 @@ pipeline {
                         def deviceSize  = (params.DEVICE_SIZE?.trim() ?: '50') as Integer
                         def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
                         def cephImage   = params.CEPH_IMAGE?.trim() ?: ''
-                        def odfChannel  = params.ODF_CHANNEL?.trim() ?: ''
+                        def odfChannel  = env.RESOLVED_ODF_CHANNEL?.trim() ?: ''
                         def nightly     = params.ODF_NIGHTLY_INDEX?.trim() ?: ''
                         def sshKeyNames = params.SSH_KEY_NAMES?.trim() ?: 'ceph-qe-sa,ceph-qe-sa-svc'
 
@@ -340,8 +392,8 @@ pipeline {
 
                         // ── Cluster / OCP Configuration ──────────────────────
                         // Set OpenShift version and release channel (released/nightly)
-                        config.cluster.ocp_version = params.OCP_VERSION
-                        config.cluster.ocp_channel = params.OCP_CHANNEL
+                        config.cluster.ocp_version = env.RESOLVED_OCP_VERSION
+                        config.cluster.ocp_channel = env.RESOLVED_OCP_CHANNEL
 
                         // ── IBM Cloud Infrastructure ─────────────────────────
                         // Configure IBM Cloud region, COS region, and VPC
@@ -524,15 +576,18 @@ pipeline {
                     ]
                     def colors = statusMap[status] ?: statusMap['FAILURE']
 
-                    def ocpVer = params.OCP_VERSION ?: 'N/A'
-                    def odfCh  = params.ODF_CHANNEL ?: 'default'
+                    // Email table: fixed columns, soft borders (readable in Outlook/Gmail)
+                    def lab = "background-color: ${colors.labelBg}; border: 1px solid #d0d0d0; padding: 9px 12px; vertical-align: top; width: 34%; font-size: 13px;"
+                    def val = "background-color: ${colors.valueBg}; border: 1px solid #d0d0d0; padding: 9px 12px; vertical-align: top; font-size: 13px; line-height: 1.45;"
+                    def cephValStyle = "${val} word-break: break-all; font-size: 12px; font-family: Consolas, Monaco, 'Courier New', monospace; line-height: 1.35;"
+
+                    def ocpVer = env.RESOLVED_OCP_VERSION ?: 'N/A'
+                    def odfCh  = env.RESOLVED_ODF_CHANNEL ?: 'default'
                     def subject = "CEPH-ODF INTEROP TESTING — OCP ${ocpVer} / ODF ${odfCh} — ${status}"
 
-                    def actionLabel = 'Deploy \u2192 Workload \u2192 Teardown'
-
                     // Build version links (safe for null params)
-                    def ocpVersion = params.OCP_VERSION ?: ''
-                    def ocpChannel = params.OCP_CHANNEL ?: 'released'
+                    def ocpVersion = env.RESOLVED_OCP_VERSION ?: ''
+                    def ocpChannel = env.RESOLVED_OCP_CHANNEL ?: 'released'
                     def ocpMirrorBase = (ocpChannel == 'nightly')
                         ? 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview'
                         : 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp'
@@ -540,7 +595,7 @@ pipeline {
                         ? "<a href=\"${ocpMirrorBase}/${ocpVersion}/\">${ocpVersion}</a> (${ocpChannel})"
                         : 'N/A'
 
-                    def odfChannel = params.ODF_CHANNEL ?: ''
+                    def odfChannel = env.RESOLVED_ODF_CHANNEL ?: ''
                     def odfCell = 'default'
                     if (odfChannel) {
                         def odfVersion = odfChannel.replaceAll(/^.*?(\d+\.\d+).*/, '$1')
@@ -554,8 +609,8 @@ pipeline {
                     if (cephImage) {
                         cephImageRow = """
                     <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph Image</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${cephImage}</td>
+                        <td style="${lab}"><b>Ceph Image</b></td>
+                        <td style="${cephValStyle}">${cephImage}</td>
                     </tr>"""
                     }
 
@@ -572,32 +627,60 @@ pipeline {
                     def cephCommit = 'N/A'
                     def cephRelName = 'N/A'
                     try {
-                        if (fileExists('ceph-interop/.cephadm-version.json')) {
-                            def meta = new groovy.json.JsonSlurper().parseText(
-                                readFile('ceph-interop/.cephadm-version.json'))
-                            if (meta.ceph_git_nice_ver) { cephNice = meta.ceph_git_nice_ver.toString() }
-                            if (meta.ceph_git_ver) { cephCommit = meta.ceph_git_ver.toString() }
-                            if (meta.ceph_release_name) { cephRelName = meta.ceph_release_name.toString() }
+                        def metaPath = 'ceph-interop/.cephadm-version.json'
+                        if (fileExists(metaPath)) {
+                            def meta = readJSON file: metaPath
+                            echo "Email: read ${metaPath} successfully (readJSON)"
+                            // cephadm command_version --verbose (json.dump): ceph_git_nice_ver, ceph_git_ver, ceph_release_name
+                            if (meta?.ceph_git_nice_ver) { cephNice = meta.ceph_git_nice_ver.toString() }
+                            if (meta?.ceph_git_ver) { cephCommit = meta.ceph_git_ver.toString() }
+                            if (meta?.ceph_release_name) { cephRelName = meta.ceph_release_name.toString() }
+                            def n = [cephNice, cephCommit, cephRelName].count { it != 'N/A' }
+                            if (n > 0) {
+                                echo "Email: populated ${n}/3 Ceph email rows from JSON (version, commit, release name)"
+                            } else {
+                                echo "Email: JSON loaded but ceph_git_nice_ver / ceph_git_ver / ceph_release_name were empty or missing"
+                            }
+                        } else {
+                            echo "Email: ${metaPath} not found (Ceph image metadata stage may have been skipped or failed)"
                         }
-                    } catch (Exception ignored) {
-                        /* JSON missing or invalid */
+                    } catch (Exception e) {
+                        echo "Email: could not parse .cephadm-version.json — ${e.message}"
                     }
                     def cephMetaRows = """
                     <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph version</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${htmlEsc(cephNice)}</td>
+                        <td style="${lab}"><b>Ceph version</b></td>
+                        <td style="${cephValStyle}">${htmlEsc(cephNice)}</td>
                     </tr>
                     <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph commit</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${htmlEsc(cephCommit)}</td>
+                        <td style="${lab}"><b>Ceph commit</b></td>
+                        <td style="${cephValStyle}">${htmlEsc(cephCommit)}</td>
                     </tr>
                     <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Ceph release name</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${htmlEsc(cephRelName)}</td>
+                        <td style="${lab}"><b>Ceph release name</b></td>
+                        <td style="${cephValStyle}">${htmlEsc(cephRelName)}</td>
                     </tr>"""
 
-                    // Workload report: storage classes vs workloads (best-effort parsing)
-                    def workloadExecRow = ""
+                    // Test case rows (same table as status): section header + Test | Result (titles only)
+                    def workloadOk = (status == 'SUCCESS')
+                    def deployResult = status == 'SUCCESS' ? 'Pass' : (status == 'ABORTED' ? 'Not run' : 'Fail')
+                    def tcBar = (status == 'SUCCESS') ? '#43A047' : ((status == 'ABORTED') ? '#FB8C00' : '#E53935')
+                    def tcHdrBg = (status == 'SUCCESS') ? '#E8F5E9' : ((status == 'ABORTED') ? '#FFF8E1' : '#FFEBEE')
+                    def tcHdrFg = (status == 'SUCCESS') ? '#1B5E20' : ((status == 'ABORTED') ? '#E65100' : '#B71C1C')
+                    def tcSectionHeader = """
+                        <tr>
+                            <td colspan="2" style="background-color: ${tcHdrBg}; color: ${tcHdrFg}; border: 1px solid #d0d0d0; border-top: 3px solid ${tcBar}; padding: 10px 14px; font-size: 108%; font-weight: bold;">
+                                Test case execution
+                            </td>
+                        </tr>"""
+                    def tcRow2 = { String title, String resultStr ->
+                        """                        <tr>
+                            <td style="${lab} vertical-align: middle;"><b>${htmlEsc(title)}</b></td>
+                            <td style="${val} font-weight: bold; vertical-align: middle; text-align: right; white-space: nowrap;">${htmlEsc(resultStr)}</td>
+                        </tr>"""
+                    }
+
+                    def testCaseRowsHtml = ""
                     if (hasCluster) {
                         try {
                             def reportPath = sh(
@@ -606,72 +689,94 @@ pipeline {
                             ).trim()
                             if (reportPath && fileExists(reportPath)) {
                                 def text = readFile(reportPath)
-                                def storageLines = new LinkedHashSet()
-                                def workloadLines = new LinkedHashSet()
+                                def allowedScNames = ['ocs-storagecluster-ceph-rbd', 'ocs-storagecluster-cephfs'] as Set
+                                def scNames = new LinkedHashSet()
+
+                                def scm = text =~ /(?i)\b(ocs-storagecluster-ceph-(?:rbd|cephfs))\b/
+                                while (scm.find()) {
+                                    scNames << scm.group(1).toLowerCase()
+                                }
+                                text.split('\n').each { line ->
+                                    def t = line.trim()
+                                    def m = (t =~ /(?i)storageclass[^:]*:\s*(\S+)/)
+                                    if (m.find()) {
+                                        def scVal = m.group(1).toLowerCase()
+                                        if (allowedScNames.contains(scVal)) {
+                                            scNames << scVal
+                                        }
+                                    }
+                                    m = (t =~ /(?i)storageclassname[^:]*:\s*(\S+)/)
+                                    if (m.find()) {
+                                        def scVal = m.group(1).toLowerCase()
+                                        if (allowedScNames.contains(scVal)) {
+                                            scNames << scVal
+                                        }
+                                    }
+                                }
+
+                                def bwLines = new LinkedHashSet()
+                                def iopsLines = new LinkedHashSet()
+                                def latLines = new LinkedHashSet()
                                 text.split('\n').each { line ->
                                     def t = line.trim()
                                     if (!t) { return }
                                     def u = t.toLowerCase()
-                                    if (u.contains('storageclass') || u.contains('storage class') ||
-                                            u.contains('ocs-storagecluster') || u.contains('storageclassname')) {
-                                        storageLines << t
+                                    if (u.contains('kib/s') || u.contains('mib/s') || u.contains('gib/s') ||
+                                            (u.contains('bw') && (u.contains('=') || u.contains('('))) ||
+                                            u.contains('throughput') || (u.contains('read:') && u.contains('/s')) ||
+                                            (u.contains('write:') && u.contains('/s'))) {
+                                        bwLines << t
                                     }
-                                    if (u.contains('fio') || u.contains('workload') ||
-                                            (u.contains('pvc') && (u.contains('create') || u.contains('bound') || u.contains('test'))) ||
-                                            u.contains('cephfs') || u.contains('ceph-fs') ||
-                                            (u.contains('rbd') && u.length() < 200)) {
-                                        workloadLines << t
+                                    if (u.contains('iops') || u =~ /(?i)\b\d+\s*iops\b/) {
+                                        iopsLines << t
+                                    }
+                                    if (u.contains('lat') && (u.contains('usec') || u.contains('msec') || u.contains('clat') ||
+                                            u.contains('slat') || u.contains('avg=') || u.contains(' min=') || u.contains(' max='))) {
+                                        latLines << t
                                     }
                                 }
-                                def sHtml
-                                def wHtml
-                                if (storageLines.isEmpty() && workloadLines.isEmpty()) {
-                                    def preview = text.split('\n').take(20).collect { htmlEsc(it) }.join('<br/>\n')
-                                    sHtml = '<i>(unparsed — report excerpt)</i><br/>' + preview
-                                    wHtml = '<i>(no matching lines)</i>'
+                                def hasIoMetrics = !bwLines.isEmpty() || !iopsLines.isEmpty() || !latLines.isEmpty()
+
+                                def bodyRows = new StringBuilder()
+                                bodyRows.append(tcSectionHeader)
+                                bodyRows.append(tcRow2('OCP + ODF deployment', deployResult))
+
+                                if (scNames.isEmpty()) {
+                                    def r = workloadOk ? 'Partial' : 'Fail'
+                                    bodyRows.append(tcRow2('Storage class validation', r))
                                 } else {
-                                    sHtml = storageLines ? new ArrayList(storageLines).take(30).collect { htmlEsc(it) }.join('<br/>\n') : '<i>(no matching lines)</i>'
-                                    wHtml = workloadLines ? new ArrayList(workloadLines).take(30).collect { htmlEsc(it) }.join('<br/>\n') : '<i>(no matching lines)</i>'
+                                    scNames.each { sc ->
+                                        def refs = 0
+                                        text.split('\n').each { ln ->
+                                            if (ln.toLowerCase().contains(sc)) {
+                                                refs++
+                                            }
+                                        }
+                                        def r = (workloadOk && refs > 0) ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
+                                        bodyRows.append(tcRow2("Storage class validation — ${sc}", r))
+                                    }
                                 }
-                                workloadExecRow = """
-                    <tr>
-                        <td colspan="2" style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">
-                            <b>Tests executed</b> (from workload report)
-                            <table style="width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 6px;">
-                                <tr>
-                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top; width: 50%; background-color: ${colors.labelBg};"><b>Storage classes / PVC context</b></td>
-                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top; background-color: ${colors.labelBg};"><b>Workloads / IO</b></td>
-                                </tr>
-                                <tr>
-                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top;">${sHtml}</td>
-                                    <td style="border: 1px solid #bbb; padding: 6px; vertical-align: top;">${wHtml}</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>"""
+
+                                def ioRes = (workloadOk && hasIoMetrics) ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
+                                bodyRows.append(tcRow2('IO metrics (FIO / workload)', ioRes))
+
+                                testCaseRowsHtml = bodyRows.toString()
                             }
                         } catch (Exception ignored) { /* no report */ }
                     }
-                    if (!workloadExecRow) {
-                        workloadExecRow = """
-                    <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Tests executed</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">N/A (workload report not available)</td>
-                    </tr>"""
+                    if (!testCaseRowsHtml) {
+                        testCaseRowsHtml = """
+                        ${tcSectionHeader}
+                        ${tcRow2('OCP + ODF deployment', deployResult)}
+                        ${tcRow2('Storage class validation', 'Not run')}
+                        ${tcRow2('IO metrics (FIO / workload)', 'Not run')}"""
                     }
 
                     // Infrastructure row (always present)
                     def infrastructureRow = """
                     <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Infrastructure</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">IBM Cloud</td>
-                    </tr>"""
-
-                    // Cluster sizing summary
-                    def sizingRow = """
-                    <tr>
-                        <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Cluster Size</b></td>
-                        <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${params.MASTER_COUNT ?: '3'} master / ${params.WORKER_COUNT ?: '3'} worker — ${params.DEVICE_COUNT ?: '3'} x ${params.DEVICE_SIZE ?: '50'}GB OSD per worker</td>
+                        <td style="${lab}"><b>Infrastructure</b></td>
+                        <td style="${val}">IBM Cloud</td>
                     </tr>"""
 
                     def duration = 'N/A'
@@ -679,48 +784,40 @@ pipeline {
 
                     def body = """
                     <html>
-                    <body>
-                    <table style="font-family: arial, sans-serif; border-collapse: collapse; width: 600px; background-color: ${colors.valueBg};">
-                        <caption style="background-color: ${colors.captionBg}; color: #FFFFFF; border: 1px solid #333; height: 44px; font-size: 130%; font-weight: bold; padding: 8px;">
+                    <body style="margin: 0; padding: 0;">
+                    <table style="font-family: 'Segoe UI', Arial, Helvetica, sans-serif; border-collapse: collapse; width: 100%; max-width: 720px; table-layout: fixed; background-color: ${colors.valueBg};">
+                        <caption style="background-color: ${colors.captionBg}; color: #FFFFFF; border: 1px solid #c0c0c0; height: 44px; font-size: 124%; font-weight: bold; padding: 10px 12px;">
                             ${colors.mark} CEPH-ODF INTEROP TESTING — ${status}
                         </caption>
+                        <colgroup><col style="width: 34%;" /><col style="width: 66%;" /></colgroup>
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Cluster</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${hasCluster ? clusterName : 'N/A (not created)'}</td>
+                            <td style="${lab}"><b>OCP Version</b></td>
+                            <td style="${val}">${ocpCell}</td>
                         </tr>
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>OCP Version</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${ocpCell}</td>
-                        </tr>
-                        <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>ODF Channel</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${odfCell}</td>
+                            <td style="${lab}"><b>ODF Channel</b></td>
+                            <td style="${val}">${odfCell}</td>
                         </tr>
 ${cephImageRow}
 ${cephMetaRows}
-${sizingRow}
 ${infrastructureRow}
-${workloadExecRow}
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px; width: 160px;"><b>Workflow</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${actionLabel}</td>
+                            <td style="${lab}"><b>IBM Region</b></td>
+                            <td style="${val}">${params.IBM_REGION ?: 'N/A'}</td>
                         </tr>
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>IBM Region</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${params.IBM_REGION ?: 'N/A'}</td>
+                            <td style="${lab}"><b>VPC</b></td>
+                            <td style="${val}">${params.VPC_NAME ?: 'N/A'}</td>
                         </tr>
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>VPC</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${params.VPC_NAME ?: 'N/A'}</td>
+                            <td style="${lab}"><b>Build</b></td>
+                            <td style="${val}"><a href="${env.BUILD_URL}">${env.JOB_NAME} #${env.BUILD_NUMBER}</a></td>
                         </tr>
                         <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Build</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;"><a href="${env.BUILD_URL}">${env.JOB_NAME} #${env.BUILD_NUMBER}</a></td>
+                            <td style="${lab}"><b>Duration</b></td>
+                            <td style="${val}">${duration}</td>
                         </tr>
-                        <tr>
-                            <td style="background-color: ${colors.labelBg}; border: 1px solid #999; padding: 8px;"><b>Duration</b></td>
-                            <td style="background-color: ${colors.valueBg}; border: 1px solid #999; padding: 8px;">${duration}</td>
-                        </tr>
+${testCaseRowsHtml}
                     </table>
                     </body>
                     </html>
@@ -744,7 +841,7 @@ ${workloadExecRow}
                     dir("ceph-interop") {
                         sh '''
                             echo "Cleaning up credential files..."
-                            rm -f configs/credentials.yaml configs/pull-secret.json .cephadm-version.json 2>/dev/null || true
+                            rm -f configs/credentials.yaml configs/pull-secret.json 2>/dev/null || true
                             echo "✓ Credential files cleaned up"
                         '''
                     }
