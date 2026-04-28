@@ -62,3 +62,17 @@ upgrade:
         - rhel-9
       build:
         - ibm
+    - name: "Test SMB upgrade IBMSC 9x to 9x latest"
+      suite: suites/tentacle/smb/tier-0-smb-upgrade-ibm-9x-to-9x-latest.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Test SMB upgrade IBMSC 8x to 9x latest with Casesensitivity Disable"
+      suite: suites/tentacle/smb/tier-1-smb-disable-casesensitivity-upgrade-ibm-8x-to-9x-latest.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
