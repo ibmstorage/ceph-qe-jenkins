@@ -13,7 +13,13 @@ regression:
     - name: "Tier2 RGW regression test" # 198 mins, 0 secs
       suite: suites/tentacle/rgw/tier-2_rgw_regression_test.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-size: bx2-2x8
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 RGW MS regression tests" # 193 mins, 8 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_regression_test.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
@@ -29,41 +35,78 @@ regression:
     - name: "Tier-2 RGW regression extended" # 300 mins, 37 secs
       suite: suites/tentacle/rgw/tier-2_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-size: bx2-2x8
-    # - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
-    #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
-    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    #   vm-size: bx2-2x8
-    # - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
-    #   suite: suites/tentacle/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
-    #   global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    #   vm-size: bx2-2x8
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-3 archivezone colocated datazone" # 95 mins, 43 secs
       suite: suites/tentacle/rgw/tier-3_archive_zone_colocate_data_zone.yaml
       global-conf: conf/tentacle/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
     - name: "Tier-2 SSL RGW ecpool" # 111 mins, 34 secs
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_ecpool_test.yaml
       global-conf: conf/tentacle/rgw/ec-profile-4+2-cluster.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 RGW ingress multirealm" # 70 mins, 35 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ingress_multi_realm.yaml
       global-conf: conf/tentacle/rgw/tier-1_rgw_multirealm.yaml
     - name: "Tier-2 SSL RGW regression" # 217 mins, 1 secs
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_test.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-size: bx2-2x8
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 RGW sanity with d3n enabled" # 105 mins, 13 secs
       suite: suites/tentacle/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    # - name: "Tier-2 RGW sts aswi" # 73 mins, 18 secs
-    #   suite: suites/tentacle/rgw/tier-2_rgw_sts_aswi.yaml
-    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW sts aswi" # 73 mins, 18 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_sts_aswi.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-1 RGW sw qat" # 39 mins, 37 secs
       suite: suites/tentacle/rgw/tier-1_rgw_sw_qat.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
     - name: "Tier-2 RGW conditional delete" # 54 mins, 37 secs
       suite: suites/tentacle/rgw/tier-2_rgw_conditional_put_delete.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-
 extended_regression:
   metadata:
     cloud:
@@ -73,7 +116,13 @@ extended_regression:
     - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms-archive.yaml
       global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
-      vm-size: bx2-4x16
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Migrate default single to multisite" # 150 mins, 35 secs
       suite: suites/tentacle/rgw/migrate_default_single_to_multisite.yaml
       global-conf: conf/tentacle/rgw/migrate_default_single_to_multisite.yaml
@@ -98,33 +147,63 @@ extended_regression:
     - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
       suite: suites/tentacle/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    # - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
-    #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
-    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    #   vm-size: bx2-2x8
+    - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-size: bx2-2x8
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    # - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
-    #   suite: suites/tentacle/rgw/tier-2_rgw_ms_async_data_notification.yaml
-    #   global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    #   custom-config:
-    #     gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
-    #     gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
-    #     gklm-endpoint-ibmc: "10.243.36.4"
-    #   vm-size: bx2-4x16
-    # - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
-    #   suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
-    #   global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    #   vm-size: bx2-2x8
+    - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_async_data_notification.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      custom-config:
+        gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
+        gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
+        gklm-endpoint-ibmc: "10.243.36.4"
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 rgw single site regression extended" 
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      vm-size: bx2-2x8
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 rgw ms archive with haproxy" # 470 mins, 30 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_archive_with_haproxy.yaml
       global-conf: conf/tentacle/rgw/tier-2_rgw_ms_archive_with_haproxy_conf.yaml
@@ -170,6 +249,67 @@ extended_regression:
     - name: "tier-2_ssl_rgw_regression_extended"
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+extended_regression_1:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "sanity rgw tests" # 169 mins, 20 secs
+      suite: suites/tentacle/rgw/sanity_rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW multisite regression" # 193 mins, 8 secs
+      suite: suites/tentacle/rgw/sanity_rgw_multisite.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw bind port test"
+      suite: suites/tentacle/rgw/tier-1_rgw_with_only_bind_port_on_networks.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding with haproxy" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tests_rest_sanity_rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-1-extn_rgw_multisite-secondary-to-primary.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW mgr module tests" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_module.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW multisite sync status" # 60 mins, 8 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_and_lc.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW ms lua tests" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_lua.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
+    - name: "Tier-2 RGW ms on 2+2@4nodes" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_with_haproxy_ec_22_4.yaml
+      global-conf: conf/tentacle/rgw/tier-2_rgw_ms_with_haproxy_conf_4node.yaml
+    - name: "Tier-2 ssl RGW ms tests with ec 8-6 profile" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_ssl_rgw_ms_msr_8+6.yaml
+      global-conf: conf/tentacle/rgw/ms-msr-8+6-cluster.yaml
+    - name: "Tier-2 RGW ms 3az tests" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
+      global-conf: conf/tentacle/rados/3AZ-cluster-rhos-1.yaml
+
 upgrade:  
   metadata:
     cloud:
@@ -218,3 +358,8 @@ upgrade:
         - rhel-9
       build:
         - ibm
+    - name: "Tier-1 rgw single zone upgrade 71GA to 9x latest"
+      suite: suites/tentacle/rgw/test_ss_upgrade_7_1_GA_to_9.x_latest.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
