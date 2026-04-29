@@ -68,6 +68,12 @@
                 <td style="background-color: #D4D7D4;"><b>Container</b></td>
                 <td>{{Container}}</td>
             </tr>
+            {% if ResultsURL %}
+            <tr>
+                <td style="background-color: #D4D7D4;"><b>Results URL</b></td>
+                <td><a href="{{ResultsURL}}">{{ResultsURL}}</a></td>
+            </tr>
+            {% endif %}
     </table>
     {% if Results %}
         <br>
