@@ -34,7 +34,7 @@ on the RHCS versions
 
 
 def get_testsuite(
-    test, platform, build=None, build_type=None, tag=None
+    test, platform, build=None, build_type=None, tag=None, cloud=None
 ):
     """Get testsuite and global config"""
     # Check for platform in test config
@@ -70,12 +70,22 @@ def get_testsuite(
     ):
         return None
 
+    # Get inventory file based on cloud and platform
+    inventory = ""
+    if cloud and test.get("inventory"):
+        cloud_inventory = test.get("inventory", {}).get(cloud, {})
+        if isinstance(cloud_inventory, dict) and platform:
+            inventory = cloud_inventory.get(platform, "")
+        elif isinstance(cloud_inventory, str):
+            inventory = cloud_inventory
+
     # Create testsuites with details
     return {
         "name": test.get("name", "").replace(
                 " ", "_").replace(".", "_").replace("-", "_"),
         "suite": test.get("suite", ""),
         "global_conf": test.get("global-conf", ""),
+        "inventory": inventory,
         "vm_size": test.get("vm-size", ""),
         "custom_config": ",".join(
             [f"{k}={v}" for k, v in test.get("custom_config", {}).items()]
@@ -120,7 +130,7 @@ def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
 
         # Iterate over testsuite in stages
         for test in tests:
-            testsuite = get_testsuite(test, platform, build, build_type, tag)
+            testsuite = get_testsuite(test, platform, build, build_type, tag, cloud)
             if not testsuite:
                 continue
 

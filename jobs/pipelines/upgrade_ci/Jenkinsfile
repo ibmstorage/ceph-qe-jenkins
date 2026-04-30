@@ -78,8 +78,14 @@ pipeline {
                 script {
                     // Iterate over suite list
                     suites.upgrade.suites.each { suite ->
+                        // Prioritize test-level global_conf over stage-level globalConf
+                        def effectiveGlobalConf = suite.global_conf ?: suites.upgrade.metadata?.globalConf
+
+                        // Prioritize test-level inventory over default inventory
+                        def effectiveInventory = suite.inventory ?: jobConfigs.inventory
+
                         // Debug
-                        echo "Executing suite: ${suite.suite} with config: ${suite.global_conf}"
+                        echo "Executing suite: ${suite.suite} with config: ${effectiveGlobalConf}, inventory: ${effectiveInventory}"
 
                         // Create stages based on test suite
                         testSuitesMap[suite.name] = {
@@ -101,10 +107,10 @@ pipeline {
                                         release: jobConfigs.release,
                                         platform: jobConfigs.platform,
                                         logDir: logDir,
-                                        globalConf: suite.global_conf,
+                                        globalConf: effectiveGlobalConf,
                                         suite: suite.suite,
                                         ibmcCredFile: jobConfigs.ibmcCredFile,
-                                        inventory: jobConfigs.inventory,
+                                        inventory: effectiveInventory,
                                         logLevel: jobConfigs.logLevel,
                                         customConfig: jobConfigs.customConfig,
                                         buildType: jobConfigs.buildType,

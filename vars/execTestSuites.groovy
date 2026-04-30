@@ -49,9 +49,10 @@ def call(Map parameters) {
     }
 
     def globalConf = parameters.get("globalConf")
-    if ( ! globalConf ) {
+    if ( ! globalConf || globalConf.trim().isEmpty() ) {
         throw new RuntimeException(
-            "CephCI requires 'globalConf' parameter to execute tests"
+            "CephCI requires 'globalConf' parameter to execute tests. " +
+            "Received: '${globalConf}'"
         )
     }
 
