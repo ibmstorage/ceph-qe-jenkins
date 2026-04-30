@@ -103,10 +103,9 @@ def call(Map parameters) {
     }
 
     // Create test artifacts Content
-    def ibmCosResultsBaseUrl = "https://10.8.128.2/cephci-jenkins/ibm-cos"
     def testResult = readFile file: "${resultsSummary}"
     def ibmcCosBucketPath = logDir.replace(jobConfigs.JOB_DIR_PATH, "")
-    def resultsUrl = "${ibmCosResultsBaseUrl}${ibmcCosBucketPath}/"
+    def resultsUrl = "${ibmcCosBucketPath}/"
     def artifactsContent = """{
         "BuildType": "${buildType}",
         "Release": "${rhBuild}",
@@ -119,7 +118,7 @@ def call(Map parameters) {
         "jobName": "${env.JOB_NAME}",
         "ReportPortal": "${rpLaunchUrl}",
         "ResultsURL": "${resultsUrl}",
-        "Results": ${testResult},
+        "Results": ${testResult}
     }"""
     writeJSON file: "${artifacts}", json: artifactsContent
 
