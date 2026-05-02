@@ -82,7 +82,7 @@ pipeline {
                     }
 
                     // If ceph versions don't match let's abort as the ceph-base image is not synced
-                    if ( buildInfo.?nightly.?version != imageInfo.?cephVersion ) {
+                    if ( buildInfo?.nightly?.version != imageInfo?.cephVersion ) {
                         println("The ceph version in recipe file and image don't match.")
                         return
                     }
