@@ -45,8 +45,7 @@ pipeline {
                     def cephBaseImage = ""
                     params.BLUE_IMAGES.each { image ->
                         def trimmedImage = image.trim()
-                        if ( trimmedImage.contains(IBM_CEPH_IMAGE_PATTERN) &&
-                             (trimmedImage.contains("/ceph-base:") || trimmedImage.endsWith("/ceph-base")) ) {
+                        if ( trimmedImage.contains(IBM_CEPH_IMAGE_PATTERN) ) {
                             cephBaseImage = trimmedImage
                             println("A match has been found: " + cephBaseImage)
                         }
