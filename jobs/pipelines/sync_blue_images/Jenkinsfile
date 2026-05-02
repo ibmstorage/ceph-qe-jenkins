@@ -26,5 +26,119 @@ pipeline {
                 script { syncBlueImages(images: params.BLUE_IMAGES) }
             }
         }
+
+        stage("Downstream") {
+            steps {
+                script {
+                    // Constants
+                    final String IBM_CEPH_IMAGE_PATTERN = "icr.io/cp/ibm-ceph/ceph-"
+                    final String DEFAULT_REGION = "eu-de"
+
+                    // Return from this stage if not enabled
+                    if ( ! params.TRIGGER_BVT ) {
+                        println("Build Verification pipeline is not triggered by default.")
+                        return
+                    }
+
+                    // Get the ceph-base image from the list. We are
+                    // specifically checking for IBM Ceph image.
+                    def cephBaseImage = ""
+                    params.BLUE_IMAGES.each { image ->
+                        def trimmedImage = image.trim()
+                        if ( trimmedImage.contains(IBM_CEPH_IMAGE_PATTERN) &&
+                             (trimmedImage.contains("/ceph-base:") || trimmedImage.endsWith("/ceph-base")) ) {
+                            cephBaseImage = trimmedImage
+                            println("A match has been found: " + cephBaseImage)
+                        }
+                    }
+
+                    // Override trigger if ceph-base was not provided
+                    if ( cephBaseImage.isEmpty() ) {
+                        println("Unable to find a matching IBM Storage Ceph base image.")
+                        return
+                    }
+
+                    def imageInfo
+                    try {
+                        imageInfo = processCephBaseImage(cephBaseImage)
+                    } catch (Exception e) {
+                        println("Error processing ceph base image: ${e.message}")
+                        currentBuild.result = 'UNSTABLE'
+                        return
+                    }
+
+                    // Maintain consistency with Konflux trigger job
+                    // Requires us to pass all said overrides instead of depending on qe-ceph-manifest
+                    def buildInfo
+                    try {
+                        buildInfo = readFromManifest(
+                            recipe: imageInfo.vendor + "/" + imageInfo.releaseVersion + ".yaml",
+                            job: "sync-blue-ceph-images"
+                        )
+                    } catch (Exception e) {
+                        println("Error reading manifest: ${e.message}")
+                        currentBuild.result = 'UNSTABLE'
+                        return
+                    }
+
+                    // If ceph versions don't match let's abort as the ceph-base image is not synced
+                    if ( buildInfo.?nightly.?version != imageInfo.?cephVersion ) {
+                        println("The ceph version in recipe file and image don't match.")
+                        return
+                    }
+
+                    // Gather the repoURL - use default region or from params if available
+                    def region = params.REGION ?: DEFAULT_REGION
+                    def repoURL = buildInfo.nightly.repositories."${region}"?."${imageInfo.osPlatform}"
+
+                    if ( !repoURL ) {
+                        println("Repository URL not found for region: ${region}, platform: ${imageInfo.osPlatform}")
+                        currentBuild.result = 'UNSTABLE'
+                        return
+                    }
+
+                    // Gather the custom configs for images
+                    def customConfigs = ""
+                    buildInfo.nightly.images.each { key, image ->
+                        if ( key == "ceph-base" ) {
+                            return  // continue in closure
+                        }
+                        customConfigs += "${key}=${image},"
+                    }
+
+                    // Remove trailing comma if present
+                    if ( customConfigs.endsWith(",") ) {
+                        customConfigs = customConfigs[0..-2]
+                    }
+
+                    // Validate custom configs
+                    if ( customConfigs.isEmpty() ) {
+                        println("Warning: No custom container images found in manifest")
+                    }
+
+                    // Trigger the Build Verification test
+                    try {
+                        build ([
+                            wait: false,
+                            propagate: false,
+                            job: imageInfo.release + "-bvt-ci",
+                            parameters: [
+                                string(name: "BUILD_VERSION", value: imageInfo.releaseVersion),
+                                string(name: "RHEL_VERSION", value: imageInfo.osPlatform),
+                                string(name: "BUILD_TYPE", value: imageInfo.vendor),
+                                string(name: "REPO", value: repoURL),
+                                string(name: "CONTAINER_IMAGE", value: cephBaseImage),
+                                string(name: "CUSTOM_CONFIG", value: customConfigs),
+                                booleanParam(name: "UPDATE_BVT_RESULTS", value: true)
+                            ]
+                        ])
+                        println("Successfully triggered BVT pipeline for ${imageInfo.release}")
+                    } catch (Exception e) {
+                        println("Error triggering BVT pipeline: ${e.message}")
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+        }
     }
 }

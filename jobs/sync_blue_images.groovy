@@ -29,6 +29,8 @@ def job = pipelineJob("sync-blue-ceph-images") {
         // Required parameter
         parameters {
             textParam("BLUE_IMAGES", "", "IBM Storage Ceph container images per line.")
+            booleanParam("TRIGGER_BVT", false, "Trigger Build Verification test.")
+            stringParam("REGION", "eu-de", "Region for repository URL (default: eu-de)")
         }
     }
 }
