@@ -149,4 +149,13 @@ def call(Map parameters) {
         "${ibmcConfigs.IBM_COS_CRN}:${ibmcConfigs.IBM_COS_LOG_BUCKET}${ibmcCosBucketPath}",
         "--progress --transfers=8 --checkers=8 --verbose"
     ].join(" "))
+
+    // Call Ceph Build Team Secure Pipeline Job for BVT Validator
+    if ( parameters?.triggerSPS ) {
+        try {
+            triggerSpsBvtChecker(testResult)
+        } catch (Exception) {
+            echo "SPS BVT Validator job failed"
+        }
+    }
 }

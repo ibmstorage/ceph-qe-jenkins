@@ -210,7 +210,8 @@ pipeline {
                     rpLaunchName: jobConfigs.rpLaunchName,
                     rpLaunchDesc: jobConfigs.rpLaunchDesc,
                     rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
-                    rpProjectName: jobConfigs.rpProjectName
+                    rpProjectName: jobConfigs.rpProjectName,
+                    triggerSPS: true
                 )
             }
         }

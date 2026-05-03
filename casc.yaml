@@ -334,6 +334,12 @@ credentials:
               scope: GLOBAL
               secret: "${readFile:/secrets/aws_systest_secret_access_key}"
 
+          - string:
+              description: "Secure Pipeline Services - IAM API Key"
+              id: "sps-api-key"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/sps_api_key}"
+
           - usernamePassword:
               description: "Brew Registry access"
               id: "brew-access"
