@@ -12,7 +12,7 @@ def call(String image) {
     // Constants
     final String PROD_REGISTRY = "cp.icr.io"
     final String STG_REGISTRY = "cp.stg.icr.io"
-    final String VENDOR = "ibm"
+    final String VENDOR = "IBM"
 
     Map result = [:]
 
@@ -60,6 +60,7 @@ def call(String image) {
             returnStdout: true,
             script: cephVerCmd
         ).trim()
+        echo("Debug: The ceph-common version found in " + image + " is " + cephVersion)
     } catch (Exception e) {
         throw new RuntimeException("Failed to extract ceph version from image. Error: ${e.message}")
     }
@@ -112,7 +113,7 @@ def call(String image) {
         result["osPlatform"] = "rhel-10"
     }
 
-    // This check must be removed once UBI10 base image is supported
+    // ToDO: This check must be removed once UBI10 base image is supported
     if ( result["release"] == "tentacle" ) {
         result["osPlatform"] = "rhel-10"
     }
