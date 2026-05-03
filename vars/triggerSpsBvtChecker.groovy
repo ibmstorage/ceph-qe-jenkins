@@ -22,11 +22,11 @@ def call(Map parameters) {
 
             export CD_TEKTON_PIPELINE_URL=https://api.us-south.devops.cloud.ibm.com/pipeline/v2
             export CD_TEKTON_PIPELINE_AUTH_TYPE=iam
-            export CD_TEKTON_PIPELINE_APIKEY=${sps_api_key}
+            export CD_TEKTON_PIPELINE_APIKEY="${sps_api_key}"
 
-            cd $(dirname ${parameters.wrkspace})
+            cd $(dirname "${parameters.wrkspace}")
 
-            git clone --depth 1 --branch main https://${ghi_token}@github.ibm.com/ceph/ibm-tools.git
+            git clone --depth 1 --branch main https://"${ghi_token}"@github.ibm.com/ceph/ibm-tools.git
             pushd ibm-tools
             
             python3.12 -m venv it_venv
@@ -35,7 +35,7 @@ def call(Map parameters) {
             it_venv/bin/python3 -m pip install -e .
 
             it_venv/bin/python3 bin/sps trigger bvt-result-verification \
-                -p BVT_RESULT=${parameters.results}
+                -p BVT_RESULT="${parameters.results}"
             
             popd
             rm -rf ibm-tools
