@@ -126,7 +126,7 @@ pipeline {
                             parameters: [
                                 string(name: "BUILD_VERSION", value: imageInfo.releaseVersion),
                                 string(name: "RHEL_VERSION", value: imageInfo.osPlatform),
-                                string(name: "BUILD_TYPE", value: "IBM"),
+                                string(name: "BUILD_TYPE", value: imageInfo.vendor.toUpperCase()),
                                 string(name: "REPO", value: repoURL),
                                 string(name: "CONTAINER_IMAGE", value: cephBaseImage),
                                 string(name: "CUSTOM_CONFIG", value: customConfigs),

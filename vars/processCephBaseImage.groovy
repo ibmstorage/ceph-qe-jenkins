@@ -12,7 +12,7 @@ def call(String image) {
     // Constants
     final String PROD_REGISTRY = "cp.icr.io"
     final String STG_REGISTRY = "cp.stg.icr.io"
-    final String VENDOR = "IBM"
+    final String VENDOR = "ibm"
 
     Map result = [:]
 
