@@ -10,10 +10,14 @@
 //   6. Update Config - Apply job parameters to deployment.yaml
 //   7. Deploy OCP + ODF - Deploy cluster with OpenShift and ODF
 //   8. Run IO Workloads - Execute FIO tests on RBD and CephFS
-//   9. Teardown - Clean up resources (mandatory)
+//   9. Clone ocs-ci - Fetch the ocs-ci test framework
+//  10. Setup ocs-ci Environment - Create Python 3.11 venv and install ocs-ci
+//  11. Prepare ocs-ci Config - Write runtime auth config, copy pull-secret
+//  12. Run ocs-ci Tests - Execute acceptance (or custom) tests via run-ci
 //
 // Post Actions:
-//   - Archive cluster artifacts and state files
+//   - Teardown cluster (mandatory, runs even on failure/abort)
+//   - Archive cluster artifacts, state files, and ocs-ci test logs
 //   - Send HTML email: status rows + Test case execution rows (Test | Result) in one table
 //   - Clean up sensitive credentials
 
@@ -21,10 +25,10 @@
 @Library("ceph-qe-libs@main") _
 
 pipeline {
-    agent { label "agents" }
+    agent { label "agents-interop" }
 
     options {
-        timeout(time: 5, unit: 'HOURS')
+        timeout(time: 8, unit: 'HOURS')
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
     }
@@ -32,13 +36,15 @@ pipeline {
     environment {
         // Credentials injected from Jenkins CasC
         IBM_CLOUD_API_KEY       = credentials('ibmc-api-key')
+        IBM_CLOUD_ACCOUNT_ID    = credentials('ibmc-account-id')
         IBM_COS_HMAC_ACCESS_KEY = credentials('ibm-cos-acces-key')
         IBM_COS_HMAC_SECRET_KEY = credentials('ibm-cos-secret-key')
         AWS_ACCESS_KEY_ID       = credentials('aws-systest-access')
         AWS_SECRET_ACCESS_KEY   = credentials('aws-systest-secret-access')
 
-        // Python virtualenv location
-        VENV_DIR = "${WORKSPACE}/ceph-interop/.venv"
+        // Python virtualenv locations (separate: ceph-interop uses 3.12, ocs-ci needs <3.12)
+        VENV_DIR       = "${WORKSPACE}/ceph-interop/.venv"
+        OCSCI_VENV_DIR = "${WORKSPACE}/ocs-ci/.venv"
     }
 
     stages {
@@ -50,11 +56,9 @@ pipeline {
             steps {
                 script {
                     if (params.CLUSTER_NAME?.trim()) {
-                        // Use cluster name from parameter if provided
                         env.CLUSTER_NAME = params.CLUSTER_NAME.trim()
                         echo "Using cluster name from parameter: ${env.CLUSTER_NAME}"
                     } else {
-                        // Generate unique cluster name
                         def buildNum = env.BUILD_NUMBER
                         def randomHex = sh(
                             script: 'printf "%04x" $((RANDOM % 4096))',
@@ -81,11 +85,12 @@ pipeline {
                     def ocpChParam = params.OCP_CHANNEL ?: 'released'
 
                     if (!cephImg) {
-                        errors << "CEPH_IMAGE is required — provide the Ceph version image to test"
+                        errors << "CEPH_IMAGE is required \u2014 provide the Ceph version image to test"
                     } else if (ocpVer && odfCh) {
                         env.RESOLVED_OCP_VERSION = ocpVer
                         env.RESOLVED_ODF_CHANNEL = odfCh
                         env.RESOLVED_OCP_CHANNEL = ocpChParam
+                        env.RESOLVED_OCS_VERSION = odfCh.replaceAll(/^.*?(\d+\.\d+).*/, '$1')
                         echo "Using explicit OCP_VERSION / ODF_CHANNEL from parameters"
                     } else if (!ocpVer && !odfCh) {
                         try {
@@ -101,6 +106,7 @@ pipeline {
                             env.RESOLVED_OCP_VERSION = inf.ocpVersion
                             env.RESOLVED_ODF_CHANNEL = inf.odfChannel
                             env.RESOLVED_OCP_CHANNEL = inf.ocpChannel
+                            env.RESOLVED_OCS_VERSION = inf.ocsVersion
                             echo "Auto-resolved OCP/ODF (matrix key: ${inf.matrixKey})"
                         } catch (Exception e) {
                             errors << "Could not auto-resolve OCP/ODF: ${e.message}. " +
@@ -110,19 +116,16 @@ pipeline {
                         errors << "Set both OCP_VERSION and ODF_CHANNEL, or leave both empty to infer from CEPH_IMAGE"
                     }
 
-                    // Worker count must be >= 3 for ODF
                     def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
                     if (workerCount < 3) {
                         errors << "WORKER_COUNT must be >= 3 for ODF (got ${workerCount})"
                     }
 
-                    // Device count must be >= 1
                     def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
                     if (deviceCount < 1) {
                         errors << "DEVICE_COUNT must be >= 1 (got ${deviceCount})"
                     }
 
-                    // Verify credentials are available
                     def credErrors = []
                     if (!env.IBM_CLOUD_API_KEY)       credErrors << "IBM_CLOUD_API_KEY"
                     if (!env.IBM_COS_HMAC_ACCESS_KEY) credErrors << "IBM_COS_HMAC_ACCESS_KEY"
@@ -134,19 +137,16 @@ pipeline {
                     }
 
                     if (errors) {
-                        echo "╔══════════════════════════════════════════════════╗"
-                        echo "║           PARAMETER VALIDATION FAILED            ║"
-                        echo "╚══════════════════════════════════════════════════╝"
-                        errors.each { echo "  ✗ ${it}" }
+                        echo "Parameter validation failed:"
+                        errors.each { echo "  - ${it}" }
                         error("Validation failed:\n" + errors.collect { "  - ${it}" }.join("\n"))
                     }
 
-                    echo "╔══════════════════════════════════════════════════╗"
-                    echo "║           PARAMETER VALIDATION PASSED            ║"
-                    echo "╚══════════════════════════════════════════════════╝"
+                    echo "Parameter validation passed. Resolved configuration:"
                     echo "  OCP_VERSION  : ${env.RESOLVED_OCP_VERSION}"
                     echo "  OCP_CHANNEL  : ${env.RESOLVED_OCP_CHANNEL}"
                     echo "  ODF_CHANNEL  : ${env.RESOLVED_ODF_CHANNEL}"
+                    echo "  OCS_VERSION  : ${env.RESOLVED_OCS_VERSION}"
                     echo "  CEPH_IMAGE   : ${params.CEPH_IMAGE}"
                     echo "  IBM_REGION   : ${params.IBM_REGION}"
                     echo "  VPC_NAME     : ${params.VPC_NAME}"
@@ -156,21 +156,23 @@ pipeline {
                     echo "  DEVICE_COUNT : ${params.DEVICE_COUNT}"
                     echo "  SSH_KEY_NAMES: ${params.SSH_KEY_NAMES}"
                     echo "  PVC_COUNT    : ${params.PVC_COUNT}"
+                    echo "  OCS_CI_REPO   : ${params.OCS_CI_REPO}"
+                    echo "  OCS_CI_BRANCH : ${params.OCS_CI_BRANCH?.trim() ?: 'master'}"
+                    echo "  OCS_VERSION   : ${params.OCS_VERSION?.trim() ?: '(inferred from ODF channel for run-ci --ocs-version)'}"
+                    def ocsTestArg = (params.OCS_CI_TESTS ?: '-m acceptance').toString()
+                    echo "  OCS_CI_TESTS  : ${ocsTestArg.length() > 70 ? ocsTestArg.substring(0, 67) + '...' : ocsTestArg}"
 
-                    // Display cluster name (already set in Initialize stage)
                     if (env.CLUSTER_NAME) {
                         def source = params.CLUSTER_NAME?.trim() ? "(from parameter)" : "(auto-generated)"
                         echo "  CLUSTER_NAME : ${env.CLUSTER_NAME} ${source}"
                     }
 
-                    // Set build description and display name with key parameters
                     def cephImageShort = params.CEPH_IMAGE.split('/')[-1].take(40)
 
                     if (env.CLUSTER_NAME) {
                         currentBuild.displayName = "#${env.BUILD_NUMBER} - ${env.CLUSTER_NAME}"
                     }
 
-                    // Build simple, clean description with triggering user (first cause is not always UserIdCause)
                     def triggeredBy = 'automated'
                     def causes = currentBuild.getBuildCauses()
                     if (causes) {
@@ -201,7 +203,6 @@ pipeline {
 
                     currentBuild.description = descParts.join(' | ')
 
-                    // Log build metadata for monitoring
                     echo ""
                     echo "Build Metadata:"
                     echo "  Build Number : ${env.BUILD_NUMBER}"
@@ -212,7 +213,6 @@ pipeline {
                 }
             }
         }
-
 
         stage("Clone ceph-interop") {
             steps {
@@ -243,19 +243,13 @@ pipeline {
                             exit 1
                         fi
 
-                        echo "✓ Python \$PYTHON_VERSION meets requirement (>= \$REQUIRED_VERSION)"
+                        echo "Python \$PYTHON_VERSION meets requirement (>= \$REQUIRED_VERSION)"
                         
-                        # Create virtual environment
                         python3.12 -m venv ${VENV_DIR}
-                        
-                        # Upgrade pip and install build tools with setuptools version constraint
                         ${VENV_DIR}/bin/pip3.12 install --upgrade pip "setuptools<71" wheel
-                        
-                        # Install dependencies with --no-build-isolation flag as specified in requirements.txt
                         ${VENV_DIR}/bin/pip3.12 install --no-build-isolation -r requirements.txt
                         
-                        echo "✓ Python environment setup complete"
-                        echo "✓ Installed packages:"
+                        echo "Python environment setup complete"
                         ${VENV_DIR}/bin/pip3.12 list | grep -E "(ibm-|boto3|kubernetes|jinja2|pyyaml|requests|paramiko)"
                     """
                 }
@@ -273,38 +267,19 @@ pipeline {
                         echo "Skipping Ceph image metadata: CEPH_IMAGE empty"
                         return
                     }
-                    env.CEPH_IMAGE_PODMAN = img
                     withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
-                        sh '''
-                            set +e
-                            rm -f ceph-interop/.cephadm-version.json /tmp/cephadm-version.raw
-                            if ! command -v podman >/dev/null 2>&1; then
-                                echo "podman not found — skipping cephadm version metadata"
-                                exit 0
-                            fi
-                            podman run --rm --authfile "${PULL_SECRET_FILE}" "${CEPH_IMAGE_PODMAN}" \
-                                bash -c "cephadm version --verbose" > /tmp/cephadm-version.raw 2>/tmp/cephadm-version.err
-                            ec=$?
-                            if [ "$ec" -ne 0 ]; then
-                                echo "cephadm version --verbose failed (exit $ec)"
-                                cat /tmp/cephadm-version.err 2>/dev/null || true
-                                rm -f ceph-interop/.cephadm-version.json
-                                exit 0
-                            fi
-                            # Full stdout is one JSON object (indent=2) with nested keys e.g. bundled_packages.
-                            # Do not slice with awk on lone "}" lines — that truncated JSON and broke email Ceph rows.
-                            if [ ! -s /tmp/cephadm-version.raw ]; then
-                                echo "cephadm version --verbose produced empty stdout"
-                                rm -f ceph-interop/.cephadm-version.json
-                            elif command -v python3 >/dev/null 2>&1 && ! python3 -c "import json,sys; json.load(open('/tmp/cephadm-version.raw'))" 2>/dev/null; then
-                                echo "cephadm stdout is not valid JSON — skipping .cephadm-version.json"
-                                rm -f ceph-interop/.cephadm-version.json
-                            else
-                                cp /tmp/cephadm-version.raw ceph-interop/.cephadm-version.json
-                                echo "✓ Wrote ceph-interop/.cephadm-version.json"
-                            fi
-                            exit 0
-                        '''
+                        fetchCephImageMetadata(
+                            image: img,
+                            pullSecretFile: env.PULL_SECRET_FILE,
+                        )
+                    }
+                    def metaPath = "${env.WORKSPACE}/.cephadm-resolve-${env.BUILD_NUMBER ?: '0'}.json"
+                    if (fileExists(metaPath)) {
+                        def meta = readJSON file: metaPath
+                        if (meta?.ceph_git_nice_ver) {
+                            def desc = currentBuild.description ?: ''
+                            currentBuild.description = desc.replaceAll(/Ceph: .*/, "Ceph: ${meta.ceph_git_nice_ver}")
+                        }
                     }
                 }
             }
@@ -317,20 +292,17 @@ pipeline {
             steps {
                 dir("ceph-interop") {
                     script {
-                        // Create configs directory
                         sh 'mkdir -p configs'
 
-                        // Copy pull-secret.json from Jenkins file credential
                         def secretPath = "configs/pull-secret.json"
                         withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
                             sh """
                                 cp "\${PULL_SECRET_FILE}" ${secretPath}
                                 chmod 600 ${secretPath}
-                                echo "✓ pull-secret.json copied from Jenkins credential"
+                                echo "pull-secret.json copied from Jenkins credential"
                             """
                         }
 
-                        // Write credentials.yaml using writeYaml
                         def creds = 'configs/credentials.yaml'
                         def credentialsData = [
                             ibmcloud: [
@@ -351,7 +323,6 @@ pipeline {
                             overwrite: true
                         )
 
-                        // Validate that files were created
                         sh """
                             echo "Validating credential files..."
                             if [ ! -f "${secretPath}" ]; then
@@ -362,9 +333,9 @@ pipeline {
                                 echo "ERROR: credentials.yaml was not created"
                                 exit 1
                             fi
-                            echo "✓ pull-secret.json created (size: \$(stat -f%z ${secretPath} 2>/dev/null || stat -c%s ${secretPath}) bytes)"
-                            echo "✓ credentials.yaml created (size: \$(stat -f%z ${creds} 2>/dev/null || stat -c%s ${creds}) bytes)"
-                            echo "✓ Credentials files validated successfully"
+                            echo "pull-secret.json created (size: \$(stat -f%z ${secretPath} 2>/dev/null || stat -c%s ${secretPath}) bytes)"
+                            echo "credentials.yaml created (size: \$(stat -f%z ${creds} 2>/dev/null || stat -c%s ${creds}) bytes)"
+                            echo "Credentials files validated successfully"
                         """
                     }
                 }
@@ -387,61 +358,42 @@ pipeline {
                         def nightly     = params.ODF_NIGHTLY_INDEX?.trim() ?: ''
                         def sshKeyNames = params.SSH_KEY_NAMES?.trim() ?: 'ceph-qe-sa,ceph-qe-sa-svc'
 
-                        // Read existing deployment configuration
                         def config = readYaml(file: 'configs/deployment.yaml')
 
-                        // ── Cluster / OCP Configuration ──────────────────────
-                        // Set OpenShift version and release channel (released/nightly)
                         config.cluster.ocp_version = env.RESOLVED_OCP_VERSION
                         config.cluster.ocp_channel = env.RESOLVED_OCP_CHANNEL
 
-                        // ── IBM Cloud Infrastructure ─────────────────────────
-                        // Configure IBM Cloud region, COS region, and VPC
                         config.ibmcloud.region = params.IBM_REGION
-                        config.ibmcloud.cos_region = 'au-syd'  // Fixed COS region for object storage
+                        config.ibmcloud.cos_region = 'au-syd'
                         config.ibmcloud.vpc_name = params.VPC_NAME
 
-                        // ── Cluster Node Configuration ───────────────────────
-                        // Set master (control plane) and worker node counts
                         config.ibmcloud.master.count = masterCount
                         config.ibmcloud.worker.count = workerCount
 
-                        // ── Storage Configuration (OSD Disks) ────────────────
-                        // Configure data volumes attached to each worker node for Ceph OSDs
                         config.ibmcloud.worker.data_volumes.capacity_gb = deviceSize
                         config.ibmcloud.worker.data_volumes.count = deviceCount
 
-                        // ── ODF Operator Configuration ───────────────────────
-                        // Set ODF operator channel (e.g., stable-4.20) or use default
                         if (odfChannel) {
                             config.odf.channel = odfChannel
                         } else {
-                            config.odf.channel = ''  // Use default channel
+                            config.odf.channel = ''
                         }
 
-                        // Set ODF nightly catalog index if testing pre-release builds
                         if (nightly) {
                             config.odf.nightly_index_image = nightly
                         }
 
-                        // Set Ceph container image to test (required parameter)
                         if (cephImage) {
                             config.odf.ceph_image = cephImage
                         }
 
-                        // ── SSH Access Configuration ─────────────────────────
-                        // Parse comma-separated SSH key names for VSI access
                         if (sshKeyNames) {
                             config.ibmcloud.ssh_key_names = sshKeyNames.split(',').collect { it.trim() }.findAll { it }
                         }
 
-                        // ── ODF Storage Cluster Sizing ───────────────────────
-                        // Device set count matches worker count (one device set per worker)
-                        // OSD size matches the data volume size configured above
                         config.odf.device_set_count = workerCount
                         config.odf.osd_size = "${deviceSize}Gi"
 
-                        // Write updated configuration back to file using writeYaml
                         def configFile = 'configs/deployment.yaml'
                         writeYaml(
                             file: configFile,
@@ -449,7 +401,6 @@ pipeline {
                             overwrite: true
                         )
 
-                        // Display updated configuration
                         echo 'Updated deployment.yaml:'
                         echo "  OCP version   : ${config.cluster.ocp_version}"
                         echo "  OCP channel   : ${config.cluster.ocp_channel}"
@@ -479,12 +430,49 @@ pipeline {
                 dir("ceph-interop") {
                     script {
                         echo "Deploying cluster: ${env.CLUSTER_NAME}"
-                        sh """
-                            ${VENV_DIR}/bin/python3.12 run.py deploy \
-                                --cluster-name '${env.CLUSTER_NAME}' \
-                                --verbose
-                        """
-                        echo "✓ Cluster deployed successfully: ${env.CLUSTER_NAME}"
+                        try {
+                            sh """
+                                ${VENV_DIR}/bin/python3.12 run.py deploy \
+                                    --cluster-name '${env.CLUSTER_NAME}' \
+                                    --verbose
+                            """
+                            echo "Cluster deployed successfully: ${env.CLUSTER_NAME}"
+                        } catch (Exception deployErr) {
+                            def oc = "work/clusters/${env.CLUSTER_NAME}/bin/oc"
+                            def ns = "openshift-storage"
+
+                            echo "============================================================"
+                            echo "DEPLOY FAILED — collecting diagnostics from ${ns}"
+                            echo "============================================================"
+
+                            def diagCmds = [
+                                "StorageCluster status"  : "${oc} get storagecluster ocs-storagecluster -n ${ns} -o yaml",
+                                "CephCluster status"     : "${oc} get cephcluster -n ${ns} -o yaml",
+                                "ODF CSV status"         : "${oc} get csv -n ${ns}",
+                                "Pod status"             : "${oc} get pods -n ${ns} -o wide",
+                                "Unhealthy pods"         : "${oc} get pods -n ${ns} --field-selector=status.phase!=Running,status.phase!=Succeeded",
+                                "Pod restarts & errors"  : "${oc} get pods -n ${ns} -o jsonpath='{range .items[?(@.status.containerStatuses)]}{.metadata.name}{\"\\t\"}{range .status.containerStatuses[*]}{.name}{\" restarts=\"}{.restartCount}{\" ready=\"}{.ready}{\" \"}{end}{\"\\n\"}{end}'",
+                                "Recent events"          : "${oc} get events -n ${ns} --sort-by=.lastTimestamp | tail -60",
+                                "Subscription status"    : "${oc} get subscription -n ${ns} -o yaml",
+                                "PV status (localblock)" : "${oc} get pv -l storage.openshift.com/owner-name=local-block --no-headers",
+                            ]
+
+                            diagCmds.each { label, cmd ->
+                                echo "\n──── ${label} ────"
+                                try {
+                                    def out = sh(script: "${cmd} 2>&1 || true", returnStdout: true).trim()
+                                    echo out ?: "(no output)"
+                                } catch (Exception ignored) {
+                                    echo "(command failed or cluster unreachable)"
+                                }
+                            }
+
+                            echo "\n============================================================"
+                            echo "END OF DIAGNOSTICS"
+                            echo "============================================================"
+
+                            throw deployErr
+                        }
                     }
                 }
             }
@@ -511,38 +499,185 @@ pipeline {
         }
 
         // ──────────────────────────────────────────────────────────
-        // Teardown (mandatory)
+        // ocs-ci: Clone test framework
         // ──────────────────────────────────────────────────────────
-        stage("Teardown") {
+        stage("Clone ocs-ci") {
             steps {
-                dir("ceph-interop") {
+                dir("ocs-ci") {
                     script {
-                        echo "Tearing down cluster: ${env.CLUSTER_NAME}"
+                        def ob = params.OCS_CI_BRANCH?.trim() ?: 'master'
+                        echo "ocs-ci repo  : '${params.OCS_CI_REPO}'"
+                        echo "ocs-ci branch: '${ob}'"
+
+                        git(
+                            url: params.OCS_CI_REPO,
+                            branch: ob,
+                            credentialsId: "ceph-qe-sa-pat"
+                        )
+                    }
+                }
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────
+        // ocs-ci: Setup Python 3.11 environment
+        // ──────────────────────────────────────────────────────────
+        stage("Setup ocs-ci Environment") {
+            steps {
+                dir("ocs-ci") {
+                    sh """
+                        python3.11 --version
+                        echo "Creating ocs-ci virtual environment at ${OCSCI_VENV_DIR}"
+
+                        python3.11 -m venv ${OCSCI_VENV_DIR}
+                        ${OCSCI_VENV_DIR}/bin/pip install --upgrade pip setuptools wheel
+                        ${OCSCI_VENV_DIR}/bin/pip install -r requirements.txt
+
+                        echo "ocs-ci environment setup complete"
+                        echo "run-ci location: \$(ls -la ${OCSCI_VENV_DIR}/bin/run-ci)"
+                    """
+                }
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────
+        // ocs-ci: Prepare runtime config, credentials, and pull-secret
+        // ──────────────────────────────────────────────────────────
+        stage("Prepare ocs-ci Config") {
+            steps {
+                dir("ocs-ci") {
+                    script {
+                        env.OCS_CI_VERSION = params.OCS_VERSION?.trim() ?: env.RESOLVED_OCS_VERSION
+                        echo "ocs-ci OCS version: ${env.OCS_CI_VERSION}"
+
+                        def clusterPath = "${env.WORKSPACE}/ceph-interop/work/clusters/${env.CLUSTER_NAME}/openshift"
+                        def binDir = "${env.WORKSPACE}/ceph-interop/work/clusters/${env.CLUSTER_NAME}/bin"
+                        env.OCSCI_CLUSTER_PATH = clusterPath
+
+                        def runtimeConfig = [
+                            AUTH: [
+                                ibmcloud: [
+                                    api_key: env.IBM_CLOUD_API_KEY,
+                                    account_id: env.IBM_CLOUD_ACCOUNT_ID
+                                ]
+                            ],
+                            RUN: [
+                                bin_dir: binDir,
+                                log_dir: "${env.WORKSPACE}/ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}"
+                            ],
+                            DEPLOYMENT: [
+                                skip_download_client: true
+                            ],
+                            ENV_DATA: [
+                                skip_ocs_deployment: true,
+                                skip_ocp_deployment: true,
+                                deployment_type: 'upi',
+                                region: params.IBM_REGION
+                            ]
+                        ]
+                        writeYaml(file: 'interop-runtime-config.yaml', data: runtimeConfig, overwrite: true)
+                        echo "Wrote interop-runtime-config.yaml (bin_dir: ${binDir})"
+
+                        withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                            sh """
+                                mkdir -p data
+                                cp "\${PULL_SECRET_FILE}" data/pull-secret
+                                chmod 600 data/pull-secret
+                                echo "pull-secret copied to ocs-ci/data/pull-secret"
+                            """
+                        }
+
+                        sh '''
+                            if ! command -v ibmcloud >/dev/null 2>&1; then
+                                echo "ibmcloud CLI not found -- installing..."
+                                curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+                            fi
+                            echo "ibmcloud CLI: $(ibmcloud --version | head -1)"
+                        '''
+
                         sh """
-                            ${VENV_DIR}/bin/python3.12 run.py teardown \
-                                --cluster-name '${env.CLUSTER_NAME}' \
-                                --verbose
+                            if [ ! -f '${clusterPath}/auth/kubeconfig' ]; then
+                                echo "ERROR: kubeconfig not found at ${clusterPath}/auth/kubeconfig"
+                                exit 1
+                            fi
+                            echo "kubeconfig found at ${clusterPath}/auth/kubeconfig"
+                        """
+
+                        sh """
+                            if [ ! -x '${binDir}/oc' ]; then
+                                echo "ERROR: oc binary not found at ${binDir}/oc"
+                                exit 1
+                            fi
+                            echo "oc binary: \$('${binDir}/oc' version --client 2>/dev/null | head -1)"
                         """
                     }
                 }
             }
         }
+
+        // ──────────────────────────────────────────────────────────
+        // ocs-ci: Run tests (acceptance by default)
+        // ──────────────────────────────────────────────────────────
+        // run-ci options: see https://ocs-ci.readthedocs.io/en/latest/usage.html
+        //   Required for this flow: --cluster-path (existing cluster / kubeconfig).
+        //   We set --ocs-version (ODF); --ocsci-conf overlays IBM Cloud + skip OCP/ODF deploy.
+        //   --html / --self-contained-html: pytest HTML report
+        //   (Jenkins emailext attaches report.html; run-ci --email is not used).
+        // ──────────────────────────────────────────────────────────
+        stage("Run ocs-ci Tests") {
+            steps {
+                dir("ocs-ci") {
+                    sh "mkdir -p ocs-ci-logs-${env.BUILD_NUMBER}"
+                    sh """
+                        ${OCSCI_VENV_DIR}/bin/run-ci \
+                            --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
+                            --cluster-name '${env.CLUSTER_NAME}' \
+                            ${params.OCS_CI_TESTS ?: '-m acceptance'} \
+                            --ocsci-conf conf/deployment/ibmcloud/ipi_3az_rhcos_3m_3w.yaml \
+                            --ocsci-conf interop-runtime-config.yaml \
+                            --ocs-version '${env.OCS_CI_VERSION}' \
+                            --skip-download-client \
+                            --log-level DEBUG \
+                            --html=ocs-ci-logs-${env.BUILD_NUMBER}/report.html --self-contained-html \
+                            --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/junit-results.xml \
+                            tests/functional/
+                    """
+                }
+            }
+        }
+
     }
 
     post {
         always {
             script {
-                // Use cluster name from environment
                 def clusterName = env.CLUSTER_NAME ?: ""
                 def hasCluster = clusterName ? true : false
+                def venvDir = "${env.WORKSPACE}/ceph-interop/.venv"
 
-                // ── Archive cluster artifacts (best-effort) ───────────
+                // ── Teardown ──
+                if (hasCluster && fileExists("${venvDir}/bin/python3.12")) {
+                    try {
+                        dir("ceph-interop") {
+                            echo "Tearing down cluster: ${clusterName}"
+                            sh """
+                                ${venvDir}/bin/python3.12 run.py teardown \
+                                    --cluster-name '${clusterName}' \
+                                    --verbose
+                            """
+                        }
+                    } catch (Exception e) {
+                        echo "Teardown failed: ${e.message}"
+                    }
+                } else {
+                    echo "Skipping teardown: cluster=${clusterName ?: '(none)'}"
+                }
+
+                // ── Archive cluster artifacts ──
                 try {
                     dir("ceph-interop") {
                         if (hasCluster) {
-                            // Archive the specific state file for this cluster (legacy location)
                             archiveArtifacts artifacts: "configs/${clusterName}-state.json", allowEmptyArchive: true
-
                             sh """
                                 if [ -d "work/clusters/${clusterName}" ]; then
                                     tar czf "cluster-artifacts-${clusterName}.tar.gz" \
@@ -551,300 +686,72 @@ pipeline {
                                         "${clusterName}" 2>/dev/null || true
                                     echo "Created cluster-artifacts-${clusterName}.tar.gz"
                                 else
-                                    echo "Cluster directory work/clusters/${clusterName} not found — skipping archive"
+                                    echo "Cluster directory work/clusters/${clusterName} not found -- skipping archive"
                                 fi
                             """
                             archiveArtifacts artifacts: "cluster-artifacts-${clusterName}.tar.gz", allowEmptyArchive: true
                             archiveArtifacts artifacts: "work/clusters/${clusterName}/openshift/auth/*", allowEmptyArchive: true
                             archiveArtifacts artifacts: "work/clusters/${clusterName}/workload-report-*.txt", allowEmptyArchive: true
                         } else {
-                            echo "No cluster name available — skipping cluster artifact archival"
+                            echo "No cluster name available -- skipping cluster artifact archival"
                         }
                     }
                 } catch (Exception e) {
                     echo "Artifact archival failed (non-fatal): ${e.message}"
                 }
 
-                // ── Build email (always sent, even on abort/failure) ──
+                // ── Archive ocs-ci test artifacts ──
+                def logDir = "ocs-ci-logs-${env.BUILD_NUMBER}"
                 try {
-                    def status = currentBuild.currentResult ?: 'UNKNOWN'
-                    def statusMap = [
-                        'SUCCESS':  [ mark: '[✓]', captionBg: '#4CAF50', labelBg: '#C6EFCE', valueBg: '#E8F5E9' ],
-                        'FAILURE':  [ mark: '[✗]', captionBg: '#E53935', labelBg: '#F4CCCC', valueBg: '#FDE8E8' ],
-                        'ABORTED':  [ mark: '[—]', captionBg: '#FF9800', labelBg: '#FFF3E0', valueBg: '#FFF8E1' ],
-                        'UNSTABLE': [ mark: '[!]', captionBg: '#FFC107', labelBg: '#FFF9C4', valueBg: '#FFFDE7' ],
-                    ]
-                    def colors = statusMap[status] ?: statusMap['FAILURE']
-
-                    // Email table: fixed columns, soft borders (readable in Outlook/Gmail)
-                    def lab = "background-color: ${colors.labelBg}; border: 1px solid #d0d0d0; padding: 9px 12px; vertical-align: top; width: 34%; font-size: 13px;"
-                    def val = "background-color: ${colors.valueBg}; border: 1px solid #d0d0d0; padding: 9px 12px; vertical-align: top; font-size: 13px; line-height: 1.45;"
-                    def cephValStyle = "${val} word-break: break-all; font-size: 12px; font-family: Consolas, Monaco, 'Courier New', monospace; line-height: 1.35;"
-
-                    def ocpVer = env.RESOLVED_OCP_VERSION ?: 'N/A'
-                    def odfCh  = env.RESOLVED_ODF_CHANNEL ?: 'default'
-                    def subject = "CEPH-ODF INTEROP TESTING — OCP ${ocpVer} / ODF ${odfCh} — ${status}"
-
-                    // Build version links (safe for null params)
-                    def ocpVersion = env.RESOLVED_OCP_VERSION ?: ''
-                    def ocpChannel = env.RESOLVED_OCP_CHANNEL ?: 'released'
-                    def ocpMirrorBase = (ocpChannel == 'nightly')
-                        ? 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview'
-                        : 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp'
-                    def ocpCell = ocpVersion
-                        ? "<a href=\"${ocpMirrorBase}/${ocpVersion}/\">${ocpVersion}</a> (${ocpChannel})"
-                        : 'N/A'
-
-                    def odfChannel = env.RESOLVED_ODF_CHANNEL ?: ''
-                    def odfCell = 'default'
-                    if (odfChannel) {
-                        def odfVersion = odfChannel.replaceAll(/^.*?(\d+\.\d+).*/, '$1')
-                        def odfLink = "https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/${odfVersion}"
-                        odfCell = "<a href=\"${odfLink}\">${odfChannel}</a>"
-                    }
-
-                    // Ceph image provided as parameter
-                    def cephImage = params.CEPH_IMAGE ?: ''
-                    def cephImageRow = ""
-                    if (cephImage) {
-                        cephImageRow = """
-                    <tr>
-                        <td style="${lab}"><b>Ceph Image</b></td>
-                        <td style="${cephValStyle}">${cephImage}</td>
-                    </tr>"""
-                    }
-
-                    def htmlEsc = { s ->
-                        if (s == null) { return '' }
-                        return s.toString().replace('&', '&amp;')
-                            .replace('<', '&lt;')
-                            .replace('>', '&gt;')
-                            .replace('"', '&quot;')
-                    }
-
-                    // Ceph version / commit / release from cephadm JSON (Ceph image metadata stage)
-                    def cephNice = 'N/A'
-                    def cephCommit = 'N/A'
-                    def cephRelName = 'N/A'
-                    try {
-                        def metaPath = 'ceph-interop/.cephadm-version.json'
-                        if (fileExists(metaPath)) {
-                            def meta = readJSON file: metaPath
-                            echo "Email: read ${metaPath} successfully (readJSON)"
-                            // cephadm command_version --verbose (json.dump): ceph_git_nice_ver, ceph_git_ver, ceph_release_name
-                            if (meta?.ceph_git_nice_ver) { cephNice = meta.ceph_git_nice_ver.toString() }
-                            if (meta?.ceph_git_ver) { cephCommit = meta.ceph_git_ver.toString() }
-                            if (meta?.ceph_release_name) { cephRelName = meta.ceph_release_name.toString() }
-                            def n = [cephNice, cephCommit, cephRelName].count { it != 'N/A' }
-                            if (n > 0) {
-                                echo "Email: populated ${n}/3 Ceph email rows from JSON (version, commit, release name)"
-                            } else {
-                                echo "Email: JSON loaded but ceph_git_nice_ver / ceph_git_ver / ceph_release_name were empty or missing"
-                            }
+                    dir("ocs-ci") {
+                        if (fileExists(logDir)) {
+                            sh "tar czf ${logDir}.tar.gz ${logDir}/ 2>/dev/null || true"
+                            archiveArtifacts artifacts: "${logDir}.tar.gz", allowEmptyArchive: true
+                            archiveArtifacts artifacts: "${logDir}/report.html", allowEmptyArchive: true
+                            archiveArtifacts artifacts: "${logDir}/junit-results.xml", allowEmptyArchive: true
                         } else {
-                            echo "Email: ${metaPath} not found (Ceph image metadata stage may have been skipped or failed)"
+                            echo "Skipping ocs-ci artifact archival: ${logDir} not found (run-ci may not have executed)"
                         }
-                    } catch (Exception e) {
-                        echo "Email: could not parse .cephadm-version.json — ${e.message}"
                     }
-                    def cephMetaRows = """
-                    <tr>
-                        <td style="${lab}"><b>Ceph version</b></td>
-                        <td style="${cephValStyle}">${htmlEsc(cephNice)}</td>
-                    </tr>
-                    <tr>
-                        <td style="${lab}"><b>Ceph commit</b></td>
-                        <td style="${cephValStyle}">${htmlEsc(cephCommit)}</td>
-                    </tr>
-                    <tr>
-                        <td style="${lab}"><b>Ceph release name</b></td>
-                        <td style="${cephValStyle}">${htmlEsc(cephRelName)}</td>
-                    </tr>"""
-
-                    // Test case rows (same table as status): section header + Test | Result (titles only)
-                    def workloadOk = (status == 'SUCCESS')
-                    def deployResult = status == 'SUCCESS' ? 'Pass' : (status == 'ABORTED' ? 'Not run' : 'Fail')
-                    def tcBar = (status == 'SUCCESS') ? '#43A047' : ((status == 'ABORTED') ? '#FB8C00' : '#E53935')
-                    def tcHdrBg = (status == 'SUCCESS') ? '#E8F5E9' : ((status == 'ABORTED') ? '#FFF8E1' : '#FFEBEE')
-                    def tcHdrFg = (status == 'SUCCESS') ? '#1B5E20' : ((status == 'ABORTED') ? '#E65100' : '#B71C1C')
-                    def tcSectionHeader = """
-                        <tr>
-                            <td colspan="2" style="background-color: ${tcHdrBg}; color: ${tcHdrFg}; border: 1px solid #d0d0d0; border-top: 3px solid ${tcBar}; padding: 10px 14px; font-size: 108%; font-weight: bold;">
-                                Test case execution
-                            </td>
-                        </tr>"""
-                    def tcRow2 = { String title, String resultStr ->
-                        """                        <tr>
-                            <td style="${lab} vertical-align: middle;"><b>${htmlEsc(title)}</b></td>
-                            <td style="${val} font-weight: bold; vertical-align: middle; text-align: right; white-space: nowrap;">${htmlEsc(resultStr)}</td>
-                        </tr>"""
-                    }
-
-                    def testCaseRowsHtml = ""
-                    if (hasCluster) {
-                        try {
-                            def reportPath = sh(
-                                script: "ls ceph-interop/work/clusters/${clusterName}/workload-report-*.txt 2>/dev/null | head -1",
-                                returnStdout: true
-                            ).trim()
-                            if (reportPath && fileExists(reportPath)) {
-                                def text = readFile(reportPath)
-                                def allowedScNames = ['ocs-storagecluster-ceph-rbd', 'ocs-storagecluster-cephfs'] as Set
-                                def scNames = new LinkedHashSet()
-
-                                def scm = text =~ /(?i)\b(ocs-storagecluster-ceph-(?:rbd|cephfs))\b/
-                                while (scm.find()) {
-                                    scNames << scm.group(1).toLowerCase()
-                                }
-                                text.split('\n').each { line ->
-                                    def t = line.trim()
-                                    def m = (t =~ /(?i)storageclass[^:]*:\s*(\S+)/)
-                                    if (m.find()) {
-                                        def scVal = m.group(1).toLowerCase()
-                                        if (allowedScNames.contains(scVal)) {
-                                            scNames << scVal
-                                        }
-                                    }
-                                    m = (t =~ /(?i)storageclassname[^:]*:\s*(\S+)/)
-                                    if (m.find()) {
-                                        def scVal = m.group(1).toLowerCase()
-                                        if (allowedScNames.contains(scVal)) {
-                                            scNames << scVal
-                                        }
-                                    }
-                                }
-
-                                def bwLines = new LinkedHashSet()
-                                def iopsLines = new LinkedHashSet()
-                                def latLines = new LinkedHashSet()
-                                text.split('\n').each { line ->
-                                    def t = line.trim()
-                                    if (!t) { return }
-                                    def u = t.toLowerCase()
-                                    if (u.contains('kib/s') || u.contains('mib/s') || u.contains('gib/s') ||
-                                            (u.contains('bw') && (u.contains('=') || u.contains('('))) ||
-                                            u.contains('throughput') || (u.contains('read:') && u.contains('/s')) ||
-                                            (u.contains('write:') && u.contains('/s'))) {
-                                        bwLines << t
-                                    }
-                                    if (u.contains('iops') || u =~ /(?i)\b\d+\s*iops\b/) {
-                                        iopsLines << t
-                                    }
-                                    if (u.contains('lat') && (u.contains('usec') || u.contains('msec') || u.contains('clat') ||
-                                            u.contains('slat') || u.contains('avg=') || u.contains(' min=') || u.contains(' max='))) {
-                                        latLines << t
-                                    }
-                                }
-                                def hasIoMetrics = !bwLines.isEmpty() || !iopsLines.isEmpty() || !latLines.isEmpty()
-
-                                def bodyRows = new StringBuilder()
-                                bodyRows.append(tcSectionHeader)
-                                bodyRows.append(tcRow2('OCP + ODF deployment', deployResult))
-
-                                if (scNames.isEmpty()) {
-                                    def r = workloadOk ? 'Partial' : 'Fail'
-                                    bodyRows.append(tcRow2('Storage class validation', r))
-                                } else {
-                                    scNames.each { sc ->
-                                        def refs = 0
-                                        text.split('\n').each { ln ->
-                                            if (ln.toLowerCase().contains(sc)) {
-                                                refs++
-                                            }
-                                        }
-                                        def r = (workloadOk && refs > 0) ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
-                                        bodyRows.append(tcRow2("Storage class validation — ${sc}", r))
-                                    }
-                                }
-
-                                def ioRes = (workloadOk && hasIoMetrics) ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
-                                bodyRows.append(tcRow2('IO metrics (FIO / workload)', ioRes))
-
-                                testCaseRowsHtml = bodyRows.toString()
-                            }
-                        } catch (Exception ignored) { /* no report */ }
-                    }
-                    if (!testCaseRowsHtml) {
-                        testCaseRowsHtml = """
-                        ${tcSectionHeader}
-                        ${tcRow2('OCP + ODF deployment', deployResult)}
-                        ${tcRow2('Storage class validation', 'Not run')}
-                        ${tcRow2('IO metrics (FIO / workload)', 'Not run')}"""
-                    }
-
-                    // Infrastructure row (always present)
-                    def infrastructureRow = """
-                    <tr>
-                        <td style="${lab}"><b>Infrastructure</b></td>
-                        <td style="${val}">IBM Cloud</td>
-                    </tr>"""
-
-                    def duration = 'N/A'
-                    try { duration = currentBuild.durationString.replace(' and counting', '') } catch (Exception ignored) {}
-
-                    def body = """
-                    <html>
-                    <body style="margin: 0; padding: 0;">
-                    <table style="font-family: 'Segoe UI', Arial, Helvetica, sans-serif; border-collapse: collapse; width: 100%; max-width: 720px; table-layout: fixed; background-color: ${colors.valueBg};">
-                        <caption style="background-color: ${colors.captionBg}; color: #FFFFFF; border: 1px solid #c0c0c0; height: 44px; font-size: 124%; font-weight: bold; padding: 10px 12px;">
-                            ${colors.mark} CEPH-ODF INTEROP TESTING — ${status}
-                        </caption>
-                        <colgroup><col style="width: 34%;" /><col style="width: 66%;" /></colgroup>
-                        <tr>
-                            <td style="${lab}"><b>OCP Version</b></td>
-                            <td style="${val}">${ocpCell}</td>
-                        </tr>
-                        <tr>
-                            <td style="${lab}"><b>ODF Channel</b></td>
-                            <td style="${val}">${odfCell}</td>
-                        </tr>
-${cephImageRow}
-${cephMetaRows}
-${infrastructureRow}
-                        <tr>
-                            <td style="${lab}"><b>IBM Region</b></td>
-                            <td style="${val}">${params.IBM_REGION ?: 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <td style="${lab}"><b>VPC</b></td>
-                            <td style="${val}">${params.VPC_NAME ?: 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <td style="${lab}"><b>Build</b></td>
-                            <td style="${val}"><a href="${env.BUILD_URL}">${env.JOB_NAME} #${env.BUILD_NUMBER}</a></td>
-                        </tr>
-                        <tr>
-                            <td style="${lab}"><b>Duration</b></td>
-                            <td style="${val}">${duration}</td>
-                        </tr>
-${testCaseRowsHtml}
-                    </table>
-                    </body>
-                    </html>
-                    """.stripIndent()
-
-                    def attachPattern = hasCluster
-                        ? "ceph-interop/cluster-artifacts-${clusterName}.tar.gz, ceph-interop/configs/${clusterName}-state.json"
-                        : ''
-
-                    emailext(
-                        mimeType: 'text/html',
-                        subject: subject,
-                        body: body,
-                        to: params.EMAIL_ADDRESS ?: '',
-                        attachmentsPattern: attachPattern
-                    )
                 } catch (Exception e) {
-                    echo "Email notification failed: ${e.message}"
-                } finally {
-                    // After email (needs .cephadm-version.json for Ceph rows); always remove secrets
-                    dir("ceph-interop") {
-                        sh '''
-                            echo "Cleaning up credential files..."
-                            rm -f configs/credentials.yaml configs/pull-secret.json 2>/dev/null || true
-                            echo "✓ Credential files cleaned up"
-                        '''
+                    echo "ocs-ci artifact archival failed (non-fatal): ${e.message}"
+                }
+
+                // ── Publish JUnit results ──
+                def testSummary = null
+                try {
+                    def junitFile = "ocs-ci/${logDir}/junit-results.xml"
+                    if (fileExists(junitFile)) {
+                        def result = junit testResults: junitFile, allowEmptyResults: true
+                        testSummary = [
+                            total: result.totalCount,
+                            pass:  result.passCount,
+                            fail:  result.failCount,
+                            skip:  result.skipCount
+                        ]
                     }
+                } catch (Exception e) {
+                    echo "JUnit publish failed (non-fatal): ${e.message}"
+                }
+
+                // ── Email notification ──
+                try {
+                    sendOdfInteropEmail(clusterName: clusterName, hasCluster: hasCluster, testSummary: testSummary)
+                } catch (Exception e) {
+                    echo "Email with test summary failed (${e.message}) -- retrying without summary"
+                    try {
+                        sendOdfInteropEmail(clusterName: clusterName, hasCluster: hasCluster)
+                    } catch (Exception e2) {
+                        echo "Email notification failed entirely: ${e2.message}"
+                    }
+                }
+
+                // ── Cleanup credentials ──
+                dir("ceph-interop") {
+                    sh 'rm -f configs/credentials.yaml configs/pull-secret.json 2>/dev/null || true'
+                }
+                dir("ocs-ci") {
+                    sh 'rm -f interop-runtime-config.yaml data/pull-secret 2>/dev/null || true'
                 }
             }
         }

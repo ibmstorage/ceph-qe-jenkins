@@ -140,8 +140,33 @@ def job = pipelineJob("odf-interop") {
 
             stringParam(
                 "PVC_COUNT",
-                "10",
+                "2",
                 "Number of PVCs per storage type (RBD and CephFS) for IO workloads"
+            )
+
+            // ── ocs-ci (run-ci) test stage ───────────────────────────
+            stringParam(
+                "OCS_CI_REPO",
+                "https://github.com/red-hat-storage/ocs-ci.git",
+                "ocs-ci Git repository (run-ci / pytest tests)"
+            )
+
+            stringParam(
+                "OCS_CI_BRANCH",
+                "master",
+                "ocs-ci branch to clone"
+            )
+
+            stringParam(
+                "OCS_VERSION",
+                "",
+                "OCS/ODF version passed to run-ci --ocs-version (e.g. 4.16). Empty = minor version from resolved ODF channel"
+            )
+
+            stringParam(
+                "OCS_CI_TESTS",
+                "-m acceptance",
+                "Pytest / run-ci args before the tests/ path (e.g. -m acceptance). See ocs-ci usage: https://ocs-ci.readthedocs.io/en/latest/usage.html — pipeline also passes --html=report.html --self-contained-html for the HTML report"
             )
 
             stringParam(

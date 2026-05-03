@@ -68,6 +68,7 @@ def call(Map parameters) {
         ocpVersion    : ocpVersion,
         ocpChannel    : ocpChannel,
         odfChannel    : odfChannel,
+        ocsVersion    : row.ocsVersion,
     ]
 }
 
@@ -161,6 +162,7 @@ def resolveByStream(String stream, String howMsg = null) {
         ocpVersion    : row.ocpVersion,
         ocpChannel    : row.ocpChannel,
         odfChannel    : row.odfChannel,
+        ocsVersion    : row.ocsVersion,
     ]
 }
 
@@ -198,10 +200,6 @@ def cephGitNiceVerFromPodman(String image, String pullSecretFile) {
     } catch (Exception e) {
         echo "cephGitNiceVerFromPodman: ${e.message}"
         return null
-    } finally {
-        withEnv(["CEPHADM_JSON_OUT=${outFile}"]) {
-            sh(script: 'rm -f "${CEPHADM_JSON_OUT}"', returnStatus: true)
-        }
     }
 }
 
@@ -217,8 +215,8 @@ def extractCephStream(String jobName) {
 
 def odfInteropMatrix() {
     return [
-        reef     : [ocpVersion: '4.19.28', ocpChannel: 'released', odfChannel: 'stable-4.19'],
-        squid    : [ocpVersion: '4.20.19', ocpChannel: 'released', odfChannel: 'stable-4.20'],
-        tentacle : [ocpVersion: '4.21.11', ocpChannel: 'released', odfChannel: 'stable-4.21'],
+        reef     : [ocpVersion: '4.19.28', ocpChannel: 'released', odfChannel: 'stable-4.19', ocsVersion: '4.19'],
+        squid    : [ocpVersion: '4.20.19', ocpChannel: 'released', odfChannel: 'stable-4.20', ocsVersion: '4.20'],
+        tentacle : [ocpVersion: '4.21.11', ocpChannel: 'released', odfChannel: 'stable-4.21', ocsVersion: '4.21'],
     ]
 }
