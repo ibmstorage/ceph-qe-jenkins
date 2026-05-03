@@ -153,9 +153,9 @@ def call(Map parameters) {
     // Call Ceph Build Team Secure Pipeline Job for BVT Validator
     if ( parameters?.triggerSPS ) {
         try {
-            triggerSpsBvtChecker(testResult)
-        } catch (Exception) {
-            echo "SPS BVT Validator job failed"
+            triggerSpsBvtChecker(results: testResult, wrkspace: logDir)
+        } catch (Exception e) {
+            echo "SPS BVT Validator job failed due to ${e.message}"
         }
     }
 }

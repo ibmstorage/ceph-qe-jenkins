@@ -11,32 +11,34 @@
     ibm-tools works will with python3.11 and above.
 */
 
-def call(String results) {
-    final String SPS_PIPELINE_URL="https://api.us-south.devops.cloud.ibm.com/pipeline/v2"
-    final String SPS_AUTH_TYPE="iam"
+def call(Map parameters) {
 
     withCredentials([
         string(credentialsId: "ceph-qe-sa-pat", variable: "ghi_token"),
         string(credentialsId: "sps-api-key", variable: "sps_api_key")
     ]) {
-        withEnv([
-            "CD_TEKTON_PIPELINE_URL=${SPS_PIPELINE_URL}",
-            "CD_TEKTON_PIPELINE_AUTH_TYPE=iam",
-            "CD_TEKTON_PIPELINE_APIKEY=${sps_api_key}"
-        ]){
-            sh """
-                set -eo pipefail
+        sh """
+            set -eo pipefail
 
-                git clone --depth 1 --branch main https://${ghi_token}@github.ibm.com/ceph/ibm-tools.git
-                cd ibm-tools
-                
-                python3.12 -m venv it_venv
-                it_venv/bin/python3 -m pip install --upgrade pip
-                it_venv/bin/python3 -m pip install -r requirements.txt
+            export CD_TEKTON_PIPELINE_URL=https://api.us-south.devops.cloud.ibm.com/pipeline/v2
+            export CD_TEKTON_PIPELINE_AUTH_TYPE=iam
+            export CD_TEKTON_PIPELINE_APIKEY=${sps_api_key}
 
-                it_venv/bin/python3 bin/sps bvt-result-verification \
-                    -p BVT_RESULT=${results}
-            """
-        }
+            cd $(dirname ${parameters.wrkspace})
+
+            git clone --depth 1 --branch main https://${ghi_token}@github.ibm.com/ceph/ibm-tools.git
+            pushd ibm-tools
+            
+            python3.12 -m venv it_venv
+            it_venv/bin/python3 -m pip install --upgrade pip
+            it_venv/bin/python3 -m pip install -r requirements.txt
+            it_venv/bin/python3 -m pip install -e .
+
+            it_venv/bin/python3 bin/sps trigger bvt-result-verification \
+                -p BVT_RESULT=${parameters.results}
+            
+            popd
+            rm -rf ibm-tools
+        """
     }
 }
