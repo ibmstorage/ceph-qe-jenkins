@@ -13,20 +13,20 @@
 
 def call(Map parameters) {
 
-    withCredentials([
-        string(credentialsId: "ceph-qe-sa-pat", variable: "ghi_token"),
-        string(credentialsId: "sps-api-key", variable: "sps_api_key")
+    withEnv([
+        CD_TEKTON_PIPELINE_URL = "https://api.us-south.devops.cloud.ibm.com/pipeline/v2",
+        CD_TEKTON_PIPELINE_AUTH_TYPE = "iam",
+        CD_TEKTON_PIPELINE_APIKEY = credentials('sps-api-key'),
+        GHI_TOKEN = credentials('ceph-qe-sa-pat'),
+        WRKSPACE = parameters.wrkspace,
+        TEST_RESULTS = parameters.results
     ]) {
-        sh """
+        sh '''
             set -eo pipefail
 
-            export CD_TEKTON_PIPELINE_URL=https://api.us-south.devops.cloud.ibm.com/pipeline/v2
-            export CD_TEKTON_PIPELINE_AUTH_TYPE=iam
-            export CD_TEKTON_PIPELINE_APIKEY="${sps_api_key}"
+            cd $(dirname "$WRKSPACE")
 
-            cd $(dirname "${parameters.wrkspace}")
-
-            git clone --depth 1 --branch main https://"${ghi_token}"@github.ibm.com/ceph/ibm-tools.git
+            git clone --depth 1 --branch main https://"$GHI_TOKEN"@github.ibm.com/ceph/ibm-tools.git
             pushd ibm-tools
             
             python3.12 -m venv it_venv
@@ -35,10 +35,10 @@ def call(Map parameters) {
             it_venv/bin/python3 -m pip install -e .
 
             it_venv/bin/python3 bin/sps trigger bvt-result-verification \
-                -p BVT_RESULT="${parameters.results}"
+                -p BVT_RESULT="$TEST_RESULTS"
             
             popd
             rm -rf ibm-tools
-        """
+        '''
     }
 }
