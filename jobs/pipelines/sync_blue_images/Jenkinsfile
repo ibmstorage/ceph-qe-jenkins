@@ -32,6 +32,7 @@ pipeline {
                 script {
                     // Constants
                     final String IBM_CEPH_IMAGE_PATTERN = "icr.io/cp/ibm-ceph/ceph-"
+                    final String EXCLUDED_IMAGE_PATTERN = "crimson"
                     final String DEFAULT_REGION = "eu-de"
 
                     // Return from this stage if not enabled
@@ -42,12 +43,17 @@ pipeline {
 
                     // Get the ceph-base image from the list. We are
                     // specifically checking for IBM Ceph image.
+                    // Note: Crimson images are excluded as they are experimental/development builds
+                    // and should not trigger BVT pipelines.
                     def cephBaseImage = ""
                     
                     def images = params.BLUE_IMAGES.split("\r?\n")
                     images.each { image ->
                         def trimmedImage = image.trim()
-                        if ( trimmedImage.contains(IBM_CEPH_IMAGE_PATTERN) ) {
+                        if (
+                            ( trimmedImage.contains(IBM_CEPH_IMAGE_PATTERN) ) &&
+                            ( ! trimmedImage.toLowerCase().contains(EXCLUDED_IMAGE_PATTERN.toLowerCase()) )
+                        ) {
                             cephBaseImage = trimmedImage
                             println("A match has been found: " + cephBaseImage)
                         }
