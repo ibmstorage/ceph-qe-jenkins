@@ -13,32 +13,35 @@
 
 def call(Map parameters) {
 
-    withEnv([
-        CD_TEKTON_PIPELINE_URL = "https://api.us-south.devops.cloud.ibm.com/pipeline/v2",
-        CD_TEKTON_PIPELINE_AUTH_TYPE = "iam",
-        CD_TEKTON_PIPELINE_APIKEY = credentials('sps-api-key'),
-        GHI_TOKEN = credentials('ceph-qe-sa-pat'),
-        WRKSPACE = parameters.wrkspace,
-        TEST_RESULTS = parameters.results
+    withCredentials ([
+        string(credentialsId: "ceph-qe-sa-pat", variable: "GHI_TOKEN"),
+        string(credentialsId: "sps-api-key", variable: "CD_TEKTON_PIPELINE_APIKEY")
     ]) {
-        sh '''
-            set -eo pipefail
+        withEnv([
+            CD_TEKTON_PIPELINE_URL = "https://api.us-south.devops.cloud.ibm.com/pipeline/v2",
+            CD_TEKTON_PIPELINE_AUTH_TYPE = "iam",
+            WRKSPACE = parameters.wrkspace,
+            TEST_RESULTS = parameters.results
+        ]) {
+            sh '''
+                set -eo pipefail
 
-            cd $(dirname "$WRKSPACE")
+                cd $(dirname "$WRKSPACE")
 
-            git clone --depth 1 --branch main https://"$GHI_TOKEN"@github.ibm.com/ceph/ibm-tools.git
-            pushd ibm-tools
-            
-            python3.12 -m venv it_venv
-            it_venv/bin/python3 -m pip install --upgrade pip
-            it_venv/bin/python3 -m pip install -r requirements.txt
-            it_venv/bin/python3 -m pip install -e .
+                git clone --depth 1 --branch main https://"$GHI_TOKEN"@github.ibm.com/ceph/ibm-tools.git
+                pushd ibm-tools
+                
+                python3.12 -m venv it_venv
+                it_venv/bin/python3 -m pip install --upgrade pip
+                it_venv/bin/python3 -m pip install -r requirements.txt
+                it_venv/bin/python3 -m pip install -e .
 
-            it_venv/bin/python3 bin/sps trigger bvt-result-verification \
-                -p BVT_RESULT="$TEST_RESULTS"
-            
-            popd
-            rm -rf ibm-tools
-        '''
+                it_venv/bin/python3 bin/sps trigger bvt-result-verification \
+                    -p BVT_RESULT="$TEST_RESULTS"
+                
+                popd
+                rm -rf ibm-tools
+            '''
+        }
     }
 }
