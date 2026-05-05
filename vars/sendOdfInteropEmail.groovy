@@ -10,12 +10,14 @@
  *   hasCluster   - boolean, whether a cluster was provisioned
  *
  * Optional parameters:
- *   testSummary  - Map with keys total/pass/fail/skip (from junit step), or null
+ *   testSummary   - Map with keys total/pass/fail/skip (from junit step), or null
+ *   cosResultsUrl - String, IBM COS URL where logs/tarballs were uploaded
  */
 def call(Map parameters) {
-    def clusterName = parameters.clusterName ?: ''
-    def hasCluster  = parameters.hasCluster ?: false
-    def testSummary = parameters.testSummary
+    def clusterName   = parameters.clusterName ?: ''
+    def hasCluster    = parameters.hasCluster ?: false
+    def testSummary   = parameters.testSummary
+    def cosResultsUrl = parameters.cosResultsUrl ?: ''
 
     try {
         def status = currentBuild.currentResult ?: 'UNKNOWN'
@@ -149,6 +151,15 @@ def call(Map parameters) {
         def duration = 'N/A'
         try { duration = currentBuild.durationString.replace(' and counting', '') } catch (Exception ignored) {}
 
+        def cosLogsRow = ''
+        if (cosResultsUrl) {
+            cosLogsRow = """
+            <tr>
+                <td style="${lab}"><b>Logs</b></td>
+                <td style="${val}"><a href="${cosResultsUrl}">IBM COS Artifacts</a></td>
+            </tr>"""
+        }
+
         def body = """
         <html>
         <body style="margin: 0; padding: 0;">
@@ -184,6 +195,7 @@ ${infrastructureRow}
                 <td style="${lab}"><b>Duration</b></td>
                 <td style="${val}">${duration}</td>
             </tr>
+${cosLogsRow}
 ${ocsciReportRow}
 ${testCaseRowsHtml}
         </table>
@@ -191,32 +203,18 @@ ${testCaseRowsHtml}
         </html>
         """.stripIndent()
 
-        if (testSummary && testSummary.fail > 0) {
-            def ftSection = '<div style="margin-top:18px;font-family:\'Segoe UI\',Arial,Helvetica,sans-serif;max-width:720px;">' +
-                '<h3 style="color:#C62828;border-bottom:2px solid #E53935;padding-bottom:6px;">Failed Tests</h3>' +
-                '${FAILED_TESTS}</div>'
-            body = body.replace('</body>', ftSection + '</body>')
-        }
-
         def attachFiles = []
 
-        // Cluster artifacts
+        // Cluster state file
         if (hasCluster) {
-            def tarball = "ceph-interop/cluster-artifacts-${clusterName}.tar.gz"
             def stateJson = "ceph-interop/configs/${clusterName}-state.json"
-            if (fileExists(tarball)) { attachFiles << tarball }
             if (fileExists(stateJson)) { attachFiles << stateJson }
         }
 
-        // ocs-ci artifacts (only if run-ci executed)
-        // Note: report.html is excluded (can be 300MB+ with --self-contained-html).
-        //       It is available in Jenkins archived artifacts instead.
+        // ocs-ci JUnit results (small file, safe to attach)
         def logDir = "ocs-ci-logs-${env.BUILD_NUMBER}"
-        if (fileExists("ocs-ci/${logDir}")) {
-            if (fileExists("ocs-ci/${logDir}/junit-results.xml")) { attachFiles << "ocs-ci/${logDir}/junit-results.xml" }
-            def tarPath = "ocs-ci/${logDir}.tar.gz"
-            echo "Email: checking tar at ${tarPath} -> exists: ${fileExists(tarPath)}"
-            if (fileExists(tarPath)) { attachFiles << tarPath }
+        if (fileExists("ocs-ci/${logDir}/ocs-ci-test-junit-results.xml")) {
+            attachFiles << "ocs-ci/${logDir}/ocs-ci-test-junit-results.xml"
         }
 
         def attachPattern = attachFiles.join(', ')

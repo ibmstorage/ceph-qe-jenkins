@@ -460,8 +460,7 @@ pipeline {
                             diagCmds.each { label, cmd ->
                                 echo "\n──── ${label} ────"
                                 try {
-                                    def out = sh(script: "${cmd} 2>&1 || true", returnStdout: true).trim()
-                                    echo out ?: "(no output)"
+                                    sh "${cmd} 2>&1 || true"
                                 } catch (Exception ignored) {
                                     echo "(command failed or cluster unreachable)"
                                 }
@@ -638,8 +637,8 @@ pipeline {
                             --ocs-version '${env.OCS_CI_VERSION}' \
                             --skip-download-client \
                             --log-level DEBUG \
-                            --html=ocs-ci-logs-${env.BUILD_NUMBER}/report.html --self-contained-html \
-                            --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/junit-results.xml \
+                            --html=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-report.html --self-contained-html \
+                            --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-junit-results.xml \
                             tests/functional/
                     """
                 }
@@ -677,7 +676,9 @@ pipeline {
                 try {
                     dir("ceph-interop") {
                         if (hasCluster) {
-                            archiveArtifacts artifacts: "configs/${clusterName}-state.json", allowEmptyArchive: true
+                            if (fileExists("configs/${clusterName}-state.json")) {
+                                archiveArtifacts artifacts: "configs/${clusterName}-state.json"
+                            }
                             sh """
                                 if [ -d "work/clusters/${clusterName}" ]; then
                                     tar czf "cluster-artifacts-${clusterName}.tar.gz" \
@@ -689,9 +690,15 @@ pipeline {
                                     echo "Cluster directory work/clusters/${clusterName} not found -- skipping archive"
                                 fi
                             """
-                            archiveArtifacts artifacts: "cluster-artifacts-${clusterName}.tar.gz", allowEmptyArchive: true
-                            archiveArtifacts artifacts: "work/clusters/${clusterName}/openshift/auth/*", allowEmptyArchive: true
-                            archiveArtifacts artifacts: "work/clusters/${clusterName}/workload-report-*.txt", allowEmptyArchive: true
+                            if (fileExists("cluster-artifacts-${clusterName}.tar.gz")) {
+                                archiveArtifacts artifacts: "cluster-artifacts-${clusterName}.tar.gz"
+                            }
+                            if (fileExists("work/clusters/${clusterName}/openshift/auth")) {
+                                archiveArtifacts artifacts: "work/clusters/${clusterName}/openshift/auth/*"
+                            }
+                            if (fileExists("work/clusters/${clusterName}")) {
+                                archiveArtifacts artifacts: "work/clusters/${clusterName}/workload-report-*.txt", allowEmptyArchive: true
+                            }
                         } else {
                             echo "No cluster name available -- skipping cluster artifact archival"
                         }
@@ -705,10 +712,16 @@ pipeline {
                 try {
                     dir("ocs-ci") {
                         if (fileExists(logDir)) {
-                            sh "tar czf ${logDir}.tar.gz ${logDir}/ 2>/dev/null || true"
-                            archiveArtifacts artifacts: "${logDir}.tar.gz", allowEmptyArchive: true
-                            archiveArtifacts artifacts: "${logDir}/report.html", allowEmptyArchive: true
-                            archiveArtifacts artifacts: "${logDir}/junit-results.xml", allowEmptyArchive: true
+                            if (fileExists("${logDir}/ocs-ci-test-report.html")) {
+                                archiveArtifacts artifacts: "${logDir}/ocs-ci-test-report.html"
+                            }
+                            if (fileExists("${logDir}/ocs-ci-test-junit-results.xml")) {
+                                archiveArtifacts artifacts: "${logDir}/ocs-ci-test-junit-results.xml"
+                            }
+                            sh "tar czf ${logDir}.tar.gz --exclude='ocs-ci-test-*.html' --exclude='ocs-ci-test-*.xml' ${logDir}/ 2>/dev/null || true"
+                            if (fileExists("${logDir}.tar.gz")) {
+                                archiveArtifacts artifacts: "${logDir}.tar.gz"
+                            }
                         } else {
                             echo "Skipping ocs-ci artifact archival: ${logDir} not found (run-ci may not have executed)"
                         }
@@ -717,10 +730,45 @@ pipeline {
                     echo "ocs-ci artifact archival failed (non-fatal): ${e.message}"
                 }
 
+                // ── Upload artifacts to IBM COS ──
+                def cosRemote = "ceph-qe-cos"
+                def cosBucket = "ceph-qe-logs"
+                def cosBaseUrl = "https://10.8.128.2/cephci-jenkins/ibm-cos"
+                def cosBasePath = "odf-interop/${env.BUILD_NUMBER}"
+                def cosResultsUrl = ''
+                try {
+                    def hasRclone = sh(script: "rclone listremotes 2>/dev/null | grep -q '^${cosRemote}:'", returnStatus: true) == 0
+                    if (!hasRclone) {
+                        echo "rclone remote '${cosRemote}' not configured -- skipping COS upload"
+                    } else {
+                        def filesToUpload = []
+                        if (hasCluster) {
+                            def clusterTar = "ceph-interop/cluster-artifacts-${clusterName}.tar.gz"
+                            if (fileExists(clusterTar)) { filesToUpload << clusterTar }
+                        }
+                        def ocsciTar = "ocs-ci/${logDir}.tar.gz"
+                        if (fileExists(ocsciTar)) { filesToUpload << ocsciTar }
+                        if (fileExists("ocs-ci/${logDir}/ocs-ci-test-report.html"))       { filesToUpload << "ocs-ci/${logDir}/ocs-ci-test-report.html" }
+                        if (fileExists("ocs-ci/${logDir}/ocs-ci-test-junit-results.xml")) { filesToUpload << "ocs-ci/${logDir}/ocs-ci-test-junit-results.xml" }
+
+                        if (filesToUpload) {
+                            def uploadStart = System.currentTimeMillis()
+                            for (f in filesToUpload) {
+                                sh "rclone copy ${f} ${cosRemote}:${cosBucket}/${cosBasePath}/ --progress --transfers=8 --checkers=8"
+                            }
+                            def uploadSec = (System.currentTimeMillis() - uploadStart) / 1000
+                            cosResultsUrl = "${cosBaseUrl}/${cosBasePath}/"
+                            echo "COS upload complete: ${filesToUpload.size()} file(s) in ${uploadSec}s -- ${cosResultsUrl}"
+                        }
+                    }
+                } catch (Exception e) {
+                    echo "COS upload failed (non-fatal): ${e.message}"
+                }
+
                 // ── Publish JUnit results ──
                 def testSummary = null
                 try {
-                    def junitFile = "ocs-ci/${logDir}/junit-results.xml"
+                    def junitFile = "ocs-ci/${logDir}/ocs-ci-test-junit-results.xml"
                     if (fileExists(junitFile)) {
                         def result = junit testResults: junitFile, allowEmptyResults: true
                         testSummary = [
@@ -736,7 +784,10 @@ pipeline {
 
                 // ── Email notification ──
                 try {
-                    sendOdfInteropEmail(clusterName: clusterName, hasCluster: hasCluster, testSummary: testSummary)
+                    sendOdfInteropEmail(
+                        clusterName: clusterName, hasCluster: hasCluster,
+                        testSummary: testSummary, cosResultsUrl: cosResultsUrl
+                    )
                 } catch (Exception e) {
                     echo "Email with test summary failed (${e.message}) -- retrying without summary"
                     try {
