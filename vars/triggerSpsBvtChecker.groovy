@@ -14,7 +14,7 @@
 def call(Map parameters) {
 
     withCredentials ([
-        string(credentialsId: "ceph-qe-sa-pat", variable: "GHI_TOKEN"),
+        usernamePassword(credentialsId: "ceph-qe-sa-pat", passwordVariable: "GHI_TOKEN"),
         string(credentialsId: "sps-api-key", variable: "CD_TEKTON_PIPELINE_APIKEY")
     ]) {
         withEnv([
