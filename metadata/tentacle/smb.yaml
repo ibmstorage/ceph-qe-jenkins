@@ -48,6 +48,14 @@ regression:
       suite: suites/tentacle/smb/tier-1-smb-ip-based-access-control.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       vm-size: cx2-8x16
+    - name: "Test SMB Tier-3 Test Cases"
+      suite: suites/tentacle/smb/tier-3-smb.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size: cx2-8x16
+    - name: "Test SMB Tier-4 Test Cases"
+      suite: suites/tentacle/smb/tier-3-smb.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size: cx2-8x16
 
 upgrade:
   metadata:
