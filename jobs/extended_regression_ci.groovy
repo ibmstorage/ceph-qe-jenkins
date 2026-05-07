@@ -89,6 +89,14 @@ generate_jobs(
     vpc: ["ci-vpc-01"]
 )
 
+// Create jobs specific to Ceph - Squid - SMB
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Squid",
+    fg: "SMB",
+    vpc: ["ci-vpc-01"]
+)
+
 // Create jobs specific to Ceph - Tentacle - DMFG
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
@@ -142,6 +150,14 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
     fg: "RGW",
+    vpc: ["ci-vpc-01"]
+)
+
+// Create jobs specific to Ceph - Tentacle - SMB
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Tentacle",
+    fg: "SMB",
     vpc: ["ci-vpc-01"]
 )
 
