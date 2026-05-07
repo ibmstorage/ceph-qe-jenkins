@@ -176,7 +176,7 @@ extended_regression:
       custom-config:
         gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
         gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
-        gklm-endpoint-ibmc: "10.243.36.4"
+        gklm-endpoint-ibmc: "10.245.64.172"
       inventory:
         ibmc:
           rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
@@ -225,30 +225,42 @@ extended_regression:
     - name: "Test granular s3test" # 75 mins, 46 secs
       suite: suites/tentacle/rgw/test_granular_s3test.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 rgw upgrade 71GA to 9x latest" 
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 rgw upgrade 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 rgw archive ms upgrade 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_archive_ms_upgrade_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
-    - name: "Tier-1 rgw ms upgrade 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_ms_upgrade_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    - name: "Tier-1 rgw upgrade ssl 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ssl_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 rgw upgrade ms ssl ecpool 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
-    - name: "Tier-2 rgw ms rgw_module" 
+    - name: "Tier-2 rgw ms rgw_module"
       suite: suites/tentacle/rgw/tier-2_rgw_ms_rgw_module.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
     - name: "tier-2_ssl_rgw_regression_extended"
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw upgrade 71GA to 9x latest" 
+      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 rgw upgrade 81GA to 9x latest"
+      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_81GA_to_9x_latest.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 rgw archive ms upgrade 81GA to 9x latest"
+      suite: suites/tentacle/rgw/tier-1_rgw_archive_ms_upgrade_81GA_to_9x_latest.yaml
+      global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 rgw ms upgrade 81GA to 9x latest"
+      suite: suites/tentacle/rgw/tier-1_rgw_ms_upgrade_81GA_to_9x_latest.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 rgw upgrade ssl 81GA to 9x latest"
+      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ssl_81GA_to_9x_latest.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
+    - name: "Tier-1 rgw upgrade ms ssl ecpool 81GA to 9x latest"
+      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_81GA_to_9x_latest.yaml
+      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
+      platform:
+        - rhel-9
 extended_regression_1:
   metadata:
     cloud:
@@ -268,6 +280,10 @@ extended_regression_1:
     - name: "Tier-2 RGW multisite regression" # 193 mins, 8 secs
       suite: suites/tentacle/rgw/sanity_rgw_multisite.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      custom-config:
+        gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
+        gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
+        gklm-endpoint-ibmc: "10.245.64.172"
       inventory:
         ibmc:
           rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
@@ -321,43 +337,31 @@ upgrade:
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       platform:
         - rhel-9
-      build:
-        - rh
     - name: "Tier-1 rgw upgrade ssl archive 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_upgrade_archive_ssl_ecpool_81GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/3-way-archive-ec-profile-2+2@4nodes.yaml
       platform:
         - rhel-9
-      build:
-        - rh
     - name: "Tier-1 rgw multirealm upgrade 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_ms_upgrade_multirealm_81GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       platform:
         - rhel-9
-      build:
-        - rh
     - name: "Tier-1 rgw ms upgrade 71GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_ms_upgrade_71GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       platform:
         - rhel-9
-      build:
-        - rh
     - name: "Tier-1 rgw upgrade ssl ecpool 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ssl_ecpool_81GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/ec-profile-4+2-cluster.yaml
       platform:
         - rhel-9
-      build:
-        - rh
     - name: "Tier-1 rgw ibm upgrade ms ssl 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_ibm_ssl_ms_upgrade_81GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       platform:
         - rhel-9
-      build:
-        - ibm
     - name: "Tier-1 rgw single zone upgrade 71GA to 9x latest"
       suite: suites/tentacle/rgw/test_ss_upgrade_7_1_GA_to_9.x_latest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
