@@ -20,10 +20,6 @@ regression:
       suite: suites/tentacle/smb/tier-1-smb-vss.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       vm-size: cx2-8x16
-    - name: "Test SMB Tier-2 Test Cases"
-      suite: suites/tentacle/smb/tier-2-smb.yaml
-      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
-      vm-size: cx2-8x16
     - name: "Test SMB Firewall Test Cases"
       suite: suites/tentacle/smb/tier-1-smb-firewall.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
@@ -48,6 +44,16 @@ regression:
       suite: suites/tentacle/smb/tier-1-smb-ip-based-access-control.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       vm-size: cx2-8x16
+extended_regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Test SMB Tier-2 Test Cases"
+      suite: suites/tentacle/smb/tier-2-smb.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size: cx2-8x16
     - name: "Test SMB Tier-3 Test Cases"
       suite: suites/tentacle/smb/tier-3-smb.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
@@ -56,7 +62,6 @@ regression:
       suite: suites/tentacle/smb/tier-3-smb.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       vm-size: cx2-8x16
-
 upgrade:
   metadata:
     cloud:
