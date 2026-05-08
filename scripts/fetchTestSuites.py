@@ -34,7 +34,7 @@ on the RHCS versions
 
 
 def get_testsuite(
-    test, platform, build=None, build_type=None, tag=None, cloud=None
+    test, platform, build=None, build_type=None, tag=None, cloud=None, stage_inventory=None
 ):
     """Get testsuite and global config"""
     # Check for platform in test config
@@ -71,26 +71,39 @@ def get_testsuite(
         return None
 
     # Get inventory file based on cloud and platform
-    inventory = ""
+    # First check test-level inventory, then fall back to stage-level inventory
+    inventory = None
     if cloud and test.get("inventory"):
         cloud_inventory = test.get("inventory", {}).get(cloud, {})
         if isinstance(cloud_inventory, dict) and platform:
-            inventory = cloud_inventory.get(platform, "")
+            inventory = cloud_inventory.get(platform)
+        elif isinstance(cloud_inventory, str):
+            inventory = cloud_inventory
+    elif cloud and stage_inventory:
+        # Use stage-level inventory if test-level inventory is not present
+        cloud_inventory = stage_inventory.get(cloud, {})
+        if isinstance(cloud_inventory, dict) and platform:
+            inventory = cloud_inventory.get(platform)
         elif isinstance(cloud_inventory, str):
             inventory = cloud_inventory
 
     # Create testsuites with details
-    return {
+    result = {
         "name": test.get("name", "").replace(
                 " ", "_").replace(".", "_").replace("-", "_"),
         "suite": test.get("suite", ""),
         "global_conf": test.get("global-conf", ""),
-        "inventory": inventory,
         "vm_size": test.get("vm-size", ""),
         "custom_config": ",".join(
             [f"{k}={v}" for k, v in test.get("custom_config", {}).items()]
         )
     }
+    
+    # Only add inventory if it's actually set
+    if inventory:
+        result["inventory"] = inventory
+    
+    return result
 
 def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
     """Get stage and testsuites"""
@@ -106,31 +119,34 @@ def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
         if not tests:
             continue
 
-        metadata = stages.get(stage, {}).get("metadata", {})
-        if not metadata:
+        stage_metadata = stages.get(stage, {}).get("metadata", {})
+        if not stage_metadata:
             continue
+
+        # Get stage-level inventory
+        stage_inventory = stages.get(stage, {}).get("inventory", {})
 
         # Define metadata in testsuite
         testsuites[stage] = {"metadata": {}}
 
         # Get cloud details
-        _cloud = metadata.get("cloud")
+        _cloud = stage_metadata.get("cloud")
         if _cloud and cloud not in _cloud:
             continue
         testsuites[stage]["metadata"]["cloud"] = cloud
 
         # Get global conf
-        testsuites[stage]["metadata"]["globalConf"] = metadata.get(
+        testsuites[stage]["metadata"]["globalConf"] = stage_metadata.get(
             "global-conf", {}).get(build_type, "")
 
         # Check for custom-config
         testsuites[stage]["metadata"]["custom_config"] = ",".join(
-            [f"{k}={v}" for k, v in metadata.get("custom-config", {}).items()]
+            [f"{k}={v}" for k, v in stage_metadata.get("custom-config", {}).items()]
         )
 
         # Iterate over testsuite in stages
         for test in tests:
-            testsuite = get_testsuite(test, platform, build, build_type, tag, cloud)
+            testsuite = get_testsuite(test, platform, build, build_type, tag, cloud, stage_inventory)
             if not testsuite:
                 continue
 

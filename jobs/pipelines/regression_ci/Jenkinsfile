@@ -81,7 +81,8 @@ pipeline {
                         // Prioritize test-level global_conf over stage-level globalConf
                         def effectiveGlobalConf = suite.global_conf ?: suites.regression.metadata?.globalConf
 
-                        // Prioritize test-level inventory over default inventory
+                        // Prioritize test-level inventory over stage-level inventory over default inventory
+                        // suite.inventory will be null if not set in metadata (allows proper fallback)
                         def effectiveInventory = suite.inventory ?: jobConfigs.inventory
 
                         // Debug
