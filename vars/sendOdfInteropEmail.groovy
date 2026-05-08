@@ -119,8 +119,9 @@ def call(Map parameters) {
             <td style="${cephValStyle}">${htmlEsc(cephRelName)}</td>
         </tr>"""
 
-        def workloadOk = (status == 'SUCCESS')
-        def deployResult = status == 'SUCCESS' ? 'Pass' : (status == 'ABORTED' ? 'Not run' : 'Fail')
+        def deployPassed = (env.DEPLOY_PASSED == 'true')
+        def workloadOk   = (env.WORKLOAD_PASSED == 'true')
+        def deployResult = deployPassed ? 'Pass' : (status == 'ABORTED' ? 'Not run' : 'Fail')
         def tcBar = (status == 'SUCCESS') ? '#43A047' : ((status == 'ABORTED') ? '#FB8C00' : '#E53935')
         def tcHdrBg = (status == 'SUCCESS') ? '#E8F5E9' : ((status == 'ABORTED') ? '#FFF8E1' : '#FFEBEE')
         def tcHdrFg = (status == 'SUCCESS') ? '#1B5E20' : ((status == 'ABORTED') ? '#E65100' : '#B71C1C')
@@ -156,7 +157,7 @@ def call(Map parameters) {
             cosLogsRow = """
             <tr>
                 <td style="${lab}"><b>Logs</b></td>
-                <td style="${val}"><a href="${cosResultsUrl}">IBM COS Artifacts</a></td>
+                <td style="${val}"><a href="${cosResultsUrl}">OCS-CI Tests Report</a></td>
             </tr>"""
         }
 

@@ -436,6 +436,7 @@ pipeline {
                                     --cluster-name '${env.CLUSTER_NAME}' \
                                     --verbose
                             """
+                            env.DEPLOY_PASSED = 'true'
                             echo "Cluster deployed successfully: ${env.CLUSTER_NAME}"
                         } catch (Exception deployErr) {
                             def oc = "work/clusters/${env.CLUSTER_NAME}/bin/oc"
@@ -492,6 +493,8 @@ pipeline {
                                 --pvc-count ${pvcCount} \
                                 --verbose
                         """
+                        env.WORKLOAD_PASSED = 'true'
+                        echo "IO workloads completed successfully: ${env.CLUSTER_NAME}"
                     }
                 }
             }
