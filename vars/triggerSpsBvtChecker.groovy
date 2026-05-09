@@ -14,8 +14,8 @@
 def call(Map parameters) {
 
     withCredentials ([
-        usernamePassword(credentialsId: "ceph-qe-sa-pat", passwordVariable: "GHI_TOKEN"),
-        string(credentialsId: "sps-api-key", variable: "CD_TEKTON_PIPELINE_APIKEY")
+        usernamePassword(credentialsId: 'ceph-qe-sa-pat', usernameVariable: 'GHI_USER', passwordVariable: 'GHI_TOKEN'),
+        string(credentialsId: 'sps-api-key', variable: 'CD_TEKTON_PIPELINE_APIKEY')
     ]) {
         withEnv([
             "CD_TEKTON_PIPELINE_URL=https://api.us-south.devops.cloud.ibm.com/pipeline/v2",
