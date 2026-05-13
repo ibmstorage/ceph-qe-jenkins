@@ -90,8 +90,10 @@ def call(Map parameters) {
         jobConfig.customConfig = params.CUSTOM_CONFIG.split(",") as List
     }
 
-    // Set inventory file
-    if ( params.INVENTORY ) {
+    // Set inventory file (released builds use IBMC_LIVE_INVENTORY on IBM Cloud)
+    if ( jobConfig.cloudType == "ibmc" && params.RELEASE?.toLowerCase() == "released" ) {
+        jobConfig.inventory = cephciConfigs.IBMC_LIVE_INVENTORY[jobConfig.platform]
+    } else if ( params.INVENTORY ) {
         jobConfig.inventory = params.INVENTORY
     } else if ( jobConfig.cloudType == "ibmc" ) {
         jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
@@ -108,8 +110,12 @@ def call(Map parameters) {
         jobConfig.vpcName = null  // Not used for AWS cleanup
     }
 
-    // Get subscription manager execution
-    jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
+    // Get subscription manager execution (released jobs require RHEL CDN subscription)
+    if ( jobConfig.job.toLowerCase() == "released" ) {
+        jobConfig.skipSubscription = false
+    } else {
+        jobConfig.skipSubscription = params.SKIP_SUBSCRIPTION
+    }
 
     // Get Sos Report config parameter
     jobConfig.skipSosReport = params.SKIP_SOS_REPORT ?: true
@@ -121,7 +127,7 @@ def call(Map parameters) {
         release = "redhat"
     }
     def manifestFile = "${release}/${jobConfig.rhBuild}.yaml"
-    recipeContent = readFromManifest(recipe: manifestFile, job: jobConfig.job)
+    def recipeContent = readFromManifest(recipe: manifestFile, job: jobConfig.job)
 
     if ( ! recipeContent ) {
         currentBuild.result = "ABORTED"
@@ -262,6 +268,12 @@ def call(Map parameters) {
 
     // Update launch description with JOB_URL
     jobConfig.rpLaunchDesc  = "JOB_URL: ${env.BUILD_URL}\\n"
+
+    // released job: add Ceph build and container description
+    if (jobConfig.job.toLowerCase() == "released") {
+        jobConfig.rpLaunchDesc += "CEPH_BUILD: Released\\n"
+        jobConfig.rpLaunchDesc += "CONTAINER_URL: Released\\n"
+    }
 
     // Set project name & url based on build type
     if (jobConfig.buildType.toLowerCase() == "ibm"){

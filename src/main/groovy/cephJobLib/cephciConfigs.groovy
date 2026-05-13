@@ -25,6 +25,12 @@ class cephciConfigs {
         "rhel-10": "conf/inventory/ibm-eu-rhel-10-latest.yaml"
     ]
 
+    // IBM Cloud inventory for released builds
+    static final Map IBMC_LIVE_INVENTORY = [
+        "rhel-9": "conf/inventory/ibm-eu-live-rhel-9-latest.yaml",
+        "rhel-10": "conf/inventory/ibm-eu-live-rhel-10-latest.yaml"
+    ]
+
     // AWS inventory config (for --cloud aws)
     static final Map AWS_INVENTORY = [
         "rhel-9": "conf/inventory/aws-rhel-9.6-server-arm-64.yaml",

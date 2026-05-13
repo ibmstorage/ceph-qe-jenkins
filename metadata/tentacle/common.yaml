@@ -106,17 +106,12 @@ sanity:
       suite: suites/tentacle/cephadm/tier1-service-apply-spec.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
 
-
-live:
+released:
   metadata:
     cloud:
       - ibmc
       - aws
   suites:
-    # DMFG test suites
-    - name: "Test DMFG Tier-0 Cephadm"
-      suite: suites/tentacle/cephadm/tier0-cephadm.yaml
-      global-conf: conf/tentacle/cephadm/1admin-8node-1client-cluster.yaml
     - name: "Test DMFG Tier-1 Cephadm Clients"
       suite: suites/tentacle/cephadm/tier1-cephadm-clients.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
@@ -137,6 +132,7 @@ live:
     - name: "Test DMFG Tier-2 OSD Scenarios"
       suite: suites/tentacle/cephadm/tier2-osd-scenarios.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
+
     # NVMEoF tests
     - name: "Basic E2E NVMeoF Sanity tests"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
