@@ -639,7 +639,7 @@ pipeline {
                             --ocsci-conf interop-runtime-config.yaml \
                             --ocs-version '${env.OCS_CI_VERSION}' \
                             --skip-download-client \
-                            --log-level DEBUG \
+                            --log-level DEBUG --collect-logs \
                             --html=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-report.html --self-contained-html \
                             --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-junit-results.xml \
                             tests/functional/
