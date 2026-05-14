@@ -56,6 +56,10 @@ regression:
       suite: suites/squid/rados/tier-3_rados_osd_thrashing_tests.yaml
       global-conf: conf/squid/rados/9-node-ec-cluster-1-client.yaml
       # VM count: 6
+    - name: "RADOS Test - OSD deployment workflows"
+      suite: suites/squid/rados/tier-2_rados_test_osd_deployment_workflows.yaml
+      global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
 extended_regression:
   metadata:
     cloud:
