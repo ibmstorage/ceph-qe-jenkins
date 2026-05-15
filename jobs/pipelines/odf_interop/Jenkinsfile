@@ -635,7 +635,7 @@ pipeline {
                             --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
                             --cluster-name '${env.CLUSTER_NAME}' \
                             ${params.OCS_CI_TESTS ?: '-m acceptance'} \
-                            --ocsci-conf conf/deployment/ibmcloud/ipi_3az_rhcos_3m_3w.yaml \
+                            --ocsci-conf conf/deployment/baremetal/upi_1az_rhcos_nvme_intel_3m_3w.yaml \
                             --ocsci-conf interop-runtime-config.yaml \
                             --ocs-version '${env.OCS_CI_VERSION}' \
                             --skip-download-client \
