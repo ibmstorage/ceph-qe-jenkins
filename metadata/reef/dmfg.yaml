@@ -153,3 +153,35 @@ regression:
     - name: tier1 osd crush device class
       suite: suites/reef/cephadm/tier-1-osd-crush-device-class.yaml
       global-conf: conf/reef/cephadm/tier-0.yaml
+
+extended_regression:
+  Tier-1:
+    metadata:
+      cloud:
+        - openstack
+        - ibmc
+      testrun-template:
+        rh: rh-reef-weekly-dmfg
+        ibm: ibm-reef-weekly-dmfg
+    suites:
+      - name:
+        suite: suites/reef/cephadm/tier0-cephadm.yaml
+        global-conf: conf/reef/cephadm/1admin-8node-1client-cluster.yaml
+        platform:
+          - rhel-9
+
+      - name:
+        suite: suites/reef/cephadm/tier2-cluster-elasticity.yaml
+        global-conf: conf/reef/cephadm/1admin_10node_1client_cephadm_scale.yaml
+        platform:
+          - rhel-9
+      - name:
+        suite: suites/reef/cephadm/tier4-crash_configuration.yaml
+        global-conf: conf/reef/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+        platform:
+          - rhel-9
+      - name:
+        suite: suites/reef/cephmgr/tier2-cephmgr.yaml
+        global-conf: conf/reef/cephmgr/1admin-3node-1client-ceph-volume.yaml
+        platform:
+          - rhel-9
