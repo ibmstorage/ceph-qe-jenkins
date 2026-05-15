@@ -28,8 +28,8 @@ def job = pipelineJob("cleanup_vms") {
 
         // Required parameters
         parameters {
-            booleanParam("DELETE", false, "Delete orphan/stale VM entries after generating report")
-            booleanParam("DRY_RUN", true, "Generate the report and log intended deletes without removing VMs")
+            booleanParam("DELETE", true, "Delete orphan/stale VM entries after generating report")
+            booleanParam("DRY_RUN", false, "Generate the report and log intended deletes without removing VMs")
             stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
             stringParam("BRANCH", "main", "Ceph CI git branch")
         }
