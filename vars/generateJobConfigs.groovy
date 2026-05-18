@@ -140,9 +140,6 @@ def call(Map parameters) {
     // Get ceph downstream repo based on DC & platform
     jobConfig.rhsCephRepo = recipeContent."${params.RELEASE}".repositories."${repoDC}"."${jobConfig.platform}"
 
-    // Fetch ceph version
-    jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
-
     //Set the manifest section
     jobConfig.manifestSection = params.RELEASE
 
@@ -210,6 +207,17 @@ def call(Map parameters) {
     // if CONTAINER_IMAGE is provided, use the provided image
     if ( params.CONTAINER_IMAGE ) {
         jobConfig.containerImage = params.CONTAINER_IMAGE
+    }
+
+    // Fetch Ceph version from container image
+    if (!jobConfig.containerImage?.toString()?.trim()) {
+        error("Container image is required but not set")
+    }
+
+    try {
+        jobConfig.cephVersion = fetchContainerImageCephVersion(containerImage: jobConfig.containerImage)
+    } catch (Exception e) {
+        error "WARN: Failed to fetch version from container: ${e.message}"
     }
 
     // Debug info

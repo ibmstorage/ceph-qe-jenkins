@@ -126,8 +126,31 @@ pipeline {
                     // read manifest to get compose
                     repoBuild = readFromManifest(recipe: buildInfo.recipe, job: job)
 
-                    // Create repo url and check if it is available in the manifest
+                    def manifestCephVersion = repoBuild?."${buildTag}"?.version?.toString()?.trim()
+                    if (!manifestCephVersion) {
+                        echo("Skipping BVT: ${buildTag}.version missing in manifest.")
+                        return
+                    }
 
+                    if (!cephBase?.toString()?.trim()) {
+                        echo("WARN: No ceph-base image in build info. Proceeding with BVT.")
+                    } else {
+                        def containerCephVersion = fetchContainerImageCephVersion(
+                            containerImage: cephBase
+                        )
+
+                        echo("Comparing versions - container: ${containerCephVersion}, manifest: ${manifestCephVersion}")
+                        // compareVersions() is provided by Jenkins Pipeline Utility Steps plugin
+                        if (compareVersions(containerCephVersion, manifestCephVersion) > 0) {
+                            echo(
+                                "Skipping BVT: container (${containerCephVersion}) > manifest " +
+                                "(${manifestCephVersion})."
+                            )
+                            return
+                        }
+                    }
+
+                    // Create repo url and check if it is available in the manifest
                     def repoUrl = repoBuild?."${buildTag}"?.repositories?."${repoDc}"?."${platform}"
                     if (!repoUrl) {
                         error(
