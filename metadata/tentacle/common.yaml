@@ -45,7 +45,9 @@ sanity:
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/tentacle/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8
+        aws: m6g.xlarge
     - name: "tier-1 rbd"
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
       global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
@@ -133,7 +135,8 @@ live:
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
       build:
         - ibm
-      vm-size: cx2-8x16
+      vm-size:
+        ibmc: cx2-8x16
     - name: "Basic E2E-Test with FIPS mode enabled"
       suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_fips.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
@@ -141,33 +144,39 @@ live:
         - ibm
       custom-config:
         enable-fips-mode: true
-      vm-size: cx2-8x16
+      vm-size:
+        ibmc: cx2-8x16
     - name: "NVMeoTCP functional regression tests"
       suite: suites/tentacle/nvmeof/tier-2_nvmeof_functional_Regression.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_functional.yaml
       build:
         - ibm
-      vm-size: cx2-8x16
+      vm-size:
+        ibmc: cx2-8x16
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
       build:
         - ibm
-      vm-size: cx2-8x16
+      vm-size:
+        ibmc: cx2-8x16
 
     # RBD and RBD Mirror tests
     - name: "RBD Functional regression tests"
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
       global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8
     - name: "RBD Mirror Functional regression tests"
       suite: suites/tentacle/rbd/tier-1_rbd_mirror.yaml
       global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8
     - name: "tier-2 rbd group mirror tests"
       suite: suites/tentacle/rbd/tier-2_rbd_group_mirror.yaml
       global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8
 
     # CephFS tests
     - name: "Tier-1 CephFS Test"
@@ -182,7 +191,8 @@ live:
         - ibm
       platform:
         - rhel-9
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8
 
     # NFS-Ganesha tests
     - name: "Tier-0 NFS Ganesha"
@@ -212,16 +222,19 @@ live:
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       build:
         - ibm
-      vm-size: cx2-8x16
+      vm-size:
+        ibmc: cx2-8x16
     - name: "Tier-1 SMB"
       suite: suites/tentacle/smb/tier-1-smb.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
       build:
         - ibm
-      vm-size: cx2-8x16
+      vm-size:
+        ibmc: cx2-8x16
 
     # RADOS tests
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/tentacle/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8

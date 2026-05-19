@@ -47,7 +47,8 @@ sanity:
     - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
       suite: suites/squid/nvmeof/tier-1_nvmeof_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
-      vm-size: bx2-4x16
+      vm-size:
+        ibmc: bx2-4x16
       build:
         - ibm
     - name: "NVMe Basic E2E-Test with FIPS mode enabled"
@@ -55,19 +56,22 @@ sanity:
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
       custom-config:
         enable-fips-mode: true
-      vm-size: bx2-4x16
+      vm-size:
+        ibmc: bx2-4x16
       build:
         - ibm
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/squid/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
-      vm-size: bx2-4x16
+      vm-size:
+        ibmc: bx2-4x16
       build:
         - ibm
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/squid/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8
     - name: "Tier-1 RBD"
       suite: suites/squid/rbd/tier-1_rbd.yaml
       global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
@@ -114,4 +118,5 @@ live:
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/squid/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
-      vm-size: bx2-2x8
+      vm-size:
+        ibmc: bx2-2x8

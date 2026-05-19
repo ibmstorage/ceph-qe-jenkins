@@ -32,6 +32,17 @@ on the RHCS versions
         -o --output <str>       Output file path.
 """
 
+def resolve_vm_size(test, cloud):
+    """Resolve cloud-specific vm-size from suite metadata.
+
+    Only dict entries (e.g. ibmc/aws keys) are used. Legacy string
+    vm-size values are ignored so they are not applied on every cloud.
+    """
+    raw = test.get("vm-size")
+    if not isinstance(raw, dict) or not cloud:
+        return ""
+    return raw.get(cloud, "") or ""
+
 
 def get_testsuite(
     test, platform, build=None, build_type=None, tag=None, cloud=None, stage_inventory=None
@@ -93,7 +104,7 @@ def get_testsuite(
                 " ", "_").replace(".", "_").replace("-", "_"),
         "suite": test.get("suite", ""),
         "global_conf": test.get("global-conf", ""),
-        "vm_size": test.get("vm-size", ""),
+        "vm_size": resolve_vm_size(test, cloud),
         "custom_config": ",".join(
             [f"{k}={v}" for k, v in test.get("custom_config", {}).items()]
         )
