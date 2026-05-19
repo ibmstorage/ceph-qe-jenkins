@@ -108,7 +108,7 @@ for (jobConfig in jobsConfiguration) {
 
                 booleanParam(
                     "TRIGGER_ODF_INTEROP",
-                    true,
+                    false,
                     "Enabling this parameter flag will trigger odf-interop pipeline when BUILD_TYPE=RH and this BVT succeeds"
                 )
             }
