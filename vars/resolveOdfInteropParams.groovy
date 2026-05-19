@@ -2,8 +2,11 @@
  * Resolve OCP + ODF from RHCS line or Ceph image (podman).
  * Uses RuntimeException (not IllegalArgumentException) so load()-ed scripts pass typical Jenkins sandbox rules.
  *
+ * Only squid and tentacle are supported.  Returns null when the resolved stream
+ * is not in the matrix (e.g. reef / RHCS 7) so the caller can exit gracefully.
+ *
  * inferAuto:
- *   - RHCS_BUILD_VERSION: leading major 7/8/9 → reef/squid/tentacle → matrix
+ *   - RHCS_BUILD_VERSION: leading major 8/9 → squid/tentacle → matrix
  *   - else: podman + cephadm version --verbose JSON → ceph_git_nice_ver (e.g. 20.2.1) → upstream major → matrix
  *
  * Also supports BVT-style: JOB_NAME <stream>-bvt-ci + BUILD_VERSION + overrides (no inferAuto).
@@ -37,12 +40,10 @@ def call(Map parameters) {
         }
     }
 
-    def matrix = odfInteropMatrix()
-    def row = matrix[stream]
+    def row = odfInteropMatrix()[stream]
     if (!row) {
-        throw new RuntimeException(
-            "resolveOdfInteropParams: no matrix for stream '${stream}'. Known: ${matrix.keySet().sort()}"
-        )
+        echo "resolveOdfInteropParams: stream '${stream}' is not in the interop matrix (supported: squid, tentacle)"
+        return null
     }
 
     def ocpVersion = ocpVerOverride ?: row.ocpVersion
@@ -81,6 +82,10 @@ def inferAuto(Map p) {
     def bv = p.rhcsBuildVersion?.toString()?.trim()
     if (bv) {
         def stream = rhcsMajorToStream(parseLeadingMajor(bv, 'RHCS_BUILD_VERSION'))
+        if (!stream) {
+            echo "resolveOdfInteropParams: RHCS_BUILD_VERSION '${bv}' does not map to a supported stream (only squid / tentacle)"
+            return null
+        }
         return resolveByStream(
             stream,
             "RHCS_BUILD_VERSION '${bv}' → Ceph stream '${stream}' → interop matrix → OCP/ODF GA row"
@@ -94,15 +99,19 @@ def inferAuto(Map p) {
         )
     }
 
-    def nice = cephGitNiceVerFromPodman(img, psf)
+    def meta = fetchCephImageMetadata(image: img, pullSecretFile: psf)
+    def nice = meta?.ceph_git_nice_ver?.toString()?.trim()
     if (!nice) {
-        throw new RuntimeException(
-            'inferAuto: podman did not return ceph_git_nice_ver from cephadm version --verbose (check podman, pull secret, image)'
-        )
+        echo "resolveOdfInteropParams: could not extract version from image (check podman, pull secret, image)"
+        return null
     }
 
     def cephMaj = parseLeadingMajor(nice, 'ceph_git_nice_ver')
     def stream = upstreamCephMajorToStream(cephMaj)
+    if (!stream) {
+        echo "resolveOdfInteropParams: Ceph major ${cephMaj} (from '${nice}') does not map to a supported stream (only squid / tentacle)"
+        return null
+    }
     return resolveByStream(
         stream,
         "podman + cephadm: ceph_git_nice_ver '${nice}' → Ceph major ${cephMaj} → stream '${stream}' → interop matrix → OCP/ODF GA row"
@@ -122,37 +131,23 @@ def parseLeadingMajor(String s, String label) {
     return (m.group(1) as int)
 }
 
-/** RHCS product line: 7 → reef, 8 → squid, 9 → tentacle */
+/** RHCS product line: 8 → squid, 9 → tentacle.  Returns null for unsupported majors. */
 def rhcsMajorToStream(int maj) {
-    def s = [7: 'reef', 8: 'squid', 9: 'tentacle'][maj]
-    if (!s) {
-        throw new RuntimeException(
-            "resolveOdfInteropParams: RHCS major ${maj} not supported (use 7, 8, or 9)"
-        )
-    }
-    return s
+    return [8: 'squid', 9: 'tentacle'][maj]
 }
 
-/** Upstream Ceph (e.g. 18.2 / 19.2 / 20.2): 18→reef, 19→squid, 20+→tentacle */
+/** Upstream Ceph: 19 → squid, 20+ → tentacle.  Returns null for unsupported majors. */
 def upstreamCephMajorToStream(int cephMajor) {
-    if (cephMajor >= 20) {
-        return 'tentacle'
-    }
-    if (cephMajor == 19) {
-        return 'squid'
-    }
-    if (cephMajor == 18) {
-        return 'reef'
-    }
-    throw new RuntimeException(
-        "resolveOdfInteropParams: Ceph major ${cephMajor} not mapped (expected 18–20+ for reef/squid/tentacle)"
-    )
+    if (cephMajor >= 20) { return 'tentacle' }
+    if (cephMajor == 19) { return 'squid' }
+    return null
 }
 
 def resolveByStream(String stream, String howMsg = null) {
     def row = odfInteropMatrix()[stream]
     if (!row) {
-        throw new RuntimeException("resolveOdfInteropParams: unknown stream '${stream}'")
+        echo "resolveOdfInteropParams: stream '${stream}' is not in the interop matrix (supported: squid, tentacle)"
+        return null
     }
     def msg = howMsg ?: "stream '${stream}' → interop matrix → OCP ${row.ocpVersion} (${row.ocpChannel}), ODF ${row.odfChannel}"
     echo "resolveOdfInteropParams: ${msg}"
@@ -164,43 +159,6 @@ def resolveByStream(String stream, String howMsg = null) {
         odfChannel    : row.odfChannel,
         ocsVersion    : row.ocsVersion,
     ]
-}
-
-/** podman run … cephadm version --verbose → JSON → ceph_git_nice_ver (e.g. v20.2.1) */
-def cephGitNiceVerFromPodman(String image, String pullSecretFile) {
-    def outFile = "${env.WORKSPACE}/.cephadm-resolve-${env.BUILD_NUMBER ?: '0'}.json"
-    try {
-        withEnv([
-            "CEPH_IMAGE_PODMAN=${image}",
-            "PULL_SECRET_FILE=${pullSecretFile}",
-            "CEPHADM_JSON_OUT=${outFile}",
-        ]) {
-            sh(
-                script: '''
-                    set +e
-                    rm -f "${CEPHADM_JSON_OUT}"
-                    if ! command -v podman >/dev/null 2>&1; then
-                        exit 1
-                    fi
-                    podman run --rm --authfile "${PULL_SECRET_FILE}" "${CEPH_IMAGE_PODMAN}" \
-                        bash -c "cephadm version --verbose" > "${CEPHADM_JSON_OUT}" 2>/dev/null
-                ''',
-                returnStatus: true
-            )
-        }
-        if (!fileExists(outFile)) {
-            return null
-        }
-        def raw = readFile(outFile).trim()
-        if (!raw) {
-            return null
-        }
-        def meta = new groovy.json.JsonSlurper().parseText(raw)
-        return meta?.ceph_git_nice_ver?.toString()?.trim()
-    } catch (Exception e) {
-        echo "cephGitNiceVerFromPodman: ${e.message}"
-        return null
-    }
 }
 
 def extractCephStream(String jobName) {
@@ -215,7 +173,6 @@ def extractCephStream(String jobName) {
 
 def odfInteropMatrix() {
     return [
-        reef     : [ocpVersion: '4.19.28', ocpChannel: 'released', odfChannel: 'stable-4.19', ocsVersion: '4.19'],
         squid    : [ocpVersion: '4.20.19', ocpChannel: 'released', odfChannel: 'stable-4.20', ocsVersion: '4.20'],
         tentacle : [ocpVersion: '4.21.11', ocpChannel: 'released', odfChannel: 'stable-4.21', ocsVersion: '4.21'],
     ]

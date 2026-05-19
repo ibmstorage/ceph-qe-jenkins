@@ -44,13 +44,15 @@ The pipeline always executes the complete end-to-end workflow:
 | `OCP_VERSION` | OpenShift version (optional if auto-resolved) | `4.21.10` |
 | `OCP_CHANNEL` | OCP release channel | `released` or `nightly` |
 
-**Digest-only images** (e.g. `quay.io/.../rhceph@sha256:...` with no `rhceph-N-rhel*` in the path) cannot infer the stream from the URL alone. Set **`RHCS_BUILD_VERSION`** (e.g. `9.1`); the pipeline maps the major digit to reef/squid/tentacle and picks OCP/ODF from the matrix. **bvt-ci** passes **`CEPH_IMAGE`** and **`RHCS_BUILD_VERSION`** (from **`BUILD_VERSION`**).
+**Only squid (RHCS 8) and tentacle (RHCS 9) are supported.** Reef (RHCS 7 / Ceph 18) images are detected and the build exits gracefully with status `NOT_BUILT`.
+
+**Digest-only images** (e.g. `quay.io/.../rhceph@sha256:...` with no `rhceph-N-rhel*` in the path) cannot infer the stream from the URL alone. Set **`RHCS_BUILD_VERSION`** (e.g. `9.1`); the pipeline maps the major digit to squid/tentacle and picks OCP/ODF from the matrix. **bvt-ci** passes **`CEPH_IMAGE`** and **`RHCS_BUILD_VERSION`** (from **`BUILD_VERSION`**).
 
 ### Optional Configuration
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `RHCS_BUILD_VERSION` | (empty) | RHCS line (e.g. `9.1`); required for digest-only auto OCP/ODF; optional with `rhceph-N-rhel*` image path |
+| `RHCS_BUILD_VERSION` | (empty) | RHCS line (e.g. `9.1`); major 8 → squid, 9 → tentacle; required for digest-only auto OCP/ODF; optional with `rhceph-N-rhel*` image path |
 | `ODF_CHANNEL` | (auto) | ODF operator channel (e.g., `stable-4.20`) |
 | `ODF_NIGHTLY_INDEX` | - | ODF nightly catalog index image |
 | `IBM_REGION` | `eu-de` | IBM Cloud region |

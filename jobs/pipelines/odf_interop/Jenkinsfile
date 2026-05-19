@@ -103,6 +103,12 @@ pipeline {
                                     pullSecretFile: env.PULL_SECRET_FILE
                                 )
                             }
+                            if (!inf) {
+                                def img = cephImg.split('/')[-1].take(40)
+                                currentBuild.description = "Skipped: unsupported Ceph stream (only squid / tentacle) | Ceph: ${img}"
+                                env.PIPELINE_SKIP = 'true'
+                                error("Unsupported Ceph stream -- exiting gracefully as NOT_BUILT")
+                            }
                             env.RESOLVED_OCP_VERSION = inf.ocpVersion
                             env.RESOLVED_ODF_CHANNEL = inf.odfChannel
                             env.RESOLVED_OCP_CHANNEL = inf.ocpChannel
@@ -110,7 +116,7 @@ pipeline {
                             echo "Auto-resolved OCP/ODF (matrix key: ${inf.matrixKey})"
                         } catch (Exception e) {
                             errors << "Could not auto-resolve OCP/ODF: ${e.message}. " +
-                                "Set OCP_VERSION and ODF_CHANNEL, or RHCS_BUILD_VERSION (7/8/9.x), or ensure podman can run cephadm on the image (digest refs need pull secret + metadata)."
+                                "Set OCP_VERSION and ODF_CHANNEL, or RHCS_BUILD_VERSION (8/9.x), or ensure podman can run cephadm on the image (digest refs need pull secret + metadata)."
                         }
                     } else {
                         errors << "Set both OCP_VERSION and ODF_CHANNEL, or leave both empty to infer from CEPH_IMAGE"
@@ -653,6 +659,12 @@ pipeline {
     post {
         always {
             script {
+                if (env.PIPELINE_SKIP == 'true') {
+                    currentBuild.result = 'NOT_BUILT'
+                    echo "Pipeline skipped: ${currentBuild.description}"
+                    return
+                }
+
                 def clusterName = env.CLUSTER_NAME ?: ""
                 def hasCluster = clusterName ? true : false
                 def venvDir = "${env.WORKSPACE}/ceph-interop/.venv"
