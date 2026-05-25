@@ -24,7 +24,7 @@ regression:
       global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
     - name: "Test Cephfs with Erasure"
       suite: suites/tentacle/cephfs/tier-2_fs_erasure.yaml
-      global-conf: conf/tentacle/cephfs/tier-0_fs.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
 extended_regression:
   metadata:
     cloud:
