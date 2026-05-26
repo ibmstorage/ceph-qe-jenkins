@@ -231,6 +231,13 @@ extended_regression:
     - name: "tier-2_ssl_rgw_regression_extended"
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-1 rgw upgrade 71GA to 9x latest" 
       suite: suites/tentacle/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
