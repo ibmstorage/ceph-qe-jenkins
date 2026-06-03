@@ -50,7 +50,7 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
-    buildVersion: ["9.1", "9.0"],
+    buildVersion: ["9.1", "9.0", "9.2"],
     rhelVersion: ["rhel-10", "rhel-9"]
 )
 

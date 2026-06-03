@@ -84,7 +84,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "RHCS_BUILD_VERSION",
                 "",
-                "RHCS build version (e.g. 9.1, 8.0) (OPTIONAL)"
+                "RHCS build version (e.g. 9.1, 9.0, 9.2, 8.0) (OPTIONAL)"
             )
 
             // ── IBM Cloud Environment ────────────────────────────────
