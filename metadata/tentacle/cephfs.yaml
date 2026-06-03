@@ -103,3 +103,8 @@ upgrade:
       global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
       platform:
         - rhel-9
+    - name: "Test Cephfs Upgrade 9x to 9.1x"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_9x_to_91x.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-10
