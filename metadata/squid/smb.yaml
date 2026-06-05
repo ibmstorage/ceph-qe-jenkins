@@ -9,31 +9,37 @@ regression:
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB AD Test Cases"
       suite: suites/squid/smb/tier-1-smb-ad-dc.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB CTDB Clustering Test Cases"
       suite: suites/squid/smb/tier-1-smb-ctdb-clustering.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB VSS Snapshot Test Cases"
       suite: suites/squid/smb/tier-1-smb-vss.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB Firewall Test Cases"
       suite: suites/squid/smb/tier-1-smb-firewall.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB Torture Test Cases"
       suite: suites/squid/smb/tier-1-smb-smbtorture.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
 extended_regression:
   metadata:
     cloud:
@@ -45,14 +51,17 @@ extended_regression:
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB Tier-3 Test Cases"
       suite: suites/squid/smb/tier-3-smb.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB Tier-4 Test Cases"
       suite: suites/squid/smb/tier-4-smb.yaml
       global-conf: conf/squid/smb/1admin-4node-1client-cluster.yaml
       vm-size:
         ibmc: cx2-8x16
+        aws: m6g.xlarge
   
