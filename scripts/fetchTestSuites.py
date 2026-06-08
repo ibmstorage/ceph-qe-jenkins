@@ -106,7 +106,7 @@ def get_testsuite(
         "global_conf": test.get("global-conf", ""),
         "vm_size": resolve_vm_size(test, cloud),
         "custom_config": ",".join(
-            [f"{k}={v}" for k, v in test.get("custom_config", {}).items()]
+            [f"{k}={v}" for k, v in test.get("custom-config", {}).items()]
         )
     }
     
