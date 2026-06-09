@@ -4,12 +4,17 @@ regression:
       - ibmc
       - aws
   suites:
-    - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Registry Details"
-      suite: suites/tentacle/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
-      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
-    - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Custom SSH"
-      suite: suites/tentacle/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-custom-ssh.yaml
-      global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    ## Cephadm-ansible boostrap module does not support the --automatically-accept-license flag.
+    ## Hence these suites will fail on IBM Ceph Storage 9.1 builds.
+    ## Therefore, cephadm-ansible test suites that depend on it are temporarily commented out.
+    ## These suites will be re-enabled once the support is added; QE BZ IBMCEPH-15709
+    
+    # - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Registry Details"
+    #  suite: suites/tentacle/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
+    #  global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
+    # - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Custom SSH"
+    #  suite: suites/tentacle/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-custom-ssh.yaml
+    #  global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml
     - name: "Test DMFG Tier-1 Ceph API Auth"
       suite: suites/tentacle/cephmgr/tier1-cephapi-auth-api.yaml
       global-conf: conf/tentacle/cephmgr/1admin-4node-1client-ceph-mgr.yaml
