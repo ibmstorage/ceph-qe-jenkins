@@ -28,6 +28,8 @@ sanity:
     - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
+      vm-size:
+        ibmc: bx2-4x16
       build:
          - ibm
     - name: "Basic E2E-Test with FIPS mode enabled"
@@ -40,13 +42,15 @@ sanity:
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      vm-size:
+        ibmc: bx2-4x16
       build:
          - ibm
     - name: "Tier-2 RADOS Basic Regression"
       suite: suites/tentacle/rados/tier-2-rados-basic-regression.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
       vm-size:
-        ibmc: bx2-2x8
+        ibmc: bx2-4x16
         aws: m6g.xlarge
     - name: "tier-1 rbd"
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
@@ -54,6 +58,8 @@ sanity:
     - name: "iscsi sanity"
       suite: suites/tentacle/iscsi/iscsi_sanity.yaml
       global-conf: conf/tentacle/iscsi/ceph_iscsi_functional.yaml
+      vm-size:
+        ibmc: bx2-4x16
       build:
         - ibm
     - name: "tier-1 rbd_mirror"
