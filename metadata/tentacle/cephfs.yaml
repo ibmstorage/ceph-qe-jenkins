@@ -19,6 +19,9 @@ regression:
     - name: "New Feature suite - 9.0"
       suite: suites/tentacle/cephfs/9_0_features_suite.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
+    - name: "New Feature suite - 9.1"
+      suite: suites/tentacle/cephfs/9_1_features_suite.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
     - name: "Test Cephfs Mirroring"
       suite: suites/tentacle/cephfs/tier-1_cephfs_mirror.yaml
       global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
