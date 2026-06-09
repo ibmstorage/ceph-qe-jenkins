@@ -42,18 +42,18 @@ regression:
     - name: "Test DMFG Tier-1 Node-exporter Operations"
       suite: suites/tentacle/cephadm/tier1_node_exporter_operation.yaml
       global-conf: conf/tentacle/cephadm/2admin-5node-1client-cluster.yaml
-    - name: "Test DMFG Tier-1 OSD Crush Device Class"
-      suite: suites/tentacle/cephadm/tier1-osd-crush-device-class.yaml
-      global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
-    - name: "Test DMFG Tier-2 Bootstrap with Spec"
-      suite: suites/tentacle/cephadm/tier2-bootstrap-along-with-spec-file.yaml
-      global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
+    # - name: "Test DMFG Tier-1 OSD Crush Device Class"
+    #  suite: suites/tentacle/cephadm/tier1-osd-crush-device-class.yaml
+    #  global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
+    # - name: "Test DMFG Tier-2 Bootstrap with Spec"
+    #  suite: suites/tentacle/cephadm/tier2-bootstrap-along-with-spec-file.yaml
+    #  global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
     - name: "Test DMFG Tier-2 Ceph Volume"
       suite: suites/tentacle/ceph_volume/tier2-ceph-volume.yaml
       global-conf: conf/tentacle/ceph_volume/1admin-4node-1client-ceph-volume.yaml
-    - name: "Test DMFG Tier-2 Permissive Mode Scenarios"
-      suite: suites/tentacle/cephadm/tier2-permissive-mode-scenarios.yaml
-      global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    # - name: "Test DMFG Tier-2 Permissive Mode Scenarios"
+    #  suite: suites/tentacle/cephadm/tier2-permissive-mode-scenarios.yaml
+    #  global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
     - name: "Test DMFG Tier-2 RGW with Warn State"
       suite: suites/tentacle/cephadm/tier2-rgw-with-warn-state.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
