@@ -38,7 +38,7 @@ def generate_jobs(data) {
 
     def logLevel  = ["ERROR", "DEBUG", "INFO"]
     def buildType = ["IBM", "RH"]
-    def release   = "stable"
+    def release   = ["stable", "rc"]
 
     def cephVersion = data.cephVersion.toLowerCase()
     def releaseConfig = data.cephReleaseConfig[cephVersion]
@@ -125,7 +125,7 @@ jobsConfiguration.each { jobConfig ->
             choiceParam("BUILD_VERSION", jobConfig.buildVersion, "Ceph version")
             choiceParam("RHEL_VERSION", jobConfig.rhelVersion, "RHEL version")
             choiceParam("BUILD_TYPE", jobConfig.buildType, jobConfig.buildDescription)
-            stringParam("RELEASE", jobConfig.release, "Release type")
+            choiceParam("RELEASE", jobConfig.release, "Release type")
             stringParam("REPO", "", "Repository for RPM builds")
             stringParam("HOTFIX_REPO", "", "Hotfix repository")
             stringParam("CONTAINER_IMAGE", "", "Container image URL")
