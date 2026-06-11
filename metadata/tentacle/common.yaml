@@ -14,6 +14,8 @@ bvt:
     - name: "Build Verfification Test"
       suite: suites/tentacle/smoke/bvt-ibm.yaml
       global-conf: conf/tentacle/common/6node-1client.yaml
+      vm-size:
+        ibmc: cx2-8x16
       build:
         - ibm
       tags:
