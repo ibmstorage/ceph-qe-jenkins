@@ -12,9 +12,9 @@ def generate_jobs(data) {
     if (data.cephVersion.toLowerCase() == "reef") {
         release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
     } else if (data.cephVersion.toLowerCase() == "squid") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5"]
+        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6"]
     } else if (data.cephVersion.toLowerCase() == "tentacle") {
-        release += ["rc", "released", "z0", "z1", "z2"]
+        release += ["rc", "released", "z0", "z1", "z2", "z3"]
     }
 
     // Add the job configurations

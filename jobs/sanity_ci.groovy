@@ -14,7 +14,7 @@ def generate_jobs(data) {
     } else if (data.cephVersion.toLowerCase() == "squid") {
         release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5"]
     } else if (data.cephVersion.toLowerCase() == "tentacle") {
-        release += ["rc", "released", "z0", "z1", "z2"]
+        release += ["rc", "released", "z0", "z1", "z2", "z3"]
     }
 
     // Add the job configurations
