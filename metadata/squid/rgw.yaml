@@ -142,6 +142,9 @@ extended_regression:
     - name: "Tier-2 rgw 3 way ms failover" # 360 mins, 21 secs
       suite: suites/squid/rgw/tier-2_rgw_3_way_ms_failover.yaml
       global-conf: conf/squid/rgw/3-way_ms_4nodes_1client_cluster.yaml
+    - name: "Tier-3 rgw 3AZ EC MS test" # 140 mins
+      suite: suites/squid/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
+      global-conf: conf/tentacle/rgw/3AZ-ec-ms.yaml
     - name: "test granular s3test" # 75 mins, 46 secs
       suite: suites/squid/rgw/test_granular_s3test.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
