@@ -144,6 +144,9 @@ extended_regression:
     - name: "Tier-2 rgw multisite regression extended" # 254 mins, 1 secs
       suite: suites/tentacle/rgw/tier-2_rgw_multisite_regression_extended.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+    - name: "Tier-3 rgw 3AZ EC MS test" # 140 mins
+      suite: suites/squid/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
+      global-conf: conf/tentacle/rgw/3AZ-ec-ms.yaml
     - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
       suite: suites/tentacle/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
