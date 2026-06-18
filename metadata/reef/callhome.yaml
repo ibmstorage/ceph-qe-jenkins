@@ -4,12 +4,12 @@ upgrade:
       - ibmc
       - aws
   suites:
-    - name:
+    - name: "Tier-1 Enable CallHome Post Upgrade 5x to 7x"
       suite: suites/reef/callhome/tier1-enable-callhome-post-upgrade-5x-to-7x.yaml
       global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
       build:
         - ibm
-    - name:
+    - name: "Tier-1 Enable CallHome Post Upgrade 6x to 7x"
       suite: suites/reef/callhome/tier1-enable-callhome-post-upgrade-6x-to-7x.yaml
       global-conf: conf/reef/smoke/1admin-4node-1client-bvt.yaml
       build:
