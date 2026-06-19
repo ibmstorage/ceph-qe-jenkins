@@ -48,6 +48,10 @@ def generate_jobs(cfg, data) {
 
     def buildType = ["IBM", "RH"]
     def description  = "IBM or RH build"
+    def cronExpr = ""
+    if (fg.equalsIgnoreCase("NvmeOF")) {
+        cronExpr = "H 1 * * 6"
+    }
     if (fg == "callhome") {
         cephciRepo   = "https://github.ibm.com/ceph-qe-ng/cephci.git"
         cephciBranch = "callhome"
@@ -67,7 +71,8 @@ def generate_jobs(cfg, data) {
         rhelVersion     : config.rhelVersion,
         release         : ["stable", "nightly"] + config.releaseExtra,
         buildType       : buildType,
-        buildDescription: description
+        buildDescription: description,
+        cronExpr        : cronExpr
     ])
 }
 
@@ -144,6 +149,10 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com", "Email Address")
+            }
+
+            triggers {
+                cron(jobConfig.cronExpr)
             }
         }
     }
