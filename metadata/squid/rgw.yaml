@@ -220,3 +220,8 @@ upgrade:
       global-conf: conf/squid/rgw/rgw_multisite.yaml
       platform:
         - rhel-9
+    - name: "Tier-1 rgw single zone upgrade 71GA to 8x latest"
+      suite: suites/squid/rgw/test_ss_upgrade_7_1_GA_to_8.x_latest.yaml
+      global-conf: conf/squid/rgw/tier-0_rgw.yaml
+      platform:
+        - rhel-9
