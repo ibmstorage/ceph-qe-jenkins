@@ -88,17 +88,21 @@ def call(Map parameters) {
     def gsheetName = "${product}CS Test Results (${release})"
     
     if (enableGoogleSheet) {
-        withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_SERVICE_ACCOUNT')]) {
-            def gsheetScript = "scripts/xunit2gsheet.py"
+        try {
+            withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_SERVICE_ACCOUNT')]) {
+                def gsheetScript = "scripts/xunit2gsheet.py"
 
-            sh("cp -n \$GCP_SERVICE_ACCOUNT /home/jenkins/.gcp_service_account.json")
-            sh([
-                "${jobConfigs.PYTHON} ${gsheetScript}",
-                "--service-account /home/jenkins/.gcp_service_account.json",
-                "--version ${cephVersion}",
-                "--resultdir ${resultsDir}",
-                "--gsheet \"${gsheetName}\""
-            ].join(" "))
+                sh("cp -n \$GCP_SERVICE_ACCOUNT /home/jenkins/.gcp_service_account.json")
+                sh([
+                    "${jobConfigs.PYTHON} ${gsheetScript}",
+                    "--service-account /home/jenkins/.gcp_service_account.json",
+                    "--version ${cephVersion}",
+                    "--resultdir ${resultsDir}",
+                    "--gsheet \"${gsheetName}\""
+                ].join(" "))
+            }
+        } catch (Exception ex) {
+            echo "Failed to update Google Sheet: ${ex}"
         }
     }
 
