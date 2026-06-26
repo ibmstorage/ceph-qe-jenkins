@@ -340,6 +340,12 @@ credentials:
               scope: GLOBAL
               secret: "${readFile:/secrets/sps_api_key}"
 
+          - string:
+              description: "OpenShift CI Registry pull secret"
+              id: "odf-interop-pull-secret"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/odf_interop_pull_secret}"
+
           - usernamePassword:
               description: "Brew Registry access"
               id: "brew-access"
