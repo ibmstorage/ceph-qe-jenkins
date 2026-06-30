@@ -143,13 +143,13 @@ extended_regression:
       global-conf:  conf/tentacle/rgw/tier-0_rgw.yaml
     - name: "Tier-2 rgw multisite regression extended" # 254 mins, 1 secs
       suite: suites/tentacle/rgw/tier-2_rgw_multisite_regression_extended.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
     - name: "Tier-3 rgw 3AZ EC MS test" # 140 mins
       suite: suites/squid/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
       global-conf: conf/tentacle/rgw/3AZ-ec-ms.yaml
     - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
       suite: suites/tentacle/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
     - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
       suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
@@ -172,7 +172,7 @@ extended_regression:
         - rhel-10
     - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
     - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_async_data_notification.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
