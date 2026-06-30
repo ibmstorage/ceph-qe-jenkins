@@ -1,25 +1,12 @@
 /*
     OCP + ODF Interop Deployment Pipeline
 
-    Deploys OpenShift Container Platform with OpenShift Data Foundation
-    in external mode using an internal Ceph cluster on IBM Cloud.
-
-    Steps:
-        - Clones the ceph-interop repository
-        - Sets up Python virtual environment and credentials
-        - Validates all required parameters and credentials
-        - Deploys OCP cluster on IBM Cloud VPC (RHCOS + ignition via Nginx)
-        - Configures DNS via AWS Route53
-        - Installs ODF operator and creates internal Ceph StorageCluster
-        - Patches Ceph image on StorageCluster
-        - Runs IO verification workloads (FIO on RBD + CephFS)
-        - Tears down all resources (mandatory)
+    Promoted from odf-interop-test-pipeline after validation.
+    BVT downstream triggers target this job (odf-interop).
 */
 def job = pipelineJob("odf-interop") {
-    // Job display name
     displayName("Interop : ODF-Ceph Testing [CICD]")
 
-    // Job definition from git repo
     definition {
         cpsScm {
             scm {
@@ -35,7 +22,6 @@ def job = pipelineJob("odf-interop") {
             lightweight(false)
         }
 
-        // Required parameters for the job
         parameters {
             stringParam(
                 "CEPH_INTEROP_REPO",
@@ -49,45 +35,52 @@ def job = pipelineJob("odf-interop") {
                 "Branch of the ceph-interop repository to checkout"
             )
 
-            // ── OCP Configuration ─────────────────────────────────────
-            stringParam(
-                "OCP_VERSION",
-                "",
-                "OpenShift version (e.g. 4.21.10). Leave empty with ODF_CHANNEL empty to auto-resolve via CEPH_IMAGE / RHCS_BUILD_VERSION"
-            )
-
-            choiceParam(
-                "OCP_CHANNEL",
-                ["released", "nightly"],
-                "OCP release channel"
-            )
-
-            // ── ODF Configuration ─────────────────────────────────────
-            stringParam(
-                "ODF_CHANNEL",
-                "",
-                "ODF operator channel (e.g. stable-4.21). Leave empty with OCP_VERSION empty for auto-resolve via CEPH_IMAGE / RHCS_BUILD_VERSION"
-            )
-
-            stringParam(
-                "ODF_NIGHTLY_INDEX",
-                "",
-                "ODF nightly catalog index image (leave empty for released)"
-            )
-
+            // ── Ceph (required) ─────────────────────────────────────
             stringParam(
                 "CEPH_IMAGE",
                 "",
-                "Ceph version image to test (REQUIRED). e.g. registry.stage.redhat.io/rhceph/rhceph-9-rhel9:9-1768259913"
+                "Dev Ceph image to test (REQUIRED)"
             )
 
             stringParam(
                 "RHCS_BUILD_VERSION",
                 "",
-                "RHCS build version (e.g. 9.1, 9.0, 9.2, 8.0) (OPTIONAL)"
+                "Optional. RHCS version e.g. 9.1 — required for digest-only CEPH_IMAGE when version cannot be inferred"
             )
 
-            // ── IBM Cloud Environment ────────────────────────────────
+            // ── OCP ─────────────────────────────────────────────────
+            choiceParam(
+                "OCP_CHANNEL",
+                ["nightly", "released"],
+                "OCP build channel (default: nightly). released = latest GA stable for matrix minor."
+            )
+
+            stringParam(
+                "OCP_VERSION",
+                "",
+                "Optional OCP version override. Leave empty to auto-resolve from CEPH_IMAGE + OCP_CHANNEL."
+            )
+
+            // ── ODF ─────────────────────────────────────────────────
+            choiceParam(
+                "ODF_CHANNEL",
+                ["nightly", "released"],
+                "ODF build channel when ODF_CATALOG_IMAGE is empty (default: nightly). Ignored if ODF_CATALOG_IMAGE is set."
+            )
+
+            stringParam(
+                "ODF_CATALOG_IMAGE",
+                "",
+                "Optional ODF catalog index image — takes precedence over ODF_CHANNEL. e.g. quay.io/rhceph-dev/ocs-registry:4.22.0-105.konflux"
+            )
+
+            stringParam(
+                "ODF_OPERATOR_CHANNEL",
+                "",
+                "Optional OLM operator channel e.g. stable-4.22. Leave empty with OCP_VERSION for auto-resolve stable-{minor} from matrix."
+            )
+
+            // ── IBM Cloud ───────────────────────────────────────────
             choiceParam(
                 "IBM_REGION",
                 ["eu-de"],
@@ -106,7 +99,6 @@ def job = pipelineJob("odf-interop") {
                 "Comma-separated IBM Cloud SSH key names for VSI access (e.g. ceph-qe-sa,ceph-qe-sa-svc)"
             )
 
-            // ── Cluster Sizing ───────────────────────────────────────
             stringParam(
                 "MASTER_COUNT",
                 "3",
@@ -131,7 +123,6 @@ def job = pipelineJob("odf-interop") {
                 "Number of data volumes per worker node"
             )
 
-            // ── Pipeline Control ─────────────────────────────────────
             stringParam(
                 "CLUSTER_NAME",
                 "",
@@ -144,7 +135,6 @@ def job = pipelineJob("odf-interop") {
                 "Number of PVCs per storage type (RBD and CephFS) for IO workloads"
             )
 
-            // ── ocs-ci (run-ci) test stage ───────────────────────────
             stringParam(
                 "OCS_CI_REPO",
                 "https://github.com/red-hat-storage/ocs-ci.git",

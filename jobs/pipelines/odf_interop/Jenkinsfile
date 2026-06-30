@@ -77,83 +77,42 @@ pipeline {
         stage("Validate Parameters") {
             steps {
                 script {
-                    def errors = []
-
-                    def cephImg = params.CEPH_IMAGE?.trim()
-                    def ocpVer = params.OCP_VERSION?.trim()
-                    def odfCh = params.ODF_CHANNEL?.trim()
-                    def ocpChParam = params.OCP_CHANNEL ?: 'released'
-
-                    if (!cephImg) {
-                        errors << "CEPH_IMAGE is required \u2014 provide the Ceph version image to test"
-                    } else if (ocpVer && odfCh) {
-                        env.RESOLVED_OCP_VERSION = ocpVer
-                        env.RESOLVED_ODF_CHANNEL = odfCh
-                        env.RESOLVED_OCP_CHANNEL = ocpChParam
-                        env.RESOLVED_OCS_VERSION = odfCh.replaceAll(/^.*?(\d+\.\d+).*/, '$1')
-                        echo "Using explicit OCP_VERSION / ODF_CHANNEL from parameters"
-                    } else if (!ocpVer && !odfCh) {
-                        try {
-                            def inf = null
-                            withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
-                                inf = resolveOdfInteropParams(
-                                    inferAuto: true,
-                                    cephImage: cephImg,
-                                    rhcsBuildVersion: params.RHCS_BUILD_VERSION?.trim(),
-                                    pullSecretFile: env.PULL_SECRET_FILE
-                                )
-                            }
-                            if (!inf) {
-                                def img = cephImg.split('/')[-1].take(40)
-                                currentBuild.description = "Skipped: unsupported Ceph stream (only squid / tentacle) | Ceph: ${img}"
-                                env.PIPELINE_SKIP = 'true'
-                                error("Unsupported Ceph stream -- exiting gracefully as NOT_BUILT")
-                            }
-                            env.RESOLVED_OCP_VERSION = inf.ocpVersion
-                            env.RESOLVED_ODF_CHANNEL = inf.odfChannel
-                            env.RESOLVED_OCP_CHANNEL = inf.ocpChannel
-                            env.RESOLVED_OCS_VERSION = inf.ocsVersion
-                            echo "Auto-resolved OCP/ODF (matrix key: ${inf.matrixKey})"
-                        } catch (Exception e) {
-                            errors << "Could not auto-resolve OCP/ODF: ${e.message}. " +
-                                "Set OCP_VERSION and ODF_CHANNEL, or RHCS_BUILD_VERSION (8/9.x), or ensure podman can run cephadm on the image (digest refs need pull secret + metadata)."
-                        }
-                    } else {
-                        errors << "Set both OCP_VERSION and ODF_CHANNEL, or leave both empty to infer from CEPH_IMAGE"
+                    def validation = null
+                    withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                        validation = validateOdfInteropJob(
+                            params: params,
+                            pullSecretFile: env.PULL_SECRET_FILE,
+                            defaults: [ocpChannel: 'nightly', odfChannel: 'nightly'],
+                            credentials: [
+                                ibmApiKey    : env.IBM_CLOUD_API_KEY,
+                                ibmCosAccess : env.IBM_COS_HMAC_ACCESS_KEY,
+                                ibmCosSecret : env.IBM_COS_HMAC_SECRET_KEY,
+                                awsAccessKey : env.AWS_ACCESS_KEY_ID,
+                                awsSecretKey : env.AWS_SECRET_ACCESS_KEY,
+                            ],
+                        )
                     }
 
-                    def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
-                    if (workerCount < 3) {
-                        errors << "WORKER_COUNT must be >= 3 for ODF (got ${workerCount})"
+                    if (validation.skip) {
+                        error("Unsupported RHCS version -- exiting gracefully as NOT_BUILT")
                     }
 
-                    def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
-                    if (deviceCount < 1) {
-                        errors << "DEVICE_COUNT must be >= 1 (got ${deviceCount})"
-                    }
-
-                    def credErrors = []
-                    if (!env.IBM_CLOUD_API_KEY)       credErrors << "IBM_CLOUD_API_KEY"
-                    if (!env.IBM_COS_HMAC_ACCESS_KEY) credErrors << "IBM_COS_HMAC_ACCESS_KEY"
-                    if (!env.IBM_COS_HMAC_SECRET_KEY) credErrors << "IBM_COS_HMAC_SECRET_KEY"
-                    if (!env.AWS_ACCESS_KEY_ID)       credErrors << "AWS_ACCESS_KEY_ID"
-                    if (!env.AWS_SECRET_ACCESS_KEY)   credErrors << "AWS_SECRET_ACCESS_KEY"
-                    if (credErrors) {
-                        errors << "Missing credentials: ${credErrors.join(', ')}"
-                    }
-
-                    if (errors) {
+                    if (validation.errors) {
                         echo "Parameter validation failed:"
-                        errors.each { echo "  - ${it}" }
-                        error("Validation failed:\n" + errors.collect { "  - ${it}" }.join("\n"))
+                        validation.errors.each { echo "  - ${it}" }
+                        error("Validation failed:\n" + validation.errors.collect { "  - ${it}" }.join("\n"))
                     }
+
+                    def ocpBuildCh = params.OCP_CHANNEL ?: 'nightly'
+                    def odfBuildCh = params.ODF_CHANNEL ?: 'nightly'
 
                     echo "Parameter validation passed. Resolved configuration:"
-                    echo "  OCP_VERSION  : ${env.RESOLVED_OCP_VERSION}"
-                    echo "  OCP_CHANNEL  : ${env.RESOLVED_OCP_CHANNEL}"
-                    echo "  ODF_CHANNEL  : ${env.RESOLVED_ODF_CHANNEL}"
-                    echo "  OCS_VERSION  : ${env.RESOLVED_OCS_VERSION}"
                     echo "  CEPH_IMAGE   : ${params.CEPH_IMAGE}"
+                    echo "  OCP_CHANNEL  : ${ocpBuildCh} → ${env.RESOLVED_OCP_VERSION} (resolved channel: ${env.RESOLVED_OCP_CHANNEL})"
+                    echo "  OCP_PULL_SPEC: ${env.RESOLVED_OCP_PULL_SPEC ?: '(not set)'}"
+                    echo "  ODF_CHANNEL  : ${odfBuildCh} → operator ${env.RESOLVED_ODF_OPERATOR_CHANNEL ?: env.RESOLVED_ODF_CHANNEL}"
+                    echo "  ODF_CATALOG  : ${env.RESOLVED_ODF_CATALOG_IMAGE ?: '(not set — redhat-operators)'}"
+                    echo "  OCS_VERSION  : ${env.RESOLVED_OCS_VERSION}"
                     echo "  IBM_REGION   : ${params.IBM_REGION}"
                     echo "  VPC_NAME     : ${params.VPC_NAME}"
                     echo "  MASTER_COUNT : ${params.MASTER_COUNT}"
@@ -205,6 +164,12 @@ pipeline {
                         descParts << "Cluster: ${env.CLUSTER_NAME}"
                     }
                     descParts << "OCP: ${env.RESOLVED_OCP_VERSION} (${env.RESOLVED_OCP_CHANNEL})"
+                    if (env.RESOLVED_ODF_CATALOG_IMAGE) {
+                        def odfShort = env.RESOLVED_ODF_CATALOG_IMAGE.split('/')[-1].take(48)
+                        descParts << "ODF: ${odfShort}"
+                    } else {
+                        descParts << "ODF: released"
+                    }
                     descParts << "Ceph: ${cephImageShort}"
 
                     currentBuild.description = descParts.join(' | ')
@@ -360,14 +325,17 @@ pipeline {
                         def deviceSize  = (params.DEVICE_SIZE?.trim() ?: '50') as Integer
                         def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
                         def cephImage   = params.CEPH_IMAGE?.trim() ?: ''
-                        def odfChannel  = env.RESOLVED_ODF_CHANNEL?.trim() ?: ''
-                        def nightly     = params.ODF_NIGHTLY_INDEX?.trim() ?: ''
+                        def odfChannel  = env.RESOLVED_ODF_OPERATOR_CHANNEL?.trim() ?: env.RESOLVED_ODF_CHANNEL?.trim() ?: ''
+                        def catalog     = env.RESOLVED_ODF_CATALOG_IMAGE?.trim() ?: ''
                         def sshKeyNames = params.SSH_KEY_NAMES?.trim() ?: 'ceph-qe-sa,ceph-qe-sa-svc'
 
                         def config = readYaml(file: 'configs/deployment.yaml')
 
                         config.cluster.ocp_version = env.RESOLVED_OCP_VERSION
                         config.cluster.ocp_channel = env.RESOLVED_OCP_CHANNEL
+                        if (env.RESOLVED_OCP_PULL_SPEC) {
+                            config.cluster.ocp_pull_spec = env.RESOLVED_OCP_PULL_SPEC
+                        }
 
                         config.ibmcloud.region = params.IBM_REGION
                         config.ibmcloud.cos_region = 'au-syd'
@@ -385,8 +353,12 @@ pipeline {
                             config.odf.channel = ''
                         }
 
-                        if (nightly) {
-                            config.odf.nightly_index_image = nightly
+                        if (catalog) {
+                            config.odf.catalog_image = catalog
+                            config.odf.nightly_index_image = catalog
+                        } else {
+                            config.odf.catalog_image = ''
+                            config.odf.nightly_index_image = ''
                         }
 
                         if (cephImage) {
@@ -410,7 +382,9 @@ pipeline {
                         echo 'Updated deployment.yaml:'
                         echo "  OCP version   : ${config.cluster.ocp_version}"
                         echo "  OCP channel   : ${config.cluster.ocp_channel}"
-                        echo "  ODF channel   : ${config.odf.channel ?: '(default)'}"
+                        echo "  OCP pull spec : ${config.cluster.ocp_pull_spec ?: '(not set)'}"
+                        echo "  ODF operator  : ${config.odf.channel ?: '(default)'}"
+                        echo "  ODF catalog   : ${catalog ?: '(redhat-operators)'}"
                         echo "  Ceph image    : ${config.odf.ceph_image ?: '(none)'}"
                         echo "  IBM region    : ${config.ibmcloud.region}"
                         echo "  VPC           : ${config.ibmcloud.vpc_name}"
@@ -420,9 +394,6 @@ pipeline {
                         echo "  Device count  : ${config.ibmcloud.worker.data_volumes.count} per worker"
                         echo "  SSH keys      : ${config.ibmcloud.ssh_key_names}"
                         echo "  OSD size      : ${config.odf.osd_size}"
-                        if (nightly) {
-                            echo "  ODF nightly   : ${nightly}"
-                        }
                     }
                 }
             }
@@ -635,21 +606,24 @@ pipeline {
         stage("Run ocs-ci Tests") {
             steps {
                 dir("ocs-ci") {
-                    sh "mkdir -p ocs-ci-logs-${env.BUILD_NUMBER}"
-                    sh """
-                        ${OCSCI_VENV_DIR}/bin/run-ci \
-                            --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
-                            --cluster-name '${env.CLUSTER_NAME}' \
-                            ${params.OCS_CI_TESTS ?: '-m acceptance'} \
-                            --ocsci-conf conf/deployment/baremetal/upi_1az_rhcos_nvme_intel_3m_3w.yaml \
-                            --ocsci-conf interop-runtime-config.yaml \
-                            --ocs-version '${env.OCS_CI_VERSION}' \
-                            --skip-download-client \
-                            --log-level DEBUG --collect-logs \
-                            --html=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-report.html --self-contained-html \
-                            --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-junit-results.xml \
-                            tests/functional/
-                    """
+                    script {
+                        sh "mkdir -p ocs-ci-logs-${env.BUILD_NUMBER}"
+                        sh """
+                            ${OCSCI_VENV_DIR}/bin/run-ci \
+                                --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
+                                --cluster-name '${env.CLUSTER_NAME}' \
+                                ${params.OCS_CI_TESTS ?: '-m acceptance'} \
+                                --ocsci-conf conf/deployment/baremetal/upi_1az_rhcos_nvme_intel_3m_3w.yaml \
+                                --ocsci-conf interop-runtime-config.yaml \
+                                --ocs-version '${env.OCS_CI_VERSION}' \
+                                --skip-download-client \
+                                --log-level DEBUG --collect-logs \
+                                --html=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-report.html --self-contained-html \
+                                --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-junit-results.xml \
+                                tests/functional/
+                        """
+                        env.OCSCI_PASSED = 'true'
+                    }
                 }
             }
         }
@@ -670,7 +644,15 @@ pipeline {
                 def venvDir = "${env.WORKSPACE}/ceph-interop/.venv"
 
                 // ── Teardown ──
-                if (hasCluster && fileExists("${venvDir}/bin/python3.12")) {
+                def teardownCheck = (
+                    env.DEPLOY_PASSED == 'true' &&
+                    env.WORKLOAD_PASSED == 'true' &&
+                    env.OCSCI_PASSED == 'true'
+                )
+
+                if (!teardownCheck) {
+                    echo "Skipping teardown: teardown runs only when DEPLOY_PASSED, WORKLOAD_PASSED, and OCSCI_PASSED are all 'true'"
+                } else if (hasCluster && fileExists("${venvDir}/bin/python3.12")) {
                     try {
                         dir("ceph-interop") {
                             echo "Tearing down cluster: ${clusterName}"

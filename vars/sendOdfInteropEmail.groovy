@@ -34,6 +34,14 @@ def call(Map parameters) {
         def val = "background-color: ${colors.valueBg}; border: 1px solid #d0d0d0; padding: 10px 14px; vertical-align: top; font-size: 16px; line-height: 1.55;"
         def cephValStyle = "${val} word-break: break-all; font-size: 15px; font-family: Consolas, Monaco, 'Courier New', monospace; line-height: 1.45;"
 
+        def htmlEsc = { s ->
+            if (s == null) { return '' }
+            return s.toString().replace('&', '&amp;')
+                .replace('<', '&lt;')
+                .replace('>', '&gt;')
+                .replace('"', '&quot;')
+        }
+
         def ocpVer = env.RESOLVED_OCP_VERSION ?: 'N/A'
         def odfCh  = env.RESOLVED_ODF_CHANNEL ?: 'default'
 
@@ -46,12 +54,38 @@ def call(Map parameters) {
             ? "<a href=\"${ocpMirrorBase}/${ocpVersion}/\">${ocpVersion}</a> (${ocpChannel})"
             : 'N/A'
 
-        def odfChannel = env.RESOLVED_ODF_CHANNEL ?: ''
+        def ocpPullSpec = env.RESOLVED_OCP_PULL_SPEC?.trim() ?: ''
+        def ocpImageRow = ""
+        if (ocpPullSpec) {
+            ocpImageRow = """
+            <tr>
+                <td style="${lab}"><b>OCP Image</b></td>
+                <td style="${cephValStyle}">${htmlEsc(ocpPullSpec)}</td>
+            </tr>"""
+        }
+
+        def odfChannel = env.RESOLVED_ODF_OPERATOR_CHANNEL?.trim()
+            ?: env.RESOLVED_ODF_CHANNEL?.trim()
+            ?: ''
         def odfCell = 'default'
         if (odfChannel) {
             def odfVersion = odfChannel.replaceAll(/^.*?(\d+\.\d+).*/, '$1')
             def odfLink = "https://access.redhat.com/documentation/en-us/red_hat_openshift_data_foundation/${odfVersion}"
-            odfCell = "<a href=\"${odfLink}\">${odfChannel}</a>"
+            odfCell = "<a href=\"${odfLink}\">${htmlEsc(odfChannel)}</a>"
+        }
+
+        def odfCatalogImage = env.RESOLVED_ODF_CATALOG_IMAGE?.trim()
+            ?: env.RESOLVED_ODF_NIGHTLY_INDEX?.trim()
+            ?: params.ODF_CATALOG_IMAGE?.trim()
+            ?: params.ODF_NIGHTLY_INDEX?.trim()
+            ?: ''
+        def odfImageRow = ""
+        if (odfCatalogImage) {
+            odfImageRow = """
+            <tr>
+                <td style="${lab}"><b>ODF Image</b></td>
+                <td style="${cephValStyle}">${htmlEsc(odfCatalogImage)}</td>
+            </tr>"""
         }
 
         def cephImage = params.CEPH_IMAGE ?: ''
@@ -62,14 +96,6 @@ def call(Map parameters) {
             <td style="${lab}"><b>Ceph Image</b></td>
             <td style="${cephValStyle}">${cephImage}</td>
         </tr>"""
-        }
-
-        def htmlEsc = { s ->
-            if (s == null) { return '' }
-            return s.toString().replace('&', '&amp;')
-                .replace('<', '&lt;')
-                .replace('>', '&gt;')
-                .replace('"', '&quot;')
         }
 
         def ocsciExecuted = fileExists("ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}")
@@ -173,10 +199,12 @@ def call(Map parameters) {
                 <td style="${lab}"><b>OCP Version</b></td>
                 <td style="${val}">${ocpCell}</td>
             </tr>
+${ocpImageRow}
             <tr>
-                <td style="${lab}"><b>ODF Channel</b></td>
+                <td style="${lab}"><b>ODF Version</b></td>
                 <td style="${val}">${odfCell}</td>
             </tr>
+${odfImageRow}
 ${cephImageRow}
 ${cephMetaRows}
 ${infrastructureRow}

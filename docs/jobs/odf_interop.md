@@ -41,29 +41,66 @@ The pipeline always executes the complete end-to-end workflow:
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `CEPH_IMAGE` | Ceph container image to test (REQUIRED) | `quay.io/rhceph-ci/rhceph@sha256:abc123...` |
+| `OCP_CHANNEL` | OCP build channel | `released` (default) or `nightly` |
 | `OCP_VERSION` | OpenShift version (optional if auto-resolved) | `4.21.10` |
-| `OCP_CHANNEL` | OCP release channel | `released` or `nightly` |
 
-**Only squid (RHCS 8) and tentacle (RHCS 9) are supported.** Reef (RHCS 7 / Ceph 18) images are detected and the build exits gracefully with status `NOT_BUILT`.
+**Supported RHCS versions:** 8.0, 8.1 (squid) and 9.0, 9.1, 9.2 (tentacle). Unsupported versions (e.g. reef / RHCS 7) are detected and the build exits gracefully with status `NOT_BUILT`.
 
-**Digest-only images** (e.g. `quay.io/.../rhceph@sha256:...` with no `rhceph-N-rhel*` in the path) cannot infer the stream from the URL alone. Set **`RHCS_BUILD_VERSION`** (e.g. `9.1`); the pipeline maps the major digit to squid/tentacle and picks OCP/ODF from the matrix. **bvt-ci** passes **`CEPH_IMAGE`** and **`RHCS_BUILD_VERSION`** (from **`BUILD_VERSION`**).
+The pipeline resolves the OCP patch version **dynamically** via the [OpenShift Release API](https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com). It tries the latest stable (released) version first; if no GA release exists for that OCP minor, it falls back to the latest nightly automatically.
 
-### Optional Configuration
+**RHCS → ODF version mapping:**
+
+| RHCS | Upstream Ceph | Ceph Stream | ODF Minor |
+|------|---------------|-------------|-----------|
+| 8.0  | 19.2.0-xxx    | squid       | 4.18      |
+| 8.1  | 19.2.1-xxx    | squid       | 4.20      |
+| 9.0  | 20.1.0-xxx    | tentacle    | 4.21      |
+| 9.1  | 20.2.1-xxx    | tentacle    | 4.22      |
+| 9.2  | 20.2.2-xxx    | tentacle    | 4.23      |
+
+For **released** ODF installs, the ceph-interop deployer queries the cluster `odf-operator` PackageManifest and picks the highest published `stable-M.m` channel ≤ the mapped minor (e.g. `stable-4.22` → `stable-4.21` until 4.22 ships in `redhat-operators`).
+
+**Digest-only images** (e.g. `quay.io/.../rhceph@sha256:...` with no `rhceph-N-rhel*` in the path) cannot infer the RHCS version from the URL alone. Set **`RHCS_BUILD_VERSION`** (e.g. `9.1`); the pipeline maps it to the corresponding ODF minor and resolves the latest OCP version via API. **bvt-ci** passes **`CEPH_IMAGE`** and **`RHCS_BUILD_VERSION`** (from **`BUILD_VERSION`**).
+
+### OCP
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `RHCS_BUILD_VERSION` | (empty) | RHCS line (e.g. `9.1`); major 8 → squid, 9 → tentacle; required for digest-only auto OCP/ODF; optional with `rhceph-N-rhel*` image path |
-| `ODF_CHANNEL` | (auto) | ODF operator channel (e.g., `stable-4.20`) |
-| `ODF_NIGHTLY_INDEX` | - | ODF nightly catalog index image |
+| `OCP_CHANNEL` | **released** | `released` or `nightly` |
+| `OCP_VERSION` | (empty) | Optional explicit OCP version override |
+
+### ODF
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `ODF_CHANNEL` | **released** | `released` or `nightly` — selects build source when no catalog image is provided |
+| `ODF_CATALOG_IMAGE` | (empty) | Optional catalog index image; **takes precedence over `ODF_CHANNEL`** |
+| `ODF_OPERATOR_CHANNEL` | (empty) | Optional OLM channel e.g. `stable-4.22` (auto `stable-{minor}` from matrix when empty) |
+
+### ODF catalog resolution (`ODF_CHANNEL=nightly`, no `ODF_CATALOG_IMAGE`)
+
+The pipeline runs [`scripts/ocs-build.sh`](../../scripts/ocs-build.sh):
+
+1. Finds `latest-stable-{minor}.X` on `quay.io/rhceph-dev/ocs-registry`
+2. Matches the konflux tag with the same manifest digest
+3. Returns a **tag-based** pull spec, e.g. `quay.io/rhceph-dev/ocs-registry:4.22.0-105.konflux`
+
+For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-interop deployer uses `redhat-operators` and picks the highest published `stable-M.m` channel ≤ the mapped minor.
+
+### Other optional parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `RHCS_BUILD_VERSION` | (empty) | RHCS version (e.g. `8.0`, `8.1`, `9.0`, `9.1`, `9.2`); maps to ODF minor and resolves OCP via API; required for digest-only auto OCP/ODF; optional with `rhceph-N-rhel*` image path |
 | `IBM_REGION` | `eu-de` | IBM Cloud region |
 | `VPC_NAME` | `vpc-ceph-integration` | IBM Cloud VPC name |
 | `MASTER_COUNT` | `3` | Number of control plane nodes |
 | `WORKER_COUNT` | `3` | Number of worker nodes (min: 3) |
 | `DEVICE_SIZE` | `50` | OSD disk size in GB |
 | `DEVICE_COUNT` | `3` | Number of OSD disks per worker |
-| `PVC_COUNT` | `10` | PVCs per storage type for workload tests |
+| `PVC_COUNT` | `2` | PVCs per storage type for workload tests |
 | `SSH_KEY_NAMES` | `ceph-qe-sa,ceph-qe-sa-svc` | IBM Cloud SSH keys |
-| `EMAIL_ADDRESS` | devops DL + ndevos, ebenahar, pbalogh @ibm.com | Notification email recipients (comma-separated) |
+| `EMAIL_ADDRESS` | devops DL + stakeholders | Notification email recipients (comma-separated) |
 
 ### Repository Configuration
 
@@ -144,19 +181,41 @@ The pipeline always executes the complete end-to-end workflow:
 
 ## Usage Examples
 
-### Example: End-to-End Test with Teardown
-```groovy
-CEPH_IMAGE: quay.io/rhceph-ci/rhceph@sha256:c32609c9cfeac0009a6a7b25853fde296f47eaa7d0548b87dd64cd19b0dd406c
-OCP_VERSION: 4.20.13
-OCP_CHANNEL: released
-ODF_CHANNEL: stable-4.20
-WORKER_COUNT: 3
-DEVICE_SIZE: 50
-DEVICE_COUNT: 3
-PVC_COUNT: 10
+### BVT-style auto-resolve (released OCP + released ODF)
+
+Matches what **bvt-ci** passes when `TRIGGER_ODF_INTEROP` is enabled:
+
+```
+CEPH_IMAGE=quay.io/rhceph-dev/rhceph-9-rhel9:...
+RHCS_BUILD_VERSION=9.1   # if digest-only
 ```
 
-**Note**: The pipeline always runs the complete workflow (Deploy → Workload → Teardown). Teardown is mandatory and cannot be skipped.
+### Minimal dev interop (nightly builds)
+
+```
+CEPH_IMAGE=quay.io/rhceph-dev/rhceph-9-rhel9:...
+OCP_CHANNEL=nightly
+ODF_CHANNEL=nightly
+RHCS_BUILD_VERSION=9.1   # if digest-only
+```
+
+### Pinned ODF catalog (overrides ODF_CHANNEL)
+
+```
+CEPH_IMAGE=...
+ODF_CATALOG_IMAGE=quay.io/rhceph-dev/ocs-registry:4.22.0-105.konflux
+```
+
+### Explicit OCP + ODF operator override
+
+```
+CEPH_IMAGE=...
+OCP_VERSION=4.22.10
+OCP_CHANNEL=released
+ODF_OPERATOR_CHANNEL=stable-4.22
+```
+
+**Note**: The pipeline always runs the complete workflow (Deploy → Workload → ocs-ci → Teardown). Teardown runs only when deploy, workload, and ocs-ci stages all succeed.
 
 ## Build Description Format
 
@@ -213,6 +272,17 @@ User: john.doe | Cluster: ocp-ibmc-29031a | OCP: 4.20.13 (released) | Ceph: rhce
 2. **Review state.json**: Contains cluster metadata and status
 3. **Examine workload reports**: Shows storage performance metrics
 4. **Check archived artifacts**: Complete cluster configuration available
+
+## Rollout and migration
+
+After merging the `odf-interop` branch to `main`:
+
+1. **Re-run the seed job** on `main` — updates `odf-interop` job parameters (`ODF_NIGHTLY_INDEX` removed; `ODF_CATALOG_IMAGE`, `ODF_OPERATOR_CHANNEL`, and choice-based `ODF_CHANNEL` added)
+2. **Smoke test** before relying on BVT downstream:
+   - Manual run with only `CEPH_IMAGE` + `RHCS_BUILD_VERSION` (mimics BVT) — confirm `released` OCP/ODF resolution
+   - Manual run with `OCP_CHANNEL=nightly` + `ODF_CHANNEL=nightly` — confirm dev catalog resolution
+3. **Delete** the `odf-interop-test-pipeline` Jenkins job manually (seed uses `removeAction: IGNORE`, so it is not auto-removed)
+4. **Migrate saved configs**: move any saved `ODF_NIGHTLY_INDEX` values to `ODF_CATALOG_IMAGE`, or use `ODF_CHANNEL=nightly` for auto-resolve; move explicit `stable-4.xx` values from old `ODF_CHANNEL` to `ODF_OPERATOR_CHANNEL`
 
 ## Related Documentation
 

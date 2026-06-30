@@ -1,16 +1,22 @@
 /**
- * Resolve OCP + ODF from RHCS line or Ceph image (podman).
- * Uses RuntimeException (not IllegalArgumentException) so load()-ed scripts pass typical Jenkins sandbox rules.
+ * Resolve OCP + ODF versions from RHCS build version or Ceph container image.
  *
- * Only squid and tentacle are supported.  Returns null when the resolved stream
- * is not in the matrix (e.g. reef / RHCS 7) so the caller can exit gracefully.
+ * Maintains a slim RHCS-to-ODF-minor mapping and dynamically resolves the
+ * latest OCP patch version via the OpenShift Release API at runtime.
+ *
+ * Supported RHCS versions: 8.0 (squid), 8.1 (squid), 9.0 (tentacle), 9.1 (tentacle), 9.2 (tentacle).
+ * Returns null for unsupported versions so the caller can exit gracefully.
  *
  * inferAuto:
- *   - RHCS_BUILD_VERSION: leading major 8/9 → squid/tentacle → matrix
- *   - else: podman + cephadm version --verbose JSON → ceph_git_nice_ver (e.g. 20.2.1) → upstream major → matrix
+ *   - RHCS_BUILD_VERSION (e.g. 9.1) → rhcsToOcpMinor → API → OCP/ODF
+ *   - else: podman + cephadm version --verbose → ceph_git_nice_ver (e.g. 20.2.1) → RHCS → API → OCP/ODF
+ *   - ocpChannel / ocpChannelOverride: "released" (default) or "nightly"
+ *   - odfBuildChannel / odfChannel: "released" (default) or "nightly" — catalog source when no image override
+ *   - odfCatalogImage: when set, takes precedence over odfBuildChannel
  *
  * Also supports BVT-style: JOB_NAME <stream>-bvt-ci + BUILD_VERSION + overrides (no inferAuto).
  */
+
 def call(Map parameters) {
     if (parameters.inferAuto == true) {
         return inferAuto(parameters)
@@ -20,7 +26,8 @@ def call(Map parameters) {
     def buildVersion = (parameters.buildVersion ?: '').toString().trim()
     def ocpVerOverride = parameters.ocpVersionOverride?.toString()?.trim()
     def ocpChOverride = parameters.ocpChannelOverride?.toString()?.trim()
-    def odfChOverride = parameters.odfChannelOverride?.toString()?.trim()
+    def odfOpChOverride = parameters.odfOperatorChannelOverride?.toString()?.trim()
+        ?: parameters.odfChannelOverride?.toString()?.trim()
 
     def stream = extractCephStream(jobName)
     if (!buildVersion) {
@@ -29,47 +36,45 @@ def call(Map parameters) {
         )
     }
 
-    def majM = (buildVersion =~ /^(\d+)/)
-    if (majM.find()) {
-        def maj = (majM.group(1) as int)
-        def streamFromBv = rhcsMajorToStream(maj)
-        if (streamFromBv && streamFromBv != stream) {
-            throw new RuntimeException(
-                "resolveOdfInteropParams: BUILD_VERSION '${buildVersion}' implies '${streamFromBv}' but JOB_NAME implies '${stream}'"
-            )
-        }
-    }
-
-    def row = odfInteropMatrix()[stream]
-    if (!row) {
-        echo "resolveOdfInteropParams: stream '${stream}' is not in the interop matrix (supported: squid, tentacle)"
-        return null
-    }
-
-    def ocpVersion = ocpVerOverride ?: row.ocpVersion
-    def ocpChannel = ocpChOverride ?: row.ocpChannel
-    def odfChannel = odfChOverride ?: row.odfChannel
-
-    def allowedOcpChannels = ['released', 'nightly']
-    if (!allowedOcpChannels.contains(ocpChannel)) {
+    def rhcsVer = parseRhcsVersion(buildVersion, 'BUILD_VERSION')
+    def streamFromBv = rhcsMajorToStream(parseLeadingMajor(buildVersion, 'BUILD_VERSION'))
+    if (streamFromBv && streamFromBv != stream) {
         throw new RuntimeException(
-            "resolveOdfInteropParams: OCP_CHANNEL must be one of ${allowedOcpChannels}, got '${ocpChannel}'"
+            "resolveOdfInteropParams: BUILD_VERSION '${buildVersion}' implies '${streamFromBv}' but JOB_NAME implies '${stream}'"
         )
     }
 
-    def bvtMsg = "BVT-style: stream '${stream}' from JOB_NAME, BUILD_VERSION '${buildVersion}' → interop matrix"
-    if (ocpVerOverride || ocpChOverride || odfChOverride) {
+    def ocpMinor = rhcsToOcpMinor()[rhcsVer]
+    if (!ocpMinor) {
+        echo "resolveOdfInteropParams: RHCS '${rhcsVer}' is not in the interop mapping (supported: ${rhcsToOcpMinor().keySet()})"
+        return null
+    }
+
+    def ocpChannel = normalizeOcpChannel(ocpChOverride ?: 'released')
+    def resolved = resolveOcpFromOdfMinor(ocpMinor, ocpChannel)
+    if (!resolved) {
+        echo "resolveOdfInteropParams: could not resolve OCP version for OCP ${ocpMinor}"
+        return null
+    }
+
+    def ocpVersion = ocpVerOverride ?: resolved.ocpVersion
+    def odfOperatorChannel = odfOpChOverride ?: "stable-${ocpMinor}"
+
+    def bvtMsg = "BVT-style: stream '${stream}', RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → API"
+    if (ocpVerOverride || ocpChOverride || odfOpChOverride) {
         bvtMsg += ' (with parameter overrides)'
     }
-    echo "resolveOdfInteropParams: ${bvtMsg} → OCP ${ocpVersion} (${ocpChannel}), ODF ${odfChannel}"
+    echo "resolveOdfInteropParams: ${bvtMsg} → OCP ${ocpVersion} (${resolved.ocpChannel}), ODF ${odfOperatorChannel}"
 
     return [
-        cephStream    : stream,
-        matrixKey     : stream,
-        ocpVersion    : ocpVersion,
-        ocpChannel    : ocpChannel,
-        odfChannel    : odfChannel,
-        ocsVersion    : row.ocsVersion,
+        cephStream         : stream,
+        matrixKey          : rhcsVer,
+        ocpVersion         : ocpVersion,
+        ocpChannel         : resolved.ocpChannel,
+        ocpPullSpec        : resolved.ocpPullSpec,
+        odfOperatorChannel : odfOperatorChannel,
+        odfChannel         : odfOperatorChannel,
+        ocsVersion         : ocpMinor,
     ]
 }
 
@@ -79,16 +84,29 @@ def inferAuto(Map p) {
         throw new RuntimeException('inferAuto: cephImage (CEPH_IMAGE) is required')
     }
 
+    def defaults = p.defaults ?: [:]
+    def ocpChannel = normalizeOcpChannel(
+        (p.ocpChannelOverride ?: p.ocpChannel ?: defaults.ocpChannel ?: 'released').toString().trim()
+    )
+    def odfBuildChannel = normalizeOdfBuildChannel(
+        (p.odfBuildChannel ?: p.odfChannel ?: defaults.odfChannel ?: 'released').toString().trim()
+    )
+    def odfCatalogImage = p.odfCatalogImage?.toString()?.trim() ?: ''
+
     def bv = p.rhcsBuildVersion?.toString()?.trim()
     if (bv) {
-        def stream = rhcsMajorToStream(parseLeadingMajor(bv, 'RHCS_BUILD_VERSION'))
-        if (!stream) {
-            echo "resolveOdfInteropParams: RHCS_BUILD_VERSION '${bv}' does not map to a supported stream (only squid / tentacle)"
+        def rhcsVer = parseRhcsVersion(bv, 'RHCS_BUILD_VERSION')
+        def ocpMinor = rhcsToOcpMinor()[rhcsVer]
+        if (!ocpMinor) {
+            echo "resolveOdfInteropParams: RHCS_BUILD_VERSION '${bv}' (parsed as '${rhcsVer}') is not in the interop mapping (supported: ${rhcsToOcpMinor().keySet()})"
             return null
         }
-        return resolveByStream(
-            stream,
-            "RHCS_BUILD_VERSION '${bv}' → Ceph stream '${stream}' → interop matrix → OCP/ODF GA row"
+        return resolveByRhcsVersion(
+            rhcsVer, ocpMinor,
+            "RHCS_BUILD_VERSION '${bv}' → RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → API (OCP=${ocpChannel}, ODF=${odfBuildChannel})",
+            ocpChannel,
+            odfBuildChannel,
+            odfCatalogImage
         )
     }
 
@@ -106,19 +124,62 @@ def inferAuto(Map p) {
         return null
     }
 
-    def cephMaj = parseLeadingMajor(nice, 'ceph_git_nice_ver')
-    def stream = upstreamCephMajorToStream(cephMaj)
-    if (!stream) {
-        echo "resolveOdfInteropParams: Ceph major ${cephMaj} (from '${nice}') does not map to a supported stream (only squid / tentacle)"
+    def niceBase = nice.replaceAll(/-.*$/, '')
+    def rhcsVer = upstreamCephToRhcsVersion(niceBase)
+    if (!rhcsVer) {
+        echo "resolveOdfInteropParams: upstream Ceph '${nice}' (base '${niceBase}') does not map to a known RHCS version (known: ${upstreamCephVersionMap().keySet()})"
         return null
     }
-    return resolveByStream(
-        stream,
-        "podman + cephadm: ceph_git_nice_ver '${nice}' → Ceph major ${cephMaj} → stream '${stream}' → interop matrix → OCP/ODF GA row"
+
+    def ocpMinor = rhcsToOcpMinor()[rhcsVer]
+    if (!ocpMinor) {
+        echo "resolveOdfInteropParams: RHCS '${rhcsVer}' (from upstream '${nice}') is not in the interop mapping"
+        return null
+    }
+
+    return resolveByRhcsVersion(
+        rhcsVer, ocpMinor,
+        "podman + cephadm: ceph_git_nice_ver '${nice}' → RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → API (OCP=${ocpChannel}, ODF=${odfBuildChannel})",
+        ocpChannel,
+        odfBuildChannel,
+        odfCatalogImage
     )
 }
 
-/** First major from RHCS or Ceph version strings: 9.1, v20.2.1, 20.2.1-188.el9cp → 9 / 20 / 20 */
+def normalizeOcpChannel(String channel) {
+    validateBuildChannel(channel, 'OCP_CHANNEL')
+    return channel
+}
+
+def normalizeOdfBuildChannel(String channel) {
+    validateBuildChannel(channel, 'ODF build channel')
+    return channel
+}
+
+def validateBuildChannel(String channel, String label) {
+    def allowed = ['released', 'nightly']
+    if (!allowed.contains(channel)) {
+        throw new RuntimeException(
+            "resolveOdfInteropParams: ${label} must be one of ${allowed}, got '${channel}'"
+        )
+    }
+}
+
+def resolveOdfCatalogPullSpec(String odfCatalogImage, String odfBuildChannel, String ocpMinor) {
+    if (odfCatalogImage) {
+        echo "resolveOdfInteropParams: using ODF_CATALOG_IMAGE (ODF build channel ignored)"
+        return odfCatalogImage
+    }
+    if (odfBuildChannel == 'nightly') {
+        return resolveOdfDevCatalog(odfMinor: ocpMinor).pullSpec
+    }
+    return ''
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Parsers
+// ──────────────────────────────────────────────────────────────────────
+
 def parseLeadingMajor(String s, String label) {
     def t = s?.trim()
     if (!t) {
@@ -131,33 +192,151 @@ def parseLeadingMajor(String s, String label) {
     return (m.group(1) as int)
 }
 
-/** RHCS product line: 8 → squid, 9 → tentacle.  Returns null for unsupported majors. */
+def parseRhcsVersion(String s, String label) {
+    def t = s?.trim()
+    if (!t) {
+        throw new RuntimeException("resolveOdfInteropParams: empty ${label}")
+    }
+    def m = (t =~ /^(\d+\.\d+)/)
+    if (!m.find()) {
+        throw new RuntimeException("resolveOdfInteropParams: cannot parse RHCS version (major.minor) from ${label}: '${s}'")
+    }
+    return m.group(1)
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Mappings
+// ──────────────────────────────────────────────────────────────────────
+
 def rhcsMajorToStream(int maj) {
     return [8: 'squid', 9: 'tentacle'][maj]
 }
 
-/** Upstream Ceph: 19 → squid, 20+ → tentacle.  Returns null for unsupported majors. */
-def upstreamCephMajorToStream(int cephMajor) {
-    if (cephMajor >= 20) { return 'tentacle' }
-    if (cephMajor == 19) { return 'squid' }
-    return null
+def rhcsToOcpMinor() {
+    return [
+        '8.0': '4.18',
+        '8.1': '4.20',
+        '9.0': '4.21',
+        '9.1': '4.22',
+        '9.2': '4.23',
+    ]
 }
 
-def resolveByStream(String stream, String howMsg = null) {
-    def row = odfInteropMatrix()[stream]
-    if (!row) {
-        echo "resolveOdfInteropParams: stream '${stream}' is not in the interop matrix (supported: squid, tentacle)"
+/** @deprecated Use rhcsToOcpMinor */
+def rhcsToOdfMinor() {
+    return rhcsToOcpMinor()
+}
+
+def upstreamCephVersionMap() {
+    return [
+        '19.2.0': '8.0',
+        '19.2.1': '8.1',
+        '20.1.0': '9.0',
+        '20.2.1': '9.1',
+        '20.2.2': '9.2',
+    ]
+}
+
+def upstreamCephToRhcsVersion(String niceVer) {
+    return upstreamCephVersionMap()[niceVer]
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// OCP version resolution via OpenShift Release API
+// ──────────────────────────────────────────────────────────────────────
+
+def resolveOcpFromOdfMinor(String odfMinor, String preferredChannel = 'released') {
+    if (preferredChannel == 'nightly') {
+        return queryNightlyOcp(odfMinor)
+    }
+
+    def released = queryReleasedOcp(odfMinor)
+    if (released) {
+        return released
+    }
+
+    echo "resolveOdfInteropParams: no GA release found for OCP ${odfMinor}, trying nightly"
+    return queryNightlyOcp(odfMinor)
+}
+
+def queryReleasedOcp(String odfMinor) {
+    def ocpMajor = odfMinor.split('\\.')[0]
+    def url = "${ocpReleaseApiBase()}/${ocpMajor}-stable/latest?prefix=${odfMinor}"
+    return queryOcpReleaseApi(url, 'released')
+}
+
+def queryNightlyOcp(String odfMinor) {
+    def url = "${ocpReleaseApiBase()}/${odfMinor}.0-0.nightly/latest"
+    return queryOcpReleaseApi(url, 'nightly')
+}
+
+def ocpReleaseApiBase() {
+    return 'https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/api/v1/releasestream'
+}
+
+def queryOcpReleaseApi(String url, String channel) {
+    try {
+        def raw = sh(
+            script: "curl -sf --connect-timeout 15 --max-time 30 '${url}' 2>/dev/null || true",
+            returnStdout: true
+        ).trim()
+        if (!raw) {
+            return null
+        }
+        def json = readJSON(text: raw)
+        def name = json?.name?.toString()?.trim()
+        if (!name) {
+            return null
+        }
+        def pullSpec = json?.pullSpec?.toString()?.trim() ?: ''
+        return [ocpVersion: name, ocpChannel: channel, ocpPullSpec: pullSpec]
+    } catch (Exception e) {
+        echo "resolveOdfInteropParams: OpenShift Release API query failed (${channel}): ${e.message}"
         return null
     }
-    def msg = howMsg ?: "stream '${stream}' → interop matrix → OCP ${row.ocpVersion} (${row.ocpChannel}), ODF ${row.odfChannel}"
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Resolution helpers
+// ──────────────────────────────────────────────────────────────────────
+
+def resolveByRhcsVersion(
+    String rhcsVer,
+    String ocpMinor,
+    String howMsg = null,
+    String ocpChannel = 'released',
+    String odfBuildChannel = 'released',
+    String odfCatalogImage = ''
+) {
+    def resolved = resolveOcpFromOdfMinor(ocpMinor, ocpChannel)
+    if (!resolved) {
+        echo "resolveOdfInteropParams: could not resolve OCP version for OCP/ODF ${ocpMinor} (RHCS ${rhcsVer}) from OpenShift Release API"
+        return null
+    }
+
+    def stream = rhcsMajorToStream(parseLeadingMajor(rhcsVer, 'rhcsVer'))
+    def odfOperatorChannel = "stable-${ocpMinor}"
+    def catalogPullSpec = resolveOdfCatalogPullSpec(odfCatalogImage, odfBuildChannel, ocpMinor)
+
+    def msg = howMsg ?: "RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → OCP ${resolved.ocpVersion} (${resolved.ocpChannel}), ODF ${odfOperatorChannel}"
+    if (catalogPullSpec) {
+        msg += " + catalog ${catalogPullSpec.split('/')[-1].take(48)}"
+    } else if (odfBuildChannel == 'released') {
+        msg += ' (redhat-operators)'
+    }
     echo "resolveOdfInteropParams: ${msg}"
+
     return [
-        cephStream    : stream,
-        matrixKey     : stream,
-        ocpVersion    : row.ocpVersion,
-        ocpChannel    : row.ocpChannel,
-        odfChannel    : row.odfChannel,
-        ocsVersion    : row.ocsVersion,
+        cephStream         : stream,
+        matrixKey          : rhcsVer,
+        ocpVersion         : resolved.ocpVersion,
+        ocpChannel         : resolved.ocpChannel,
+        ocpPullSpec        : resolved.ocpPullSpec,
+        odfOperatorChannel : odfOperatorChannel,
+        odfChannel         : odfOperatorChannel,
+        ocsVersion         : ocpMinor,
+        odfBuildChannel    : odfBuildChannel,
+        odfCatalogImage    : catalogPullSpec,
     ]
 }
 
@@ -169,11 +348,4 @@ def extractCephStream(String jobName) {
     throw new RuntimeException(
         "resolveOdfInteropParams: JOB_NAME '${jobName}' does not match '<stream>-bvt-ci'"
     )
-}
-
-def odfInteropMatrix() {
-    return [
-        squid    : [ocpVersion: '4.20.19', ocpChannel: 'released', odfChannel: 'stable-4.20', ocsVersion: '4.20'],
-        tentacle : [ocpVersion: '4.21.11', ocpChannel: 'released', odfChannel: 'stable-4.21', ocsVersion: '4.21'],
-    ]
 }
