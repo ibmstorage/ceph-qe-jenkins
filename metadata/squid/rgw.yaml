@@ -5,7 +5,8 @@ regression:
       - aws
   inventory:
     ibmc:
-      rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+      rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+
   platform:
     - rhel-9
   suites:
@@ -71,7 +72,7 @@ extended_regression:
       - aws
   inventory:
     ibmc:
-      rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
+      rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
   platform:
     - rhel-9
   suites:

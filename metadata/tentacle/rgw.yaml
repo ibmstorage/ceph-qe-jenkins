@@ -15,8 +15,8 @@ regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -37,8 +37,8 @@ regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -47,8 +47,8 @@ regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -57,8 +57,8 @@ regression:
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -70,8 +70,8 @@ regression:
       global-conf: conf/tentacle/rgw/ec-profile-4+2-cluster.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -83,8 +83,8 @@ regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -96,8 +96,8 @@ regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -118,8 +118,8 @@ extended_regression:
       global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -155,8 +155,8 @@ extended_regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -165,8 +165,8 @@ extended_regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -182,8 +182,8 @@ extended_regression:
         gklm-endpoint-ibmc: "10.245.64.172"
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -192,8 +192,8 @@ extended_regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -202,8 +202,8 @@ extended_regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -236,8 +236,8 @@ extended_regression:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -282,8 +282,8 @@ extended_regression_1:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -296,8 +296,8 @@ extended_regression_1:
         gklm-endpoint-ibmc: "10.245.64.172"
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
@@ -312,8 +312,8 @@ extended_regression_1:
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       inventory:
         ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9.7-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10.1-rgw.yaml
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
       platform:
         - rhel-9
         - rhel-10
