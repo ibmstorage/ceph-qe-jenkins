@@ -131,7 +131,7 @@ jobsConfiguration.each { jobConfig ->
             stringParam("CONTAINER_IMAGE", "", "Container image URL")
             stringParam("CUSTOM_CONFIG", "", "Custom config key=value pairs")
             stringParam("CUSTOM_IMAGES", "", "Custom images")
-            
+
             // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
             activeChoiceReactiveParam("VM_FLAVOR") {
                 description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")

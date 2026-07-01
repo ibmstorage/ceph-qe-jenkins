@@ -93,7 +93,7 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("SUITE", "", "Ceph CI suite")
                 stringParam("GLOBAL_CONF", "", "Ceph CI global conf")
                 stringParam("INVENTORY", "", "Ceph CI Inventory file name")
-                
+
                 // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
                 activeChoiceReactiveParam("VM_FLAVOR") {
                     description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")

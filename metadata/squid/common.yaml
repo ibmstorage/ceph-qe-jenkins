@@ -4,7 +4,7 @@ bvt:
       - ibmc
       - aws
   suites:
-    - name: "Build Verfification Test"
+    - name: "Build Verification Test (RH)"
       suite: suites/squid/smoke/bvt.yaml
       global-conf: conf/squid/common/3node-1client.yaml
       build:
@@ -13,7 +13,7 @@ bvt:
         - rhel-9
       tags:
         - bvt
-    - name: "Build Verfification Test"
+    - name: "Build Verification Test (IBM)"
       suite: suites/squid/smoke/bvt-ibm.yaml
       global-conf: conf/squid/common/6node-1client.yaml
       build:

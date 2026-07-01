@@ -81,7 +81,7 @@ extended_regression:
       - name: "Test Cephfs Ops"
         suite: suites/reef/cephfs/tier-3_cephfs.yaml
         global-conf: conf/reef/cephfs/tier-3_cephfs_4clients_4osd.yaml
-      - name: "Test Cephfs Mirror Metrics"  
+      - name: "Test Cephfs Mirror Metrics"
         suite: suites/reef/cephfs/tier-2_cephfs_mirror_metrics.yaml
         global-conf: conf/reef/cephfs/tier-1_cephfs_mirror.yaml
       - name: "Test Cephfs Mirror HA Metrics"

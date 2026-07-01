@@ -7,16 +7,16 @@ import main.groovy.cephJobLib.ibmcConfigs
 def call(Map parameters = [:]) {
     def registryHost = parameters.get("registryHost", ibmcConfigs.IBM_NGINX_HOSTNAME)
     def dryRun = parameters.get("dryRun", false)
-    
+
     if (dryRun) {
         echo "\n[DRY_RUN] Would trigger garbage collection on ${registryHost}"
         echo "[DRY_RUN] Command: podman exec registry bin/registry garbage-collect /etc/distribution/config.yaml"
         return
     }
-    
+
     echo "\n=== Triggering Registry Garbage Collection ==="
     echo "Registry Host: ${registryHost}"
-    
+
     // Define remote connection
     def remoteConnection = [:]
     remoteConnection.name = registryHost
@@ -29,10 +29,10 @@ def call(Map parameters = [:]) {
         file(credentialsId: "repo_access_key", variable: "NGINX_ACCESS")
     ]) {
         remoteConnection.identityFile = "$NGINX_ACCESS"
-        
+
         // Command to run garbage collection using podman
         def gcCommand = "sudo podman exec ceph-qe-registry registry garbage-collect /etc/distribution/config.yaml"
-        
+
         try {
             echo "Executing garbage collection..."
             sshCommand remote: remoteConnection, command: gcCommand

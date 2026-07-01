@@ -69,8 +69,5 @@ def job = freeStyleJob('seed') {
     }
 }
 
-// This accepts changes in the script approval section of 'Manage Jenkins'.  You may or may not want this.
-org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval.get().with { approval ->
-    approval.preapproveAll()
-    approval.save()
-}
+// Script signatures are managed declaratively via casc.yaml under
+// security.scriptApproval.approvedSignatures — do not use preapproveAll().

@@ -32,17 +32,17 @@ def job = pipelineJob("cleanup-registry-images") {
     // Description
     description("""
         Cleans up orphaned container images from local registry.
-        
+
         Compares registry state with qe-ceph-manifest and removes images
         that are not present in the manifest repository.
-        
+
         Target repositories: rh-stage, ibm-stage
-        
+
         Safety features:
         - DRY_RUN enabled by default
         - Safety threshold prevents mass deletion
         - Detailed reporting and audit trail
-        
+
         Scheduled to run daily at 4 AM.
     """)
 

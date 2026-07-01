@@ -38,7 +38,7 @@ pipeline {
             steps {
                 script {
                     echo "\n=== Starting Registry Cleanup ==="
-                    
+
                     try {
                         // Call the main cleanup function with fixed values
                         cleanupRegistryImages(
@@ -46,9 +46,9 @@ pipeline {
                             forceCleanup: params.FORCE_CLEANUP,
                             skipGC: params.SKIP_GC
                         )
-                        
+
                         echo "\n✓ Registry cleanup completed successfully"
-                        
+
                     } catch (Exception e) {
                         echo "\n✗ Registry cleanup failed: ${e.getMessage()}"
                         currentBuild.result = "FAILURE"
@@ -66,7 +66,7 @@ pipeline {
                     echo "Release Version: All available releases"
                     echo "Repositories: rh-stage, ibm-stage"
                     echo "Dry Run: ${params.DRY_RUN}"
-                    
+
                     if (params.DRY_RUN) {
                         echo "\n✓ This was a DRY RUN. No images were actually deleted."
                         echo "  Review the orphan list above and run with DRY_RUN=false to perform cleanup."

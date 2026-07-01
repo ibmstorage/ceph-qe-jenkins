@@ -76,10 +76,10 @@ def call(Map parameters) {
     def content = ""
     withCredentials([usernamePassword(credentialsId: "oidc-sa", usernameVariable: "USERNAME", passwordVariable: "PASSWORD")]) {
         // Update results
-        def cmd = [ 
+        def cmd = [
             "podman run -v",
             "${resultsDir}:/data:Z ${rpConfigs.DATA_ROUTER_IMAGE} send",
-            "--url ${rpConfigs.DATA_ROUTER_URL}", 
+            "--url ${rpConfigs.DATA_ROUTER_URL}",
             "--username ${USERNAME}",
             "--password ${PASSWORD}",
             "--metadata /data/${rpConfigs.RP_CONFIG}",

@@ -32,7 +32,7 @@ def call(Map parameters) {
 
                 git clone --depth 1 --branch main https://"$GHI_TOKEN"@github.ibm.com/ceph/ibm-tools.git
                 pushd ibm-tools
-                
+
                 python3.12 -m venv it_venv
                 it_venv/bin/python3 -m pip install --upgrade pip
                 it_venv/bin/python3 -m pip install -r requirements.txt
@@ -42,7 +42,7 @@ def call(Map parameters) {
                     -p BVT_RESULT="$TEST_RESULTS" \
                     -p PRODUCT="$PRODUCT" \
                     -p VERSION="$VERSION"
-                
+
                 popd
                 rm -rf ibm-tools
             '''

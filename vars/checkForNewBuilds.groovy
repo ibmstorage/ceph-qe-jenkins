@@ -30,7 +30,7 @@ def call(Map parameters) {
     def buildType = parameters.get("buildType")
     def rhBuild = parameters.get("rhBuild")
     def job = parameters.get("job")
-    
+
     if (!buildType || !rhBuild || !job) {
         throw new RuntimeException(
             "Mandatory parameters (buildType, rhBuild, job) are not provided"
@@ -84,7 +84,6 @@ def call(Map parameters) {
     echo "  - Nightly: ${nightlyVersion}"
     echo "  - Stable:  ${stableVersion}"
     echo "Proceeding with sanity tests."
-    
+
     return true  // Builds are different, proceed with tests
 }
-

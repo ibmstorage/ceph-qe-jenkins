@@ -33,7 +33,7 @@ pipeline {
                     def vendorList = params.VENDOR.split(',').collect { it.trim() }.findAll { it }
                     def validVendors = ["ibm", "redhat", "ceph"]
                     def invalidVendors = vendorList.findAll { !validVendors.contains(it) }
-                    
+
                     if (invalidVendors) {
                         error("Invalid vendor(s): ${invalidVendors.join(', ')}. Valid vendors are: ${validVendors.join(', ')}")
                     }
@@ -52,7 +52,7 @@ pipeline {
             steps {
                 script {
                     echo "\n=== Starting Image Synchronization ==="
-                    
+
                     try {
                         // Call the main sync function
                         syncManifestImages(
@@ -61,9 +61,9 @@ pipeline {
                             vendor: params.VENDOR,
                             dryRun: params.DRY_RUN
                         )
-                        
+
                         echo "\n✓ Image synchronization completed successfully"
-                        
+
                     } catch (Exception e) {
                         echo "\n✗ Image synchronization failed: ${e.getMessage()}"
                         currentBuild.result = "FAILURE"
@@ -81,7 +81,7 @@ pipeline {
                     echo "Release Version: ${params.RELEASE_VERSION ?: 'All available releases'}"
                     echo "Vendor: ${params.VENDOR ?: 'None'}"
                     echo "Dry Run: ${params.DRY_RUN}"
-                    
+
                     if (!params.VENDOR || params.VENDOR.trim().isEmpty()) {
                         echo "\nNo vendor specified - sync was skipped."
                     } else if (params.DRY_RUN) {

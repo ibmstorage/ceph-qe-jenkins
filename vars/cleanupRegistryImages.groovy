@@ -10,7 +10,7 @@ def call(Map parameters) {
     def forceCleanup = parameters.get("forceCleanup", false)
     def skipGC = parameters.get("skipGC", false)
     def registryUrl = parameters.get("registryUrl", "http://registry.qe.ceph.lab:5000")
-    
+
     echo "=== Registry Image Cleanup ==="
     echo "Manifest Branch: ${manifestBranch} (fixed)"
     echo "Release Version: All available releases"
@@ -20,11 +20,11 @@ def call(Map parameters) {
     echo "Skip GC: ${skipGC}"
     echo "Registry URL: ${registryUrl}"
     echo "==============================="
-    
+
     // Define manifest repository
     def manifestRepo = "https://github.com/ibmstorage/qe-ceph-manifest.git"
     def manifestDir = "manifest-cleanup-${env.BUILD_NUMBER}"
-    
+
     // Clone manifest repository
     echo "\n=== Fetching qe-ceph-manifest ==="
     checkout([
@@ -45,7 +45,7 @@ def call(Map parameters) {
             ]
         ]
     ])
-    
+
     // Determine release versions to process (always all releases)
     def releaseVersions = []
     echo "Discovering all available releases..."
@@ -66,34 +66,34 @@ def call(Map parameters) {
             }
         }
     }
-    
+
     if (releaseVersions.isEmpty()) {
         echo "No release versions found to process."
         sh "rm -rf ${manifestDir}"
         return
     }
-    
+
     echo "Release versions to process: ${releaseVersions.join(', ')}"
-    
+
     // Build expected image set from manifest
     echo "\n=== Building Expected Image Set from Manifest ==="
     def expectedImages = buildExpectedImageSet(manifestDir, releaseVersions, repositories, registryUrl)
-    
+
     echo "Expected images from manifest: ${expectedImages.size()}"
-    
+
     // Query current registry state
     echo "\n=== Querying Current Registry State ==="
     def registryImages = listRegistryImages(
         registryUrl: registryUrl,
         repositories: repositories
     )
-    
+
     def totalRegistryImages = 0
     repositories.each { repo ->
         totalRegistryImages += registryImages[repo].size()
     }
     echo "Total images in registry: ${totalRegistryImages}"
-    
+
     // Identify orphaned images
     echo "\n=== Identifying Orphaned Images ==="
     def orphanedImages = []
@@ -105,32 +105,32 @@ def call(Map parameters) {
             }
         }
     }
-    
+
     echo "Orphaned images found: ${orphanedImages.size()}"
-    
+
     if (orphanedImages.isEmpty()) {
         echo "\n✓ No orphaned images found. Registry is clean!"
         sh "rm -rf ${manifestDir}"
         return
     }
-    
+
     // Calculate orphan percentage
     def orphanPercentage = (orphanedImages.size() / totalRegistryImages) * 100
     echo "Orphan percentage: ${String.format('%.2f', orphanPercentage)}%"
-    
+
     // Safety threshold check
     if (orphanPercentage > 50 && !forceCleanup) {
         error("Safety threshold exceeded: ${String.format('%.2f', orphanPercentage)}% of images are orphaned. " +
               "This seems unusually high. Please review the orphan list and use FORCE_CLEANUP=true if this is expected.")
     }
-    
+
     // Display orphaned images
     echo "\n=== Orphaned Images to be Removed ==="
     orphanedImages.each { orphan ->
         echo "  [${orphan.repo}] ${orphan.image}"
     }
     echo "====================================="
-    
+
     // Perform cleanup
     if (dryRun) {
         echo "\n[DRY_RUN] Skipping actual image deletion"
@@ -139,7 +139,7 @@ def call(Map parameters) {
         echo "\n=== Deleting Orphaned Images ==="
         def deletedCount = 0
         def failedCount = 0
-        
+
         orphanedImages.each { orphan ->
             try {
                 deleteRegistryImage(registryUrl, orphan.image)
@@ -150,16 +150,16 @@ def call(Map parameters) {
                 echo "  ✗ Failed to delete ${orphan.image}: ${e.getMessage()}"
             }
         }
-        
+
         echo "\n=== Deletion Summary ==="
         echo "Successfully deleted: ${deletedCount}"
         echo "Failed: ${failedCount}"
         echo "========================"
-        
+
         if (failedCount > 0) {
             currentBuild.result = 'UNSTABLE'
         }
-        
+
         // Trigger garbage collection
         if (!skipGC && deletedCount > 0) {
             triggerRegistryGarbageCollection(dryRun: false)
@@ -167,11 +167,11 @@ def call(Map parameters) {
             echo "\n[SKIP_GC] Skipping garbage collection as requested"
         }
     }
-    
+
     // Cleanup manifest directory
     echo "\nCleaning up manifest directory..."
     sh "rm -rf ${manifestDir}"
-    
+
     echo "\n=== Cleanup Complete ==="
 }
 
@@ -179,13 +179,13 @@ def call(Map parameters) {
 def buildExpectedImageSet(String manifestDir, List releaseVersions, List repositories, String registryUrl) {
     def expectedImages = [] as Set
     def registryHost = registryUrl.replaceAll('http://', '').replaceAll('https://', '')
-    
+
     // Map vendor to repository prefixes
     def vendorRepoMap = [
         "ibm": ["ibm-stage", "ibm-prod"],
         "redhat": ["rh-stage", "rh-prod"]
     ]
-    
+
     releaseVersions.each { release ->
         vendorRepoMap.each { vendor, repoPrefixes ->
             // Only process if this vendor's repos are in our target list
@@ -193,13 +193,13 @@ def buildExpectedImageSet(String manifestDir, List releaseVersions, List reposit
             if (relevantRepos.isEmpty()) {
                 return
             }
-            
+
             def parsedImages = parseManifestImages(
                 manifestDir: manifestDir,
                 vendor: vendor,
                 releaseVersion: release
             )
-            
+
             parsedImages.each { section, imageList ->
                 imageList.each { manifestImage ->
                     // Map manifest image to local registry format
@@ -211,7 +211,7 @@ def buildExpectedImageSet(String manifestDir, List releaseVersions, List reposit
             }
         }
     }
-    
+
     return expectedImages
 }
 
@@ -221,15 +221,15 @@ def mapManifestToLocalImage(String manifestImage, String vendor, String registry
     if (parts.size() < 2) {
         return null
     }
-    
+
     def sourceRegistry = parts[0]
     def pathAndTag = parts[1..-1].join('/')
-    
+
     def targetRepo = determineTargetRepo(sourceRegistry, vendor)
     if (!targetRepo) {
         return null
     }
-    
+
     return "${registryHost}/${targetRepo}${pathAndTag}"
 }
 
@@ -256,7 +256,7 @@ def determineTargetRepo(String sourceRegistry, String vendor) {
             return "rh-stage/"
         }
     }
-    
+
     return null
 }
 
@@ -267,28 +267,28 @@ def deleteRegistryImage(String registryUrl, String image) {
     if (imageParts.size() != 2) {
         throw new RuntimeException("Invalid image format: ${image}")
     }
-    
+
     def imageName = imageParts[0]
     def imageTag = imageParts[1]
-    
+
     // Step 1: Get manifest digest
     def manifestUrl = "${registryUrl}/v2/${imageName}/manifests/${imageTag}"
     def digestHeader = sh(
         script: "curl -s -I -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' ${manifestUrl} | grep -i 'Docker-Content-Digest:' | awk '{print \$2}' | tr -d '\\r'",
         returnStdout: true
     ).trim()
-    
+
     if (!digestHeader) {
         throw new RuntimeException("Failed to get manifest digest for ${image}")
     }
-    
+
     // Step 2: Delete manifest using digest
     def deleteUrl = "${registryUrl}/v2/${imageName}/manifests/${digestHeader}"
     def exitCode = sh(
         script: "curl -s -X DELETE ${deleteUrl} -o /dev/null -w '%{http_code}'",
         returnStdout: true
     ).trim()
-    
+
     if (exitCode != "202" && exitCode != "200") {
         throw new RuntimeException("Failed to delete image ${image}. HTTP status: ${exitCode}")
     }

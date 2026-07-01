@@ -145,7 +145,7 @@ extended_regression:
       suite: suites/tentacle/rgw/tier-2_rgw_multisite_regression_extended.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
     - name: "Tier-3 rgw 3AZ EC MS test" # 140 mins
-      suite: suites/squid/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
+      suite: suites/tentacle/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
       global-conf: conf/tentacle/rgw/3AZ-ec-ms.yaml
     - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
       suite: suites/tentacle/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
@@ -197,7 +197,7 @@ extended_regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 rgw single site regression extended" 
+    - name: "Tier-2 rgw single site regression extended"
       suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
@@ -241,7 +241,7 @@ extended_regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-1 rgw upgrade 71GA to 9x latest" 
+    - name: "Tier-1 rgw upgrade 71GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       platform:
@@ -271,7 +271,7 @@ extended_regression:
       global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
       platform:
         - rhel-9
-extended_regression_1:
+extended_regression_2:
   metadata:
     cloud:
       - ibmc
@@ -336,13 +336,13 @@ extended_regression_1:
       suite: suites/tentacle/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
       global-conf: conf/tentacle/rados/3AZ-cluster-rhos-1.yaml
 
-upgrade:  
+upgrade:
   metadata:
     cloud:
       - ibmc
       - aws
   suites:
-    - name: "Tier-1 rgw ms upgrade ssl 81GA to 9x latest" 
+    - name: "Tier-1 rgw ms upgrade ssl 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_ssl_multisite_test_upgrade_81GA_to_9x_latest.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       platform:

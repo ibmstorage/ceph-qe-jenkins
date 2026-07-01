@@ -22,7 +22,7 @@ regression:
     - name: "Test CallHome Tier-2 Validate CallHome Agent Configuration Using Ceph Config"
       suite: suites/squid/callhome/tier2-validate-callhome-agent-configuration-using-ceph-config.yaml
       global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
-    - name: "Test CallHome Tier-2 Validate CallHome Configuration Using Ceph Config"
+    - name: "Test CallHome Tier-2 Validate Storage Insights Configuration Using Ceph Config"
       suite: suites/squid/callhome/tier2-validate-storage-insights-configuration-using-ceph-config.yaml
       global-conf: conf/squid/smoke/1admin-4node-1client-bvt.yaml
     - name: "Test DMFG Tier-2 Validate On Demand Diagnostics functionality"

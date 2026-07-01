@@ -215,11 +215,11 @@ pipeline {
                         fi
 
                         echo "Python \$PYTHON_VERSION meets requirement (>= \$REQUIRED_VERSION)"
-                        
+
                         python3.12 -m venv ${VENV_DIR}
                         ${VENV_DIR}/bin/pip3.12 install --upgrade pip "setuptools<71" wheel
                         ${VENV_DIR}/bin/pip3.12 install --no-build-isolation -r requirements.txt
-                        
+
                         echo "Python environment setup complete"
                         ${VENV_DIR}/bin/pip3.12 list | grep -E "(ibm-|boto3|kubernetes|jinja2|pyyaml|requests|paramiko)"
                     """

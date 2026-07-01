@@ -91,7 +91,7 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("REPO", "", "Repository for RPM builds")
                 stringParam("HOTFIX_REPO", "", "Hotfix repo")
                 stringParam("CONTAINER_IMAGE", "", "Container image URL")
-                
+
                 // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
                 activeChoiceReactiveParam("VM_FLAVOR") {
                     description("VM flavor / instance type based on selected cloud (IBM Cloud profile or AWS EC2 instance type)")

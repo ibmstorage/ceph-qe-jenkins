@@ -3,7 +3,7 @@ jenkins:
 
   # Add retries for Source code checkout
   scmCheckoutRetryCount: 2
-  
+
   # Enable execution server side exclusively for vault token
   # It should not be blocked by an executor. No other job should use it.
   numExecutors: 0

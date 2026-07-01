@@ -112,7 +112,7 @@ extended_regression:
     - name: "Tier-2 rgw singlesite to multisite" # 400 mins, 56 secs
       suite: suites/reef/rgw/migrate_default_single_to_multisite.yaml
       global-conf: conf/reef/rgw/rgw_multisite.yaml
-    - name: "Tier-2 rgw single site regression extended" 
+    - name: "Tier-2 rgw single site regression extended"
       suite: suites/reef/rgw/tier-2_rgw_regression_extended.yaml
       global-conf: conf/reef/rgw/tier-0_rgw.yaml
     - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
@@ -143,7 +143,7 @@ extended_regression:
       global-conf: conf/reef/rgw/tier-0_rgw.yaml
       platform:
         - rhel-9
-    - name: "Tier-1 rgw archive ms upgrade 61GA to 7x latest" 
+    - name: "Tier-1 rgw archive ms upgrade 61GA to 7x latest"
       suite: suites/reef/rgw/tier-1_rgw_archive_ms_upgrade_61GA_to_7x_latest.yaml
       global-conf: conf/reef/rgw/rgw_ms_archive.yaml
       platform:
@@ -158,7 +158,7 @@ extended_regression:
       global-conf: conf/reef/rgw/tier-0_rgw.yaml
       platform:
         - rhel-9
-    - name: "tier-1 rgw upgrade ms 70GA to 7x latest" 
+    - name: "tier-1 rgw upgrade ms 70GA to 7x latest"
       suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_7_0GA_to_7x_latest.yaml
       global-conf: conf/reef/rgw/rgw_multisite.yaml
       platform:
@@ -169,7 +169,7 @@ upgrade:
       - ibmc
       - aws
   suites:
-    - name: "Tier-1 rgw ms upgrade ssl 61GA to 7x latest" 
+    - name: "Tier-1 rgw ms upgrade ssl 61GA to 7x latest"
       suite: suites/reef/rgw/tier-1_rgw_ms_upgrade_6_1GA_to_7x_latest.yaml
       global-conf: conf/reef/rgw/rgw_multisite.yaml
       platform:

@@ -247,5 +247,5 @@ pipeline {
             echo "Cleanup completed successfully ..."
             }
         }
-    }   
+    }
 }

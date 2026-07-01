@@ -68,10 +68,10 @@ def call(Map parameters) {
 
     // Get Update Report Portal config
     jobConfig.enableReportPortal = params.ENABLE_REPORT_PORTAL ?: false
-    
+
     // Get Update Google Sheet config
     jobConfig.enableGoogleSheet = params.ENABLE_GSHEET ?: false
-    
+
     // Get additional rhel repo
     jobConfig.addRepo = params.RHEL_REPO
 
@@ -194,11 +194,11 @@ def call(Map parameters) {
     // Sync all missing images in batch using syncBlueImages (skip for AWS cloud type)
     if ( jobConfig.cloudType != "aws" && imagesToSync.size() > 0 ) {
         println("Syncing ${imagesToSync.size()} missing image(s) to local registry...")
-        
+
         try {
             def imagesList = imagesToSync.join("\n")
             syncBlueImages(images: imagesList)
-            
+
             println("Successfully synced ${imagesToSync.size()} image(s) to local registry")
         } catch (Exception e) {
             currentBuild.result = "ABORTED"
@@ -231,8 +231,8 @@ def call(Map parameters) {
         jobConfig.fg = params.FG
         jobDir += [jobConfig.fg]
         jobConfig.rpLaunchName += "[${jobConfig.fg}]"
-    } 
-    
+    }
+
     // Update path with suite name for MTE jobs
     if (params.SUITE) {
         def suite = params.SUITE.trim().split("/")[-2]
@@ -285,7 +285,7 @@ def call(Map parameters) {
     } else if (jobConfig.buildType.toLowerCase() == "rh") {
         jobConfig.rpProjectName = rpConfigs.RHCS_PROJECT_NAME
         jobConfig.rpLaunchUrl = rpConfigs.RHCS_LANUCH_URL
-    } 
+    }
 
     // Launch attributes
     jobConfig.rpLaunchAttributes = """[
@@ -294,7 +294,7 @@ def call(Map parameters) {
         {"key": "RELEASE", "value": "${jobConfig.rhBuild}"},
         {"key": "PLATFORM", "value": "${jobConfig.cloudType}"},
         {"key": "RHEL", "value": "${jobConfig.platform}"},
-        {"key": "TAG", "value": "${jobConfig.tag}"}
+        {"key": "TAG", "value": "${params.TAG ?: ''}"}
     ]"""
 
     // Return the job configuration

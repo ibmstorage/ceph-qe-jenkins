@@ -91,10 +91,7 @@ def _update_testcase_failure(testcase):
             LOG.error(f"No error file present for testcase '{_testcase}'")
             continue
 
-        LOG.info(
-            "Updating errors for testcase "
-            f"'{_testcase}' with error '{errors[0]}'"
-        )
+        LOG.info(f"Updating errors for testcase '{_testcase}' with error '{errors[0]}'")
         prop.text = ""
         with open(errors[0], "r") as _f:
             for _line in _f.readlines():
@@ -167,11 +164,7 @@ def generate_results(results, logs, suite):
                 status = "Failed" if failure_tag is not None else "Passed"
 
                 testcase_results.append(
-                    {
-                        "name": tc_name,
-                        "status": status,
-                        "time": tc_time
-                    }
+                    {"name": tc_name, "status": status, "time": tc_time}
                 )
         result["comments"] = ", ".join(comments) if comments else ""
 

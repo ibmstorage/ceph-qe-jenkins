@@ -32,13 +32,13 @@ def job = pipelineJob("sync-manifest-images") {
     // Description
     description("""
         Synchronizes container images from qe-ceph-manifest repository to local registry.
-        
+
         Routes images based on source registry:
         - IBM prod images (cp.icr.io) -> ibm-prod/
         - IBM stage images (cp.stg.icr.io) -> ibm-stage/
         - RedHat prod images (registry.redhat.io) -> rh-prod/
         - RedHat stage images (other registries) -> rh-stage/
-        
+
         Full path structure is preserved after the registry.
     """)
 

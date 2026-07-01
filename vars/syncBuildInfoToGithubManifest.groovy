@@ -104,11 +104,11 @@ def call(Map parameters) {
 
             // Determine platform from URL content (rhel9 or rhel10 in filename or path)
             // Check for rhel10 first (to avoid matching rhel9 in rhel10)
-            if (trimmed.contains("rhel10") || trimmed.contains("rhel-10") || 
+            if (trimmed.contains("rhel10") || trimmed.contains("rhel-10") ||
                 trimmed.contains("/rhel10/") || trimmed.contains("/rhel-10/") ||
                 trimmed.contains("-rhel10.") || trimmed.contains("-rhel-10.")) {
                 platform = "rhel-10"
-            } else if (trimmed.contains("rhel9") || trimmed.contains("rhel-9") || 
+            } else if (trimmed.contains("rhel9") || trimmed.contains("rhel-9") ||
                        trimmed.contains("/rhel9/") || trimmed.contains("/rhel-9/") ||
                        trimmed.contains("-rhel9.") || trimmed.contains("-rhel-9.")) {
                 platform = "rhel-9"
@@ -124,11 +124,11 @@ def call(Map parameters) {
             // Derive eu-de URL from default URL by detecting product from URL
             def euDeUrl = repoUrl
             def cephMajorVersion = cephVersion.split("\\.")[0]
-            
+
             def eudeplatform = platform.replace("-", "")
             // IBM repository: Replace public.dhe.ibm.com with repo.qe.ceph.eu.lab
             euDeUrl = "http://repo.qe.ceph.lab/repos/ceph/testing/ibm/${cephMajorVersion}/${eudeplatform}/${cephBuildVersion}/"
-            
+
             manifestContent.nightly.repositories."eu-de"[platform] = euDeUrl
             println("  Repository (eu-de/${platform}): ${euDeUrl}")
         }
@@ -196,7 +196,7 @@ def call(Map parameters) {
                 println("  URL: ${trimmed}")
                 return
             }
-            
+
             // Store the image
             manifestContent.nightly.images[imageName] = imageUrl
             println("  Image (${imageName}): ${imageUrl}")
@@ -233,7 +233,7 @@ def call(Map parameters) {
                     manifestContent.rc.images[imageName] = imageUrl
                 }
             }
-            
+
             println("  Successfully copied nightly section to rc section")
         }
 
@@ -290,4 +290,3 @@ def call(Map parameters) {
         }
     }
 }
-

@@ -29,7 +29,7 @@ def call(Map parameters) {
 
     // Construct YAML file path
     def yamlFile = "${manifestDir}/${vendor}/${releaseVersion}.yaml"
-    
+
     // Check if file exists
     if (!fileExists(yamlFile)) {
         echo "Warning: Manifest file ${yamlFile} does not exist"
@@ -49,11 +49,11 @@ def call(Map parameters) {
     manifestContent.each { rootKey, rootValue ->
         // Initialize list for this root key
         result[rootKey] = []
-        
+
         // Check if this root key has an 'images' section
         if (rootValue && rootValue instanceof Map && rootValue.containsKey('images')) {
             def images = rootValue['images']
-            
+
             // Images can be a map (key: value) or list
             if (images instanceof Map) {
                 // Extract image URLs from map values

@@ -131,8 +131,8 @@ pipeline {
                                     // Debug
                                     echo "Test execution for ${suite.name} completed successfully."
                                 } catch (Exception e) {
-                                    // Debug
-                                    echo "Test execution failed: ${e.message}"
+                                    echo "Suite ${suite.name} failed: ${e.message}"
+                                    currentBuild.result = 'UNSTABLE'
                                 } finally {
                                     // Cleanup configs generated
                                     cleanupCluster(

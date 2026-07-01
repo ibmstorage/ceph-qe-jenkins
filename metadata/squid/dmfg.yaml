@@ -82,7 +82,6 @@ regression:
 upgrade:
   metadata:
     cloud:
-      - openstack
       - ibmc
       - aws
     testrun-template:

@@ -199,10 +199,10 @@ Sync status is reported via:
 
 ## Benefits
 
-✅ **Automated Discovery** - Reads from manifest repository  
-✅ **Path Preservation** - Maintains original image structure  
-✅ **Namespace Isolation** - Separate prefixes for prod/stage  
-✅ **Flexible Routing** - Registry-based target selection  
-✅ **Existing Infrastructure** - Leverages current sync patterns  
-✅ **Idempotent** - Safe to re-run without duplication  
+✅ **Automated Discovery** - Reads from manifest repository
+✅ **Path Preservation** - Maintains original image structure
+✅ **Namespace Isolation** - Separate prefixes for prod/stage
+✅ **Flexible Routing** - Registry-based target selection
+✅ **Existing Infrastructure** - Leverages current sync patterns
+✅ **Idempotent** - Safe to re-run without duplication
 ✅ **Scalable** - Handles multiple releases and vendors

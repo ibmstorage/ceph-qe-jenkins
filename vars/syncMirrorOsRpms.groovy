@@ -17,7 +17,7 @@ def call(Map parameters) {
 
         def baseCmdString = "podman run --rm --security-opt label=disable"
         baseCmdString += " -v /data/repos:/data/repos"
-        baseCmdString += " quay.io/ibm-ceph-qe/repo-sync:rhel" 
+        baseCmdString += " quay.io/ibm-ceph-qe/repo-sync:rhel"
 
         // Sync RHEL 8.10 repo
         def rhel8Cmd = baseCmdString + "8"

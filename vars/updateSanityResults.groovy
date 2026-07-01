@@ -72,7 +72,7 @@ def call(Map parameters) {
     buildInfo.repositories."${platform}" = rhsCephRepo
     buildInfo.images = [:]
     buildInfo.images."ceph-base" = containerImage
-    
+
     // Add custom images if provided
     def customImages = parameters.get("customImages")
     if (customImages) {
@@ -86,4 +86,3 @@ def call(Map parameters) {
         buildInfo: buildInfo, buildTag: "stable", job: job
     )
 }
-

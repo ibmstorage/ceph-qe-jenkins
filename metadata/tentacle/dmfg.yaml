@@ -8,7 +8,7 @@ regression:
     ## Hence these suites will fail on IBM Ceph Storage 9.1 builds.
     ## Therefore, cephadm-ansible test suites that depend on it are temporarily commented out.
     ## These suites will be re-enabled once the support is added; QE BZ IBMCEPH-15709
-    
+
     # - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Registry Details"
     #  suite: suites/tentacle/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
     #  global-conf: conf/tentacle/smoke/1admin-4node-1client-bvt.yaml

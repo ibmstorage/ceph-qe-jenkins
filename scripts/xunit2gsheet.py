@@ -52,8 +52,7 @@ import gspread
 from docopt import docopt
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from gspread_formatting import (cellFormat, color, format_cell_range,
-                                format_cell_ranges, set_frozen, textFormat)
+from gspread_formatting import cellFormat, format_cell_range, set_frozen, textFormat
 
 # --- Constants ---
 SHEET_PROPERTIES = "Properties"
@@ -204,7 +203,7 @@ def parse_testcases(xml_root):
             log_dir = log_dir_prop.get("value", "").strip()
             # Convert log-dir path to Magna URL
             if log_dir.startswith(JENKINS_LOG_DIR_PREFIX):
-                relative_path = log_dir[len(JENKINS_LOG_DIR_PREFIX):]
+                relative_path = log_dir[len(JENKINS_LOG_DIR_PREFIX) :]
                 magna_log_url = MAGNA_BASE_URL + relative_path.rstrip("/") + "/"
             # else:
             #     magna_log_url = MAGNA_BASE_URL + log_dir.lstrip("/").rstrip("/") + "/"
@@ -371,7 +370,6 @@ def _apply_status_color_formatting(worksheet):
         # This creates a single batch request with all rules
         # Priority order: Passed (green) > Failed (red) > Skipped (orange) > Blank (white)
         for col_idx in version_cols:
-
             # Green formatting rule for "Passed"
             requests.append(
                 {
@@ -959,7 +957,7 @@ def _write_data_to_sheet(worksheet, final_rows, header):
         print(f"Warning: Batch update failed, falling back to regular update: {e}")
         worksheet.update(
             values=final_rows,
-            range_name=f"A2:{gspread.utils.rowcol_to_a1(len(final_rows)+1, len(header))}",
+            range_name=f"A2:{gspread.utils.rowcol_to_a1(len(final_rows) + 1, len(header))}",
             value_input_option="USER_ENTERED",
         )
 
@@ -1106,7 +1104,7 @@ def update_gsheet(
             "Errors",
             "Skipped",
             "Success Rate",
-            f"Time (seconds)",
+            "Time (seconds)",
         ]
         client = get_gsheet_client(google_credentials)
         spreadsheet = client.open(sheet_name)

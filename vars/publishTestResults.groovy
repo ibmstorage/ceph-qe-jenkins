@@ -86,7 +86,7 @@ def call(Map parameters) {
     def product = buildType.toUpperCase()
     def release = rhBuild
     def gsheetName = "${product}CS Test Results (${release})"
-    
+
     if (enableGoogleSheet) {
         try {
             withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_SERVICE_ACCOUNT')]) {

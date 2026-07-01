@@ -33,7 +33,7 @@ def call(Map parameters) {
     }
 
     // Get recipe file content
-    recipeContent = readFromManifest(recipe: buildInfo.recipe, jobDir: jobDir)
+    def recipeContent = readFromManifest(recipe: buildInfo.recipe, jobDir: jobDir)
 
     // Initialize tag map if not present
     if (!recipeContent."${buildTag}") {
@@ -110,15 +110,17 @@ def call(Map parameters) {
             ).trim()
 
             env.CEPH_BASE_CHANGED = cephBaseChanged
-            
+
             // Add changed files
             sh("git add .")
 
-            // Commit changes
-            sh("git commit -m '${commitMessage}'")
+            // Commit changes — use list form to prevent shell injection from recipe/version strings
+            sh(["git", "commit", "-m", commitMessage])
 
-            // Push changes to repo
-            sh("git push origin HEAD:main")
+            // Push changes to repo — retry on transient network failures
+            retry(3) {
+                sh("git push origin HEAD:main")
+            }
         } else {
             echo "No changes to commit"
         }

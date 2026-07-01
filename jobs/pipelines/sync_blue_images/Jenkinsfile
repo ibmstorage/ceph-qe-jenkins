@@ -46,7 +46,7 @@ pipeline {
                     // Note: Crimson images are excluded as they are experimental/development builds
                     // and should not trigger BVT pipelines.
                     def cephBaseImage = ""
-                    
+
                     def images = params.BLUE_IMAGES.split("\r?\n")
                     images.each { image ->
                         def trimmedImage = image.trim()

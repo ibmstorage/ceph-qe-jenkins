@@ -2,7 +2,7 @@
 
 def call(Map parameters) {
     // Check for results parameters
-    resultsSummary = parameters.get("resultsSummary")
+    def resultsSummary = parameters.get("resultsSummary")
     if (!resultsSummary) {
         throw new RuntimeException(
             "Mandatory results parameters are not provided"

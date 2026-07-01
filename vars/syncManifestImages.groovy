@@ -49,10 +49,10 @@ def call(Map parameters) {
 
     // Parse vendor list (comma-separated)
     def vendorList = vendor.split(',').collect { it.trim() }.findAll { it }
-    
+
     // Filter out 'ceph' vendor as per requirements
     vendorList = vendorList.findAll { it != "ceph" }
-    
+
     if (vendorList.isEmpty()) {
         echo "No valid vendors to process (ceph is ignored). Skipping sync."
         sh "rm -rf ${manifestDir}"
@@ -100,10 +100,10 @@ def call(Map parameters) {
     // Parse images from each vendor and release
     releaseVersions.each { release ->
         echo "\n=== Processing Release: ${release} ==="
-        
+
         vendorList.each { vendorName ->
             echo "\nProcessing ${vendorName} images for release ${release}..."
-            
+
             def parsedImages = parseManifestImages(
                 manifestDir: manifestDir,
                 vendor: vendorName,
@@ -141,7 +141,7 @@ def call(Map parameters) {
     allImages.each { imageInfo ->
         def imageUrl = imageInfo.image
         def vendorName = imageInfo.vendor
-        
+
         // Parse image URL
         def imageParts = imageUrl.tokenize('/')
         if (imageParts.size() < 2) {
@@ -151,10 +151,10 @@ def call(Map parameters) {
         }
 
         def sourceRegistry = imageParts[0]
-        
+
         // Determine target repository based on source registry and vendor
         def targetRepo = determineTargetRepo(sourceRegistry, vendorName)
-        
+
         if (targetRepo) {
             imagesToSync << imageUrl
             echo "  [${vendorName}] ${imageUrl} -> ${targetRepo}"
@@ -184,10 +184,10 @@ def call(Map parameters) {
         }
 
         echo "\nStarting image synchronization..."
-        
+
         // Convert list to multiline string for syncBlueImages
         def imagesString = imagesToSync.join("\n")
-        
+
         try {
             // Use existing syncBlueImages function
             syncBlueImages(images: imagesString)
@@ -230,6 +230,6 @@ def determineTargetRepo(String sourceRegistry, String vendor) {
             return "rh-stage/"
         }
     }
-    
+
     return null
 }

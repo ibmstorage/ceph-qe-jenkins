@@ -32,6 +32,7 @@ on the RHCS versions
         -o --output <str>       Output file path.
 """
 
+
 def resolve_vm_size(test, cloud):
     """Resolve cloud-specific vm-size from suite metadata.
 
@@ -45,39 +46,35 @@ def resolve_vm_size(test, cloud):
 
 
 def get_testsuite(
-    test, platform, build=None, build_type=None, tag=None, cloud=None, stage_inventory=None
+    test,
+    platform,
+    build=None,
+    build_type=None,
+    tag=None,
+    cloud=None,
+    stage_inventory=None,
 ):
     """Get testsuite and global config"""
     # Check for platform in test config
-    if (
-        platform
-        and test.get("platform")
-        and platform not in test.get("platform")
-    ):
+    if platform and test.get("platform") and platform not in test.get("platform"):
         return None
 
     # Check for version
-    if (
-        build
-        and test.get("version")
-        and float(build) not in test.get("version")
-    ):
-        return None
+    if build and test.get("version"):
+        try:
+            if float(build) not in test.get("version"):
+                return None
+        except ValueError:
+            pass  # non-numeric build string (e.g. "rc", "main") — skip version filter
 
     # Check for build type in test config
-    if build_type and build_type not in test.get(
-        "build", ["rh", "ibm", "upstream"]
-    ):
+    if build_type and build_type not in test.get("build", ["rh", "ibm", "upstream"]):
         return None
 
     # Check if tag is in test config
     if tag and (
-        not test.get("tags") or
-        not all(
-            t.lower() in [
-                x.lower() for x in test.get("tags", [])
-            ] for t in tag
-        )
+        not test.get("tags")
+        or not all(t.lower() in [x.lower() for x in test.get("tags", [])] for t in tag)
     ):
         return None
 
@@ -100,21 +97,24 @@ def get_testsuite(
 
     # Create testsuites with details
     result = {
-        "name": test.get("name", "").replace(
-                " ", "_").replace(".", "_").replace("-", "_"),
+        "name": test.get("name", "")
+        .replace(" ", "_")
+        .replace(".", "_")
+        .replace("-", "_"),
         "suite": test.get("suite", ""),
         "global_conf": test.get("global-conf", ""),
         "vm_size": resolve_vm_size(test, cloud),
         "custom_config": ",".join(
             [f"{k}={v}" for k, v in test.get("custom-config", {}).items()]
-        )
+        ),
     }
-    
+
     # Only add inventory if it's actually set
     if inventory:
         result["inventory"] = inventory
-    
+
     return result
+
 
 def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
     """Get stage and testsuites"""
@@ -148,7 +148,8 @@ def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
 
         # Get global conf
         testsuites[stage]["metadata"]["globalConf"] = stage_metadata.get(
-            "global-conf", {}).get(build_type, "")
+            "global-conf", {}
+        ).get(build_type, "")
 
         # Check for custom-config
         testsuites[stage]["metadata"]["custom_config"] = ",".join(
@@ -157,7 +158,9 @@ def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
 
         # Iterate over testsuite in stages
         for test in tests:
-            testsuite = get_testsuite(test, platform, build, build_type, tag, cloud, stage_inventory)
+            testsuite = get_testsuite(
+                test, platform, build, build_type, tag, cloud, stage_inventory
+            )
             if not testsuite:
                 continue
 
@@ -236,9 +239,7 @@ if __name__ == "__main__":
     metadata = get_metadata(build, fg)
 
     # Get testsuite with stages in dict
-    testsuites = get_testsuites(
-        metadata, job, platform, cloud, build, build_type, tag
-    )
+    testsuites = get_testsuites(metadata, job, platform, cloud, build, build_type, tag)
 
     # Write output
     write_output(testsuites, output)

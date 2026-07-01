@@ -10,18 +10,18 @@
         - SCP the rpms to the mirror repo
         - Ensure cephuser is the owner
         - Execute createrepo as cephuser
-    
+
     OnEvent
         Failure
             Email the devOps and build team about the failure.
-    
+
     Notes:
         COMPOSE name is of format IBM-CEPH-{CEPH_MAJOR}.{CEPH_MINOR}-{DATE}.ci.{BUILD_NUMBER}
         REPO_PATH is sys-ceph-team-rpm-local/COMPOSES/
         COMPOSE_FILE is {COMPOSE}.tar.gz
         Uncompressed data would be {OUTPUT}/COMPOSES/{COMPOSE}/
         The folder would have repo files for each platform and a directories for each platform
-    
+
     Limitation
         Support for x86_64 in IBM Cloud.
 */

@@ -64,4 +64,3 @@ extended_regression:
       vm-size:
         ibmc: cx2-8x16
         aws: m6g.xlarge
-  

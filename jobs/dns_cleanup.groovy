@@ -37,4 +37,3 @@ def job = pipelineJob("dns-cleanup") {
         }
     }
 }
-

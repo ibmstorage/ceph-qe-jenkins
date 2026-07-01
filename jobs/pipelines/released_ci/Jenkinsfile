@@ -1,6 +1,6 @@
 // Import shared library
 @Library("ceph-qe-libs@main") _
-    
+
 def job = "released"
 def fg = "common"
 def jobConfigs = [:]
