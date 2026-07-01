@@ -171,3 +171,52 @@ released:
     - name: "Tier-0 CephFS"
       suite: suites/squid/cephfs/tier-0_fs.yaml
       global-conf: conf/squid/cephfs/tier-0_fs.yaml
+
+sanity-upgrade:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Upgrade RHCS 6x released to 8x latest"
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-released-to-8x-latest.yaml  
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml 
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Upgrade RHCS 7x released to 8x latest"  
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-7x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml 
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Upgrade RHCS 8x released to 8x latest"
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-8x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml 
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Upgrade IBMSC 6x released to 8x latest"  
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-6x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Upgrade IBMSC 7x released to 8x latest"
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-7x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Upgrade IBMSC 8x released to 8x latest"
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-8x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm

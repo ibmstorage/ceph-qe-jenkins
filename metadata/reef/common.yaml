@@ -169,3 +169,52 @@ released:
     - name: "Tier-0 CephFS Test"
       suite: suites/reef/cephfs/tier-0_fs.yaml
       global-conf: conf/reef/cephfs/tier-0_fs.yaml
+
+sanity-upgrade:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Upgrade RHCS 5x released to 7x latest"
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-5x-released-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Upgrade RHCS 6x released to 7x latest"
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-6x-released-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Upgrade RHCS 7x released to 7x latest"
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-7x-released-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Upgrade IBMSC 5x released to 7x latest"
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-5x-released-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Upgrade IBMSC 6x released to 7x latest"
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-6x-released-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Upgrade IBMSC 7x released to 7x latest"
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-7x-released-to-7x-latest.yaml
+      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm

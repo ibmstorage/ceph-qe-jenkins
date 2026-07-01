@@ -28,12 +28,30 @@ def generate_jobs(data) {
     ])
 }
 
+// Create jobs specific to Ceph - Reef
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "reef",
+    buildVersion: ["7.1", "7.0"],
+    rhelVersion: ["rhel-9"],
+    cronExpr: ""
+)
+
+// Create jobs specific to Ceph - Squid
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "squid",
+    buildVersion: ["8.1", "8.0"],
+    rhelVersion: ["rhel-9"],
+    cronExpr: ""
+)
+
 // Create jobs specific to Ceph - Tentacle
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
-    buildVersion: ["9.1", "9.0"],
-    rhelVersion: ["rhel-10", "rhel-9"],
+    buildVersion: ["9.2", "9.1", "9.0"],
+    rhelVersion: ["rhel-9", "rhel-10"],
     cronExpr: ""
 )
 
