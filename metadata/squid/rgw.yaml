@@ -155,6 +155,9 @@ extended_regression:
     - name: "tier-2_ssl_rgw_regression_extended"
       suite: suites/squid/rgw/tier-2_ssl_rgw_regression_extended.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw multisite bucket location constraint across zonegroups"
+      suite: suites/squid/rgw/tier-2_rgw_ms-bucket-location.yaml
+      global-conf: conf/squid/rgw/3-way-ms-ec-profile-2+2@4nodes.yaml
     - name: "Tier-1 rgw upgrade 61GA to 8x latest"
       suite: suites/squid/rgw/tier-1_rgw_upgrade_61GA_to_8x_latest.yaml
       global-conf: conf/squid/rgw/tier-0_rgw.yaml

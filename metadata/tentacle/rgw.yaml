@@ -231,6 +231,9 @@ extended_regression:
     - name: "Tier-2 rgw ms rgw_module"
       suite: suites/tentacle/rgw/tier-2_rgw_ms_rgw_module.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+    - name: "Tier-2 rgw multisite bucket location constraint across zonegroups"
+      suite: suites/tentacle/rgw/tier-2_rgw_ms-bucket-location.yaml
+      global-conf: conf/tentacle/rgw/3-way-ms-ec-profile-2+2@4nodes.yaml
     - name: "tier-2_ssl_rgw_regression_extended"
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
