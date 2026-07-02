@@ -115,7 +115,7 @@ def call(Map parameters) {
             sh("git add .")
 
             // Commit changes — use list form to prevent shell injection from recipe/version strings
-            sh(["git", "commit", "-m", commitMessage])
+            sh("git commit -m '${commitMessage}'")
 
             // Push changes to repo — retry on transient network failures
             retry(3) {
