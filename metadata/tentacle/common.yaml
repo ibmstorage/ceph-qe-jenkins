@@ -4,14 +4,14 @@ bvt:
       - ibmc
       - aws
   suites:
-    - name: "Build Verification Test (RH)"
+    - name: "Build Verification Test"
       suite: suites/tentacle/smoke/bvt.yaml
       global-conf: conf/tentacle/common/3node-1client.yaml
       build:
         - rh
       tags:
         - bvt
-    - name: "Build Verification Test (IBM)"
+    - name: "Build Verification Test"
       suite: suites/tentacle/smoke/bvt-ibm.yaml
       global-conf: conf/tentacle/common/6node-1client.yaml
       vm-size:
