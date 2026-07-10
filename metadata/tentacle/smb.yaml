@@ -70,6 +70,14 @@ regression:
       vm-size:
         ibmc: cx2-8x16
         aws: m6g.xlarge
+    - name: "Test SMB macos support"
+      suite: suites/tentacle/smb/tier-1-smb-macos.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+      version:
+          - 9.2
 extended_regression:
   metadata:
     cloud:
@@ -94,6 +102,14 @@ extended_regression:
       vm-size:
         ibmc: cx2-8x16
         aws: m6g.xlarge
+    - name: "Test SMB macos Tier-4 Test Cases"
+      suite: suites/tentacle/smb/tier-4-smb-macos.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+      version:
+          - 9.2
 upgrade:
   metadata:
     cloud:
