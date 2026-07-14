@@ -252,42 +252,30 @@ sanity-upgrade:
     - name: "Upgrade RHCS 7x released to 9x latest"
       suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-7x-released-to-9x-latest.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      platform:
-        - rhel-9
       build:
         - rh
     - name: "Upgrade RHCS 8x released to 9x latest"
       suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-8x-released-to-9x-latest.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      platform:
-        - rhel-9
       build:
         - rh
     - name: "Upgrade RHCS 9x released to 9x latest"
       suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-9x-released-to-9x-latest.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      platform:
-        - rhel-9
       build:
         - rh
     - name: "Upgrade IBMSC 7x released to 9x latest"
       suite: suites/tentacle/upgrades/tier1-upgrade-ibm-7x-released-to-9x-latest.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      platform:
-        - rhel-9
       build:
         - ibm
     - name: "Upgrade IBMSC 8x released to 9x latest"
       suite: suites/tentacle/upgrades/tier1-upgrade-ibm-8x-released-to-9x-latest.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      platform:
-        - rhel-9
       build:
         - ibm
     - name: "Upgrade IBMSC 9x released to 9x latest"
       suite: suites/tentacle/upgrades/tier1-upgrade-ibm-9x-released-to-9x-latest.yaml
       global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
-      platform:
-        - rhel-9
       build:
         - ibm
