@@ -271,7 +271,7 @@ extended_regression:
         - rhel-9
     - name: "Tier-1 rgw upgrade ms ssl ecpool 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
+      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster-2rgw.yaml
       platform:
         - rhel-9
 extended_regression_2:
