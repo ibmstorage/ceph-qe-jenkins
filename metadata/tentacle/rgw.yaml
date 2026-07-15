@@ -215,7 +215,7 @@ extended_regression:
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
     - name: "Tier-2 ssl rgw ms ecpool test" # 155 mins, 21 secs
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_ms_ecpool_test.yaml
-      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
+      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster-2rgw.yaml
     - name: "Tier-2 rgw io ms spec to disable sync" # 80 mins, 05 secs
       suite: suites/tentacle/rgw/tier-2_rgw_io_ms_spec_to_disable_sync.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
