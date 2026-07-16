@@ -75,6 +75,9 @@ sanity:
     - name: "Tier-1 RBD"
       suite: suites/squid/rbd/tier-1_rbd.yaml
       global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
     - name: "Tier-1 iSCSI"
       suite: suites/squid/iscsi/iscsi_sanity.yaml
       global-conf: conf/squid/iscsi/ceph_iscsi_functional.yaml

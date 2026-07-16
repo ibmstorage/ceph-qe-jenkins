@@ -57,6 +57,9 @@ sanity:
     - name: "tier-1 rbd"
       suite: suites/tentacle/rbd/tier-1_rbd.yaml
       global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
     - name: "iscsi sanity"
       suite: suites/tentacle/iscsi/iscsi_sanity.yaml
       global-conf: conf/tentacle/iscsi/ceph_iscsi_functional.yaml

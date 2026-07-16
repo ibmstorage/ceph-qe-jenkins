@@ -46,6 +46,9 @@ sanity:
     - name: "RBD Tier1 Test suite"
       suite: suites/reef/rbd/tier-1_rbd.yaml
       global-conf: conf/reef/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
       platform:
         - rhel-9
     - name: "iSCSI Basic Sanity Test"
