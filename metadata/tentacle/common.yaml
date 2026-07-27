@@ -108,6 +108,9 @@ sanity:
     - name: "Tier-1 DMFG Service Apply Spec"
       suite: suites/tentacle/cephadm/tier1-service-apply-spec.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Tier-2 Cephadm Agent Comprehensive Tests"
+      suite: suites/tentacle/cephadm/tier2-cephadm-agent.yaml
+      global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
 
 released:
   metadata:
