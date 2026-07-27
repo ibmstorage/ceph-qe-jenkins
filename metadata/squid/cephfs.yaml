@@ -13,6 +13,11 @@ regression:
     - name: "Regression Suite 2"
       suite: suites/squid/cephfs/regression_suite_2.yaml
       global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
+    - name: "Regression Suite 3"
+      suite: suites/squid/cephfs/regression_suite_3.yaml
+      vm-size:
+        ibmc: cx2-4x8
+      global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
     - name: "New Feature suite - 8.1"
       suite: suites/squid/cephfs/8_1_features_suite.yaml
       global-conf: conf/squid/cephfs/tier-2_cephfs_7-node-cluster.yaml
@@ -87,18 +92,26 @@ upgrade:
       global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "Test Cephfs Upgrade 7.1x to 8x"
       suite: suites/squid/cephfs/tier-0_cephfs_upgrade_71_to_8x.yaml
       global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "Test Cephfs Upgrade 8x Latest to 8.1x Latest"
       suite: suites/squid/cephfs/tier-0_cephfs_upgrade_8x_latest_to_81x_latest.yaml
       global-conf: conf/squid/cephfs/tier-2_cephfs_upgrade.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "Test Cephfs Mirror Upgrade 6x to 7x to 8x"
       suite: suites/squid/cephfs/tier-0_cephfs_mirrror_upgrade_6x_to_7x_to_8x.yaml
       global-conf: conf/squid/cephfs/tier-1_cephfs_mirror.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8

@@ -13,6 +13,11 @@ regression:
     - name: "Regression Suite 2"
       suite: suites/tentacle/cephfs/regression_suite_2.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
+    - name: "Regression Suite 3"
+      suite: suites/tentacle/cephfs/regression_suite_3.yaml
+      vm-size:
+        ibmc: cx2-4x8
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
     - name: "New Feature suite - 8.1"
       suite: suites/tentacle/cephfs/8_1_features_suite.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
@@ -96,18 +101,26 @@ upgrade:
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "Test Cephfs Upgrade 7x to 9x"
       suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_7x_to_9x.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "Test Cephfs Mirror Upgrade 7x to 8x to 9x"
       suite: suites/tentacle/cephfs/tier-0_cephfs_mirrror_upgrade_7x_to_8x_to_9x.yaml
       global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "Test Cephfs Upgrade 9x to 9.1x"
       suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_9x_to_91x.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
       platform:
         - rhel-10
+      vm-size:
+        ibmc: cx2-4x8
