@@ -13,12 +13,12 @@
 //   9. Clone ocs-ci - Fetch the ocs-ci test framework
 //  10. Setup ocs-ci Environment - Create Python 3.11 venv and install ocs-ci
 //  11. Prepare ocs-ci Config - Write runtime auth config, copy pull-secret
-//  12. Run ocs-ci Tests - Execute acceptance (or custom) tests via run-ci
+//  12. Run ocs-ci Tests - Acceptance (must pass) + Tier-1 (non-blocking)
 //
 // Post Actions:
 //   - Teardown cluster (mandatory, runs even on failure/abort)
 //   - Archive cluster artifacts, state files, and ocs-ci test logs
-//   - Send HTML email: status rows + Test case execution rows (Test | Result) in one table
+//   - Send HTML email: Test case execution + OCS-CI Tests (Acceptance / Tier-1)
 //   - Clean up sensitive credentials
 
 // Import shared library
@@ -28,7 +28,7 @@ pipeline {
     agent { label "agents-interop" }
 
     options {
-        timeout(time: 8, unit: 'HOURS')
+        timeout(time: 48, unit: 'HOURS')
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
     }
@@ -542,7 +542,8 @@ pipeline {
                             ],
                             RUN: [
                                 bin_dir: binDir,
-                                log_dir: "${env.WORKSPACE}/ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}"
+                                log_dir: "${env.WORKSPACE}/ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}",
+                                chrome_binary_path: '/bin/google-chrome-stable'
                             ],
                             DEPLOYMENT: [
                                 skip_download_client: true
@@ -552,6 +553,12 @@ pipeline {
                                 skip_ocp_deployment: true,
                                 deployment_type: 'upi',
                                 region: params.IBM_REGION
+                            ],
+                            UI_SELENIUM: [
+                                browser_type: "chrome",
+                                chrome_type: "google-chrome",
+                                headless: true,
+                                ignore_ssl: true
                             ]
                         ]
                         writeYaml(file: 'interop-runtime-config.yaml', data: runtimeConfig, overwrite: true)
@@ -603,31 +610,66 @@ pipeline {
         //   --html / --self-contained-html: pytest HTML report
         //   (Jenkins emailext attaches report.html; run-ci --email is not used).
         // ──────────────────────────────────────────────────────────
-        stage("Run ocs-ci Tests") {
+        stage("Run ocs-ci tests - Acceptance") {
             steps {
                 dir("ocs-ci") {
                     script {
                         sh "mkdir -p ocs-ci-logs-${env.BUILD_NUMBER}"
-                        sh """
-                            ${OCSCI_VENV_DIR}/bin/run-ci \
-                                --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
-                                --cluster-name '${env.CLUSTER_NAME}' \
-                                ${params.OCS_CI_TESTS ?: '-m acceptance'} \
-                                --ocsci-conf conf/deployment/baremetal/upi_1az_rhcos_nvme_intel_3m_3w.yaml \
-                                --ocsci-conf interop-runtime-config.yaml \
-                                --ocs-version '${env.OCS_CI_VERSION}' \
-                                --skip-download-client \
-                                --log-level DEBUG --collect-logs \
-                                --html=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-report.html --self-contained-html \
-                                --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/ocs-ci-test-junit-results.xml \
-                                tests/functional/
-                        """
-                        env.OCSCI_PASSED = 'true'
+                        try {
+                            sh """
+                                ${OCSCI_VENV_DIR}/bin/run-ci \
+                                    --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
+                                    --cluster-name '${env.CLUSTER_NAME}' \
+                                    ${params.OCS_CI_TESTS ?: '-m acceptance'} \
+                                    --ocsci-conf conf/deployment/baremetal/upi_1az_rhcos_nvme_intel_3m_3w.yaml \
+                                    --ocsci-conf interop-runtime-config.yaml \
+                                    --ocs-version '${env.OCS_CI_VERSION}' \
+                                    --skip-download-client \
+                                    --log-level DEBUG --collect-logs \
+                                    --html=ocs-ci-logs-${env.BUILD_NUMBER}/acceptance-report.html --self-contained-html \
+                                    --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/acceptance-junit-results.xml \
+                                    -W ignore::pytest.PytestUnknownMarkWarning \
+                                    tests
+                            """
+                            env.ACCEPTANCE_PASSED = 'true'
+                        } catch (Exception e) {
+                            env.ACCEPTANCE_PASSED = 'false'
+                            echo "Acceptance tests failed: ${e.message}"
+                            throw e
+                        }
                     }
                 }
             }
         }
 
+        stage("Run ocs-ci tests - Tier-1") {
+            steps {
+                dir("ocs-ci") {
+                    script {
+                        try {
+                            sh """
+                                ${OCSCI_VENV_DIR}/bin/run-ci \
+                                    --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
+                                    --cluster-name '${env.CLUSTER_NAME}' \
+                                    --ocsci-conf conf/deployment/baremetal/upi_1az_rhcos_nvme_intel_3m_3w.yaml \
+                                    --ocsci-conf interop-runtime-config.yaml \
+                                    --ocs-version '${env.OCS_CI_VERSION}' \
+                                    --skip-download-client \
+                                    --log-level DEBUG --collect-logs \
+                                    --html=ocs-ci-logs-${env.BUILD_NUMBER}/tier1-report.html --self-contained-html \
+                                    --junit-xml=ocs-ci-logs-${env.BUILD_NUMBER}/tier1-junit-results.xml \
+                                    -W ignore::pytest.PytestUnknownMarkWarning \
+                                    -m tier1 tests
+                            """
+                            env.TIER1_PASSED = 'true'
+                        } catch (Exception e) {
+                            env.TIER1_PASSED = 'false'
+                            echo "Tier-1 tests failed (non-blocking): ${e.message}"
+                        }
+                    }
+                }
+            }
+        }
     }
 
     post {
@@ -647,11 +689,11 @@ pipeline {
                 def teardownCheck = (
                     env.DEPLOY_PASSED == 'true' &&
                     env.WORKLOAD_PASSED == 'true' &&
-                    env.OCSCI_PASSED == 'true'
+                    env.ACCEPTANCE_PASSED == 'true'
                 )
 
                 if (!teardownCheck) {
-                    echo "Skipping teardown: teardown runs only when DEPLOY_PASSED, WORKLOAD_PASSED, and OCSCI_PASSED are all 'true'"
+                    echo "Skipping teardown: teardown runs only when DEPLOY_PASSED, WORKLOAD_PASSED, and ACCEPTANCE_PASSED are all 'true'"
                 } else if (hasCluster && fileExists("${venvDir}/bin/python3.12")) {
                     try {
                         dir("ceph-interop") {
@@ -709,13 +751,19 @@ pipeline {
                 try {
                     dir("ocs-ci") {
                         if (fileExists(logDir)) {
-                            if (fileExists("${logDir}/ocs-ci-test-report.html")) {
-                                archiveArtifacts artifacts: "${logDir}/ocs-ci-test-report.html"
+                            if (fileExists("${logDir}/acceptance-report.html")) {
+                                archiveArtifacts artifacts: "${logDir}/acceptance-report.html"
                             }
-                            if (fileExists("${logDir}/ocs-ci-test-junit-results.xml")) {
-                                archiveArtifacts artifacts: "${logDir}/ocs-ci-test-junit-results.xml"
+                            if (fileExists("${logDir}/acceptance-junit-results.xml")) {
+                                archiveArtifacts artifacts: "${logDir}/acceptance-junit-results.xml"
                             }
-                            sh "tar czf ${logDir}.tar.gz --exclude='ocs-ci-test-*.html' --exclude='ocs-ci-test-*.xml' ${logDir}/ 2>/dev/null || true"
+                            if (fileExists("${logDir}/tier1-report.html")) {
+                                archiveArtifacts artifacts: "${logDir}/tier1-report.html"
+                            }
+                            if (fileExists("${logDir}/tier1-junit-results.xml")) {
+                                archiveArtifacts artifacts: "${logDir}/tier1-junit-results.xml"
+                            }
+                            sh "tar czf ${logDir}.tar.gz --exclude='*-report.html' --exclude='*-junit-results.xml' ${logDir}/ 2>/dev/null || true"
                             if (fileExists("${logDir}.tar.gz")) {
                                 archiveArtifacts artifacts: "${logDir}.tar.gz"
                             }
@@ -745,8 +793,10 @@ pipeline {
                         }
                         def ocsciTar = "ocs-ci/${logDir}.tar.gz"
                         if (fileExists(ocsciTar)) { filesToUpload << ocsciTar }
-                        if (fileExists("ocs-ci/${logDir}/ocs-ci-test-report.html"))       { filesToUpload << "ocs-ci/${logDir}/ocs-ci-test-report.html" }
-                        if (fileExists("ocs-ci/${logDir}/ocs-ci-test-junit-results.xml")) { filesToUpload << "ocs-ci/${logDir}/ocs-ci-test-junit-results.xml" }
+                        if (fileExists("ocs-ci/${logDir}/acceptance-report.html"))       { filesToUpload << "ocs-ci/${logDir}/acceptance-report.html" }
+                        if (fileExists("ocs-ci/${logDir}/acceptance-junit-results.xml")) { filesToUpload << "ocs-ci/${logDir}/acceptance-junit-results.xml" }
+                        if (fileExists("ocs-ci/${logDir}/tier1-report.html"))             { filesToUpload << "ocs-ci/${logDir}/tier1-report.html" }
+                        if (fileExists("ocs-ci/${logDir}/tier1-junit-results.xml"))       { filesToUpload << "ocs-ci/${logDir}/tier1-junit-results.xml" }
 
                         if (filesToUpload) {
                             def uploadStart = System.currentTimeMillis()
@@ -763,12 +813,13 @@ pipeline {
                 }
 
                 // ── Publish JUnit results ──
-                def testSummary = null
+                def acceptanceSummary = null
+                def tier1Summary = null
                 try {
-                    def junitFile = "ocs-ci/${logDir}/ocs-ci-test-junit-results.xml"
-                    if (fileExists(junitFile)) {
-                        def result = junit testResults: junitFile, allowEmptyResults: true
-                        testSummary = [
+                    def acceptanceJunit = "ocs-ci/${logDir}/acceptance-junit-results.xml"
+                    if (fileExists(acceptanceJunit)) {
+                        def result = junit testResults: acceptanceJunit, allowEmptyResults: true
+                        acceptanceSummary = [
                             total: result.totalCount,
                             pass:  result.passCount,
                             fail:  result.failCount,
@@ -776,14 +827,30 @@ pipeline {
                         ]
                     }
                 } catch (Exception e) {
-                    echo "JUnit publish failed (non-fatal): ${e.message}"
+                    echo "Acceptance JUnit publish failed (non-fatal): ${e.message}"
+                }
+                try {
+                    def tier1Junit = "ocs-ci/${logDir}/tier1-junit-results.xml"
+                    if (fileExists(tier1Junit)) {
+                        def result = junit testResults: tier1Junit, allowEmptyResults: true
+                        tier1Summary = [
+                            total: result.totalCount,
+                            pass:  result.passCount,
+                            fail:  result.failCount,
+                            skip:  result.skipCount
+                        ]
+                    }
+                } catch (Exception e) {
+                    echo "Tier-1 JUnit publish failed (non-fatal): ${e.message}"
                 }
 
                 // ── Email notification ──
                 try {
                     sendOdfInteropEmail(
                         clusterName: clusterName, hasCluster: hasCluster,
-                        testSummary: testSummary, cosResultsUrl: cosResultsUrl
+                        acceptanceSummary: acceptanceSummary,
+                        tier1Summary: tier1Summary,
+                        cosResultsUrl: cosResultsUrl
                     )
                 } catch (Exception e) {
                     echo "Email with test summary failed (${e.message}) -- retrying without summary"

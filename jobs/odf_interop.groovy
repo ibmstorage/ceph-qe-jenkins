@@ -1,7 +1,6 @@
 /*
     OCP + ODF Interop Deployment Pipeline
 
-    Promoted from odf-interop-test-pipeline after validation.
     BVT downstream triggers target this job (odf-interop).
 */
 def job = pipelineJob("odf-interop") {

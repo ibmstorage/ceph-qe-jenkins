@@ -10,14 +10,17 @@
  *   hasCluster   - boolean, whether a cluster was provisioned
  *
  * Optional parameters:
- *   testSummary   - Map with keys total/pass/fail/skip (from junit step), or null
- *   cosResultsUrl - String, IBM COS URL where logs/tarballs were uploaded
+ *   acceptanceSummary - Map with keys total/pass/fail/skip (acceptance tests), or null
+ *   tier1Summary      - Map with keys total/pass/fail/skip (tier-1 tests), or null
+ *   testSummary       - (legacy) combined Map, used if acceptanceSummary is not provided
+ *   cosResultsUrl     - String, IBM COS URL where logs/tarballs were uploaded
  */
 def call(Map parameters) {
-    def clusterName   = parameters.clusterName ?: ''
-    def hasCluster    = parameters.hasCluster ?: false
-    def testSummary   = parameters.testSummary
-    def cosResultsUrl = parameters.cosResultsUrl ?: ''
+    def clusterName       = parameters.clusterName ?: ''
+    def hasCluster        = parameters.hasCluster ?: false
+    def acceptanceSummary = parameters.acceptanceSummary ?: parameters.testSummary
+    def tier1Summary      = parameters.tier1Summary
+    def cosResultsUrl     = parameters.cosResultsUrl ?: ''
 
     try {
         def status = currentBuild.currentResult ?: 'UNKNOWN'
@@ -99,28 +102,44 @@ def call(Map parameters) {
         }
 
         def ocsciExecuted = fileExists("ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}")
-        def ocsciStatusCell = ''
-        if (testSummary) {
-            def p = testSummary.pass  ?: 0
-            def f = testSummary.fail  ?: 0
-            def s = testSummary.skip  ?: 0
-            def t = testSummary.total ?: 0
-            ocsciStatusCell = "<span style=\"color:#2E7D32;font-weight:bold;\">Passed: ${p}</span>" +
-                " &nbsp; <span style=\"color:#C62828;font-weight:bold;\">Failed: ${f}</span>" +
-                " &nbsp; <span style=\"color:#EF6C00;font-weight:bold;\">Skipped: ${s}</span>" +
-                " &nbsp; (Total: ${t})"
-        } else if (ocsciExecuted && status == 'SUCCESS') {
-            ocsciStatusCell = 'Passed'
-        } else if (ocsciExecuted) {
-            ocsciStatusCell = 'Failed'
-        } else {
-            ocsciStatusCell = 'Not executed'
-        }
-        def ocsciReportRow = """
+
+        def acceptanceStatusCell = buildTestStatusCell(acceptanceSummary, ocsciExecuted, status)
+        def tier1StatusCell = buildTestStatusCell(tier1Summary, ocsciExecuted, status)
+
+        def anyOcsciFail = (env.ACCEPTANCE_PASSED == 'false' || env.TIER1_PASSED == 'false'
+            || (acceptanceSummary && (acceptanceSummary.fail ?: 0) > 0)
+            || (tier1Summary && (tier1Summary.fail ?: 0) > 0))
+        def ocsciBar   = anyOcsciFail ? '#E65100' : '#1565C0'
+        def ocsciHdrBg = anyOcsciFail ? '#FFF3E0' : '#E3F2FD'
+        def ocsciHdrFg = anyOcsciFail ? '#E65100' : '#0D47A1'
+
+        def ocsciSectionHtml = """
             <tr>
-                <td style="${lab}"><b>ocs-ci test status</b></td>
-                <td style="${val}">${ocsciStatusCell}</td>
+                <td colspan="2" style="background-color: ${ocsciHdrBg}; color: ${ocsciHdrFg}; border: 1px solid #d0d0d0; border-top: 3px solid ${ocsciBar}; padding: 10px 14px; font-size: 108%; font-weight: bold;">
+                    OCS-CI Tests
+                </td>
+            </tr>
+            <tr>
+                <td style="${lab}"><b>Acceptance <span style="font-size:12px;color:#1B5E20;">(must pass)</span></b></td>
+                <td style="${val}">${acceptanceStatusCell}</td>
+            </tr>
+            <tr>
+                <td style="${lab}"><b>Tier-1</b></td>
+                <td style="${val}">${tier1StatusCell}</td>
             </tr>"""
+
+        def acceptanceFailed = (acceptanceSummary && (acceptanceSummary.fail ?: 0) > 0) || env.ACCEPTANCE_PASSED == 'false'
+        def tier1Failed = (tier1Summary && (tier1Summary.fail ?: 0) > 0) || env.TIER1_PASSED == 'false'
+        def ocsciNoteRow = ''
+        if (acceptanceFailed || tier1Failed) {
+            ocsciNoteRow = """
+            <tr>
+                <td colspan="2" style="background-color: #FFF8E1; border: 1px solid #d0d0d0; border-left: 4px solid #F57C00; padding: 12px 14px; font-size: 14px; color: #3E2723; line-height: 1.6;">
+                    <b style="color: #E65100;">&#9888; Action Required:</b> OCS-CI test failures detected. The ODF QE team's assistance is
+                    needed for root-cause analysis.<br/>
+                </td>
+            </tr>"""
+        }
 
         def cephMeta = readCephMetadata()
         def cephNice    = cephMeta.cephNice
@@ -169,10 +188,12 @@ def call(Map parameters) {
             tcSectionHeader, tcRow2
         )
 
+        def ibmRegion = params.IBM_REGION ?: 'N/A'
+        def vpcName   = params.VPC_NAME ?: 'N/A'
         def infrastructureRow = """
         <tr>
             <td style="${lab}"><b>Infrastructure</b></td>
-            <td style="${val}">IBM Cloud</td>
+            <td style="${val}">IBM Cloud &mdash; ${htmlEsc(ibmRegion)} / ${htmlEsc(vpcName)}</td>
         </tr>"""
 
         def duration = 'N/A'
@@ -209,14 +230,6 @@ ${cephImageRow}
 ${cephMetaRows}
 ${infrastructureRow}
             <tr>
-                <td style="${lab}"><b>IBM Region</b></td>
-                <td style="${val}">${params.IBM_REGION ?: 'N/A'}</td>
-            </tr>
-            <tr>
-                <td style="${lab}"><b>VPC</b></td>
-                <td style="${val}">${params.VPC_NAME ?: 'N/A'}</td>
-            </tr>
-            <tr>
                 <td style="${lab}"><b>Build</b></td>
                 <td style="${val}"><a href="${env.BUILD_URL}">${env.JOB_NAME} #${env.BUILD_NUMBER}</a></td>
             </tr>
@@ -225,8 +238,9 @@ ${infrastructureRow}
                 <td style="${val}">${duration}</td>
             </tr>
 ${cosLogsRow}
-${ocsciReportRow}
 ${testCaseRowsHtml}
+${ocsciSectionHtml}
+${ocsciNoteRow}
         </table>
         </body>
         </html>
@@ -240,10 +254,12 @@ ${testCaseRowsHtml}
             if (fileExists(stateJson)) { attachFiles << stateJson }
         }
 
-        // ocs-ci JUnit results (small file, safe to attach)
         def logDir = "ocs-ci-logs-${env.BUILD_NUMBER}"
-        if (fileExists("ocs-ci/${logDir}/ocs-ci-test-junit-results.xml")) {
-            attachFiles << "ocs-ci/${logDir}/ocs-ci-test-junit-results.xml"
+        if (fileExists("ocs-ci/${logDir}/acceptance-junit-results.xml")) {
+            attachFiles << "ocs-ci/${logDir}/acceptance-junit-results.xml"
+        }
+        if (fileExists("ocs-ci/${logDir}/tier1-junit-results.xml")) {
+            attachFiles << "ocs-ci/${logDir}/tier1-junit-results.xml"
         }
 
         def attachPattern = attachFiles.join(', ')
@@ -265,6 +281,24 @@ ${testCaseRowsHtml}
 }
 
 // ── Helper methods ──────────────────────────────────────────────────────────
+
+private String buildTestStatusCell(Map summary, boolean ocsciExecuted, String status) {
+    if (summary) {
+        def p = summary.pass  ?: 0
+        def f = summary.fail  ?: 0
+        def s = summary.skip  ?: 0
+        def t = summary.total ?: 0
+        return "<span style=\"color:#2E7D32;font-weight:bold;\">Passed: ${p}</span>" +
+            " &nbsp; <span style=\"color:#C62828;font-weight:bold;\">Failed: ${f}</span>" +
+            " &nbsp; <span style=\"color:#EF6C00;font-weight:bold;\">Skipped: ${s}</span>" +
+            " &nbsp; (Total: ${t})"
+    } else if (ocsciExecuted && status == 'SUCCESS') {
+        return 'Passed'
+    } else if (ocsciExecuted) {
+        return 'Failed'
+    }
+    return 'Not executed'
+}
 
 private Map readCephMetadata() {
     def cephNice = 'N/A'
@@ -360,24 +394,9 @@ private String buildTestCaseRows(
                 bodyRows.append(tcSectionHeader)
                 bodyRows.append(tcRow2('OCP + ODF deployment', deployResult))
 
-                if (scNames.isEmpty()) {
-                    def r = workloadOk ? 'Partial' : 'Fail'
-                    bodyRows.append(tcRow2('Storage class validation', r))
-                } else {
-                    scNames.each { sc ->
-                        def refs = 0
-                        text.split('\n').each { ln ->
-                            if (ln.toLowerCase().contains(sc)) {
-                                refs++
-                            }
-                        }
-                        def r = (workloadOk && refs > 0) ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
-                        bodyRows.append(tcRow2("Storage class validation -- ${sc}", r))
-                    }
-                }
-
-                def ioRes = (workloadOk && hasIoMetrics) ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
-                bodyRows.append(tcRow2('IO metrics (FIO / workload)', ioRes))
+                def storageIoOk = workloadOk && !scNames.isEmpty() && hasIoMetrics
+                def storageIoRes = storageIoOk ? 'Pass' : (workloadOk ? 'Partial' : 'Fail')
+                bodyRows.append(tcRow2('Storage class IO validation - CephFS, RBD', storageIoRes))
 
                 testCaseRowsHtml = bodyRows.toString()
             }
@@ -387,8 +406,7 @@ private String buildTestCaseRows(
         testCaseRowsHtml = """
             ${tcSectionHeader}
             ${tcRow2('OCP + ODF deployment', deployResult)}
-            ${tcRow2('Storage class validation', 'Not run')}
-            ${tcRow2('IO metrics (FIO / workload)', 'Not run')}"""
+            ${tcRow2('StorageClass IO validation - CephFS, RBD', 'Not run')}"""
     }
     return testCaseRowsHtml
 }

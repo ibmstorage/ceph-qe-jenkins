@@ -277,12 +277,12 @@ User: john.doe | Cluster: ocp-ibmc-29031a | OCP: 4.20.13 (released) | Ceph: rhce
 
 After merging the `odf-interop` branch to `main`:
 
-1. **Re-run the seed job** on `main` — updates `odf-interop` job parameters (`ODF_NIGHTLY_INDEX` removed; `ODF_CATALOG_IMAGE`, `ODF_OPERATOR_CHANNEL`, and choice-based `ODF_CHANNEL` added)
-2. **Smoke test** before relying on BVT downstream:
+1. **Re-run the seed job** on `main` — updates `odf-interop` (Acceptance + Tier-1 stages, 48h timeout, email layout)
+2. **Manually delete** the Jenkins job `odf-interop-test-pipeline` (display name: Interop : ODF-Ceph Testing [TEST]) — seed uses `removeAction: IGNORE`, so it is not auto-removed
+3. **Smoke test** before relying on BVT downstream:
    - Manual run with only `CEPH_IMAGE` + `RHCS_BUILD_VERSION` (mimics BVT) — confirm `released` OCP/ODF resolution
-   - Manual run with `OCP_CHANNEL=nightly` + `ODF_CHANNEL=nightly` — confirm dev catalog resolution
-3. **Delete** the `odf-interop-test-pipeline` Jenkins job manually (seed uses `removeAction: IGNORE`, so it is not auto-removed)
-4. **Migrate saved configs**: move any saved `ODF_NIGHTLY_INDEX` values to `ODF_CATALOG_IMAGE`, or use `ODF_CHANNEL=nightly` for auto-resolve; move explicit `stable-4.xx` values from old `ODF_CHANNEL` to `ODF_OPERATOR_CHANNEL`
+   - Confirm Acceptance (must pass) + Tier-1 (non-blocking) stages and dual OCS-CI email section
+4. **Migrate saved configs** (if still needed): move any saved `ODF_NIGHTLY_INDEX` values to `ODF_CATALOG_IMAGE`, or use `ODF_CHANNEL=nightly` for auto-resolve; move explicit `stable-4.xx` values from old `ODF_CHANNEL` to `ODF_OPERATOR_CHANNEL`
 
 ## Related Documentation
 
