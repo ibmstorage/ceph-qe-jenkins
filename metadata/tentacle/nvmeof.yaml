@@ -11,8 +11,8 @@ regression:
           ibmc: cx2-8x16
         build:
           - ibm
-      - name: "NVMe Tests on restart operations"
-        suite: suites/tentacle/nvmeof/tier-3_nvmeof_restart_operations.yaml
+      - name: "Restart, bdev lifecycle, cluster-under-IO, QoS negative, and GW placement"
+        suite: suites/tentacle/nvmeof/tier-3_nvmeof_operational_regression_suite.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml
         vm-size:
           ibmc: cx2-8x16
@@ -32,8 +32,8 @@ regression:
           ibmc: cx2-8x16
         build:
           - ibm
-      - name: "E2E Tests on NVMe Inband Authentication"
-        suite: suites/tentacle/nvmeof/tier-2_nvmeof_4-nvmeof-gwgroup_inbandauth_tests.yaml
+      - name: "E2E Tests on NVMe Inband Authentication and N-1 multinode failover and failback"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_4-nvmeof-gwgroup_inbandauth_n_1_failover_tests.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
         vm-size:
           ibmc: cx2-8x16
@@ -53,36 +53,8 @@ regression:
           ibmc: cx2-8x16
         build:
           - ibm
-      - name: "Tests on bdev and cluster operations"
-        suite: suites/tentacle/nvmeof/tier-3_nvmeof_bdev_fio_operations.yaml
-        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml
-        vm-size:
-          ibmc: cx2-8x16
-        build:
-          - ibm
-      - name: "Operations on NVMeoF namespaces"
-        suite: suites/tentacle/nvmeof/tier-4_nvmeof_namespace_operations.yaml
-        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml
-        vm-size:
-          ibmc: cx2-8x16
-        build:
-          - ibm
-      - name: "Negative tests on NVMe gateway CLI operations"
-        suite: suites/tentacle/nvmeof/tier-4_nvmeof_neg_tests.yaml
-        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml
-        vm-size:
-          ibmc: cx2-8x16
-        build:
-          - ibm
       - name: "[8.1] Tests on NVMe alerts and Health Checks"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof-alerts_health-checks-events.yaml
-        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-size:
-          ibmc: cx2-8x16
-        build:
-          - ibm
-      - name: "NVMeoF HA with a single GWgroup for n-1 node failures"
-        suite: suites/tentacle/nvmeof/tier-2_nvmeof_1gwgroup_8gwnodes_ha_tests.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
         vm-size:
           ibmc: cx2-8x16
@@ -98,13 +70,6 @@ regression:
       - name: "Basic NVMeoF GWgroup having 8 Gateways with scaledown and scaleup"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_1gwgroup_8gwnodes_loadbalancing_tests.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
-        vm-size:
-          ibmc: cx2-8x16
-        build:
-          - ibm
-      - name: "Negative tests on deployment of NVMe gateway in GWgroup scenarios"
-        suite: suites/tentacle/nvmeof/tier-4_8_1_nvmeof_neg_tests.yaml
-        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml
         vm-size:
           ibmc: cx2-8x16
         build:
