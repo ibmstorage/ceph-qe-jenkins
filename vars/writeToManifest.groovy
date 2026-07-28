@@ -114,12 +114,20 @@ def call(Map parameters) {
             // Add changed files
             sh("git add .")
 
-            // Commit changes — use list form to prevent shell injection from recipe/version strings
+            // Commit changes (shell injection hardening tracked separately)
             sh("git commit -m '${commitMessage}'")
 
-            // Push changes to repo — retry on transient network failures
-            retry(3) {
-                sh("git push origin HEAD:main")
+            // Push changes to repo — retry on transient network failures,
+            // abort with a clear message if the remote was never updated
+            try {
+                retry(3) {
+                    sh("git push origin HEAD:main")
+                }
+            } catch (hudson.AbortException e) {
+                error(
+                    "Failed to push manifest update to origin/main after retries. " +
+                    "Local commit exists but remote was NOT updated. Cause: ${e.message}"
+                )
             }
         } else {
             echo "No changes to commit"
