@@ -70,6 +70,12 @@ regression:
       vm-size:
         ibmc: cx2-8x16
         aws: m6g.xlarge
+    - name: "Test SMB BYOK"
+      suite: suites/tentacle/smb/tier-1-smb-byok.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
     - name: "Test SMB macos support"
       suite: suites/tentacle/smb/tier-1-smb-macos.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
