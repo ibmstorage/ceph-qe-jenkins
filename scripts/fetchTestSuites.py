@@ -1,3 +1,5 @@
+import sys
+
 import docopt
 import yaml
 
@@ -65,7 +67,12 @@ def get_testsuite(
             if float(build) not in test.get("version"):
                 return None
         except ValueError:
-            pass  # non-numeric build string (e.g. "rc", "main") — skip version filter
+            print(
+                f"ERROR: --build '{build}' is not a valid numeric version "
+                f"(e.g. 8.1, 9.2). Cannot filter suites by version.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
     # Check for build type in test config
     if build_type and build_type not in test.get("build", ["rh", "ibm", "upstream"]):
