@@ -407,6 +407,8 @@ pipeline {
                 dir("ceph-interop") {
                     script {
                         echo "Deploying cluster: ${env.CLUSTER_NAME}"
+                        // Set before deploy so teardown runs on both success and failure
+                        env.TEARDOWN_REQUIRED = 'true'
                         try {
                             sh """
                                 ${VENV_DIR}/bin/python3.12 run.py deploy \
@@ -685,16 +687,8 @@ pipeline {
                 def hasCluster = clusterName ? true : false
                 def venvDir = "${env.WORKSPACE}/ceph-interop/.venv"
 
-                // ── Teardown ──
-                def teardownCheck = (
-                    env.DEPLOY_PASSED == 'true' &&
-                    env.WORKLOAD_PASSED == 'true' &&
-                    env.ACCEPTANCE_PASSED == 'true'
-                )
-
-                if (!teardownCheck) {
-                    echo "Skipping teardown: teardown runs only when DEPLOY_PASSED, WORKLOAD_PASSED, and ACCEPTANCE_PASSED are all 'true'"
-                } else if (hasCluster && fileExists("${venvDir}/bin/python3.12")) {
+                // ── Teardown (mandatory when deploy was attempted) ──
+                if (env.TEARDOWN_REQUIRED == 'true' && hasCluster && fileExists("${venvDir}/bin/python3.12")) {
                     try {
                         dir("ceph-interop") {
                             echo "Tearing down cluster: ${clusterName}"
@@ -706,9 +700,10 @@ pipeline {
                         }
                     } catch (Exception e) {
                         echo "Teardown failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
                     }
                 } else {
-                    echo "Skipping teardown: cluster=${clusterName ?: '(none)'}"
+                    echo "Skipping teardown: TEARDOWN_REQUIRED=${env.TEARDOWN_REQUIRED ?: '(unset)'} cluster=${clusterName ?: '(none)'}"
                 }
 
                 // ── Archive cluster artifacts ──
