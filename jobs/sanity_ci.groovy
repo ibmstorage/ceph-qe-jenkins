@@ -52,7 +52,7 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
-    buildVersion: ["9.1", "9.0", "9.2"],
+    buildVersion: ["9.2", "9.1", "9.0"],
     rhelVersion: ["rhel-10", "rhel-9"],
     cronExpr: "30 3 * * *"
 )

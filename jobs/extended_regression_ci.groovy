@@ -17,7 +17,7 @@ def generate_jobs(data) {
     } else if (data.cephVersion.toLowerCase() == "tentacle") {
         release += ["rc", "released", "z0", "z1", "z2"]
         rhelVersion = ["rhel-10", "rhel-9"]
-        buildVersion = ["9.1", "9.0", "9.2"]
+        buildVersion = ["9.2", "9.1", "9.0"]
     }
     // Add the job configurations
     data.jobsConfiguration.add([

@@ -32,13 +32,13 @@ def job = pipelineJob("sync-ibm-build-publish") {
         parameters {
             choiceParam(
                 "CEPH_VERSION",
-                ["9.1", "9.0", "9.2", "8.1", "8.0", "7.1", "7.0", "6.1", "5.3"],
+                ["9.2", "9.1", "9.0", "8.1", "8.0", "7.1", "7.0", "6.1", "5.3"],
                 "Ceph version to update in manifest."
             )
             stringParam(
                 "CephBuildVersion",
                 "",
-                "Ceph build version (required, e.g., 19.2.0-139 or 17.2.1-145)."
+                "Ceph build version (required, e.g., 20.2.2-181 or 19.2.0-139)."
             )
             textParam(
                 "IMAGES",

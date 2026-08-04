@@ -29,7 +29,7 @@ def CEPH_RELEASE_CONFIG = [
         releaseExtra : ["rc", "released", "z0","z1","z2","z3","z4","z5"]
     ],
     "Tentacle": [
-        buildVersion : ["9.1", "9.0", "9.2"],
+        buildVersion : ["9.2", "9.1", "9.0"],
         rhelVersion  : ["rhel-10", "rhel-9"],
         releaseExtra : ["rc", "released", "z0", "z1", "z2", "z3"]
     ]
