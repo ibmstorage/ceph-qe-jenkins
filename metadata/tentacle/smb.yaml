@@ -84,6 +84,14 @@ regression:
         aws: m6g.xlarge
       version:
           - 9.2
+    - name: "Test SMB intergation with certmgr for GRPC service"
+      suite: suites/tentacle/smb/tier-1-grpc-certmgr.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+      version:
+          - 9.2
 extended_regression:
   metadata:
     cloud:
