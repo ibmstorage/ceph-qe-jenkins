@@ -49,7 +49,7 @@ def generate_jobs(cfg, data) {
     def buildType = ["IBM", "RH"]
     def description  = "IBM or RH build"
     def cronExpr = ""
-    if (fg.equalsIgnoreCase("NvmeOF")) {
+    if (fg.equalsIgnoreCase("NvmeOF") && ceph.equalsIgnoreCase("Tentacle")) {
         cronExpr = "H 1 * * 6"
     }
     if (fg == "callhome") {
