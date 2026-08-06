@@ -60,7 +60,7 @@ regression:
         aws: m6g.xlarge
     - name: "Test IP based access control"
       suite: suites/tentacle/smb/tier-1-smb-ip-based-access-control.yaml
-      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      global-conf: conf/tentacle/smb/1admin-5node-2client-ip-access.yaml
       vm-size:
         ibmc: cx2-8x16
         aws: m6g.xlarge
