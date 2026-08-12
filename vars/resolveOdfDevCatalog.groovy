@@ -4,8 +4,13 @@
  * Runs scripts/ocs-build.sh from the pipeline SCM checkout (stable-tag digest
  * match → konflux build) and returns the tag-based pull spec.
  *
- * Returns [tag, digest, pullSpec, stableTag]. Throws if the catalog image
- * cannot be resolved on Quay.
+ * Resolution order:
+ *   1. Find the latest-stable-{minor}.X tag and match its digest to a *.konflux tag.
+ *   2. If no digest match is found, fall back to the latest *.konflux tag by version sort
+ *      (warnings printed to the build log).
+ *
+ * Returns [tag, digest, pullSpec, stableTag].
+ * Throws if no *.konflux tag exists at all for the requested minor version.
  */
 
 def call(Map parameters) {
@@ -34,11 +39,14 @@ def call(Map parameters) {
             returnStatus: true
         )
 
+        // Always surface stderr — contains DEBUG lines on success, WARNING lines on fallback
+        def stderr = fileExists(errFile) ? readFile(errFile).trim() : ''
+        if (stderr) {
+            echo "resolveOdfDevCatalog [ocs-build.sh stderr]:\n${stderr}"
+        }
+
         if (rc != 0) {
-            def detail = fileExists(errFile) ? readFile(errFile).trim() : ''
-            if (!detail) {
-                detail = "ocs-build.sh exited ${rc}"
-            }
+            def detail = stderr ?: "ocs-build.sh exited ${rc}"
             throw new RuntimeException(
                 "ODF catalog image not found for minor ${odfMinor}: ${detail}"
             )

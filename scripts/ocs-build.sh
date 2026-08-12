@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 # Resolve the stable Konflux ODF catalog index for an OCS/ODF minor version.
 #
-# Matches the latest-stable-{minor}.X rolling tag to a *.konflux tag sharing
-# the same manifest digest, then prints the full pull spec (konflux tag).
+# Resolution order:
+#   1. Find the highest latest-stable-{minor}.X rolling tag on Quay and read its
+#      manifest digest.
+#   2. Find the *.konflux tag for that minor that shares the same digest → exact
+#      match between the stable pointer and the Konflux build.
+#   3. If no digest match is found, fall back to the highest *.konflux tag for
+#      that minor by version sort and emit a WARNING to stderr.
+#   4. If no *.konflux tag exists at all for the minor, exit non-zero.
+#
+# All diagnostic output (DEBUG/WARNING) goes to stderr only; stdout is clean.
 #
 # Usage:
 #   ./ocs-build.sh <version>              # quay.io/rhceph-dev/ocs-registry:4.22.0-105.konflux
 #   ./ocs-build.sh --tag-only <version>   # tag name only (e.g. 4.22.0-105.konflux)
-#   ./ocs-build.sh --json <version>       # {"tag":"...","digest":"...","pullSpec":"..."}
+#   ./ocs-build.sh --json <version>       # {"tag":"...","digest":"...","pullSpec":"...","stableTag":"..."}
 #
 # Example:
 #   ./ocs-build.sh 4.22
@@ -55,8 +63,13 @@ if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-TAGS_JSON="$(curl -ks --connect-timeout 15 --max-time 30 \
-    "${API_BASE}?onlyActiveTags=true&limit=200&filter_tag_name=like:${VERSION}")"
+API_URL="${API_BASE}?onlyActiveTags=true&limit=200&filter_tag_name=like:${VERSION}"
+echo "DEBUG: fetching tags from ${API_URL}" >&2
+
+TAGS_JSON="$(curl -ks --connect-timeout 15 --max-time 30 "${API_URL}")"
+
+TAG_COUNT="$(jq '.tags | length' <<< "$TAGS_JSON" 2>/dev/null || echo 0)"
+echo "DEBUG: fetched ${TAG_COUNT} tags (limit=200; if near the limit, some tags may be missing)" >&2
 
 STABLE_TAG="$(jq -r --arg ver "$VERSION" \
     '.tags[] | select(.name | test("^latest-stable-" + $ver + "\\.[0-9]+$")) | .name' \
@@ -64,8 +77,12 @@ STABLE_TAG="$(jq -r --arg ver "$VERSION" \
 
 if [[ -z "$STABLE_TAG" || "$STABLE_TAG" == "null" ]]; then
     echo "Error: no latest-stable-${VERSION}.X tag found on ${REGISTRY}/${REPO}" >&2
+    echo "DEBUG: available tags matching '${VERSION}':" >&2
+    jq -r '.tags[].name' <<< "$TAGS_JSON" | sort >&2
     exit 1
 fi
+
+echo "DEBUG: resolved stable tag -> ${STABLE_TAG}" >&2
 
 STABLE_SHA="$(jq -r --arg tag "$STABLE_TAG" \
     '.tags[] | select(.name == $tag) | .manifest_digest' <<< "$TAGS_JSON")"
@@ -75,13 +92,34 @@ if [[ -z "$STABLE_SHA" || "$STABLE_SHA" == "null" ]]; then
     exit 1
 fi
 
+echo "DEBUG: digest for ${STABLE_TAG} -> ${STABLE_SHA}" >&2
+
 KONFLUX_TAG="$(jq -r --arg sha "$STABLE_SHA" --arg ver "$VERSION" \
     '.tags[] | select(.manifest_digest == $sha and (.name | test("^" + $ver + "\\.[0-9]+-[0-9]+\\.konflux$"))) | .name' \
     <<< "$TAGS_JSON" | sort -V | tail -1)"
 
 if [[ -z "$KONFLUX_TAG" || "$KONFLUX_TAG" == "null" ]]; then
-    echo "Error: no konflux tag matching digest of ${STABLE_TAG} for ODF ${VERSION}" >&2
-    exit 1
+    echo "WARNING: no konflux tag matching digest of ${STABLE_TAG} (${STABLE_SHA}) for ODF ${VERSION}" >&2
+    echo "DEBUG: tags in this response that look like konflux candidates for ${VERSION}:" >&2
+    jq -r --arg ver "$VERSION" \
+        '.tags[] | select(.name | test("^" + $ver + "\\.[0-9]+-[0-9]+\\.konflux$")) | "\(.name)  digest=\(.manifest_digest)"' \
+        <<< "$TAGS_JSON" | sort >&2 || echo "  (none)" >&2
+    echo "DEBUG: all tags sharing digest ${STABLE_SHA}:" >&2
+    jq -r --arg sha "$STABLE_SHA" \
+        '.tags[] | select(.manifest_digest == $sha) | .name' \
+        <<< "$TAGS_JSON" | sort >&2 || echo "  (none)" >&2
+
+    # Fall back to the latest .konflux tag for this version by version sort
+    KONFLUX_TAG="$(jq -r --arg ver "$VERSION" \
+        '.tags[] | select(.name | test("^" + $ver + "\\.[0-9]+-[0-9]+\\.konflux$")) | .name' \
+        <<< "$TAGS_JSON" | sort -V | tail -1)"
+
+    if [[ -z "$KONFLUX_TAG" || "$KONFLUX_TAG" == "null" ]]; then
+        echo "Error: no konflux tag found at all for ODF ${VERSION} — cannot continue" >&2
+        exit 1
+    fi
+
+    echo "WARNING: falling back to latest konflux tag by version sort -> ${KONFLUX_TAG}" >&2
 fi
 
 DIGEST="${STABLE_SHA#sha256:}"
