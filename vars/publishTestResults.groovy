@@ -161,7 +161,8 @@ def call(Map parameters) {
                 results: testResult,
                 wrkspace: logDir,
                 product: buildType,
-                cephVersion: cephVersion
+                cephVersion: cephVersion,
+                containerImage: containerImage
             )
         } catch (Exception e) {
             echo "SPS BVT Validator job failed due to ${e.message}."

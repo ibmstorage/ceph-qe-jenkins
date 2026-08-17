@@ -23,7 +23,8 @@ def call(Map parameters) {
             "WRKSPACE=${parameters.wrkspace}",
             "TEST_RESULTS=${parameters.results}",
             "PRODUCT=${parameters.product}",
-            "VERSION=${parameters.cephVersion}"
+            "VERSION=${parameters.cephVersion}",
+            "CONTAINER_IMAGE=${parameters.containerImage}"
         ]) {
             sh '''
                 set -eo pipefail
@@ -41,7 +42,8 @@ def call(Map parameters) {
                 it_venv/bin/python3 bin/sps trigger bvt-result-verification \
                     -p BVT_RESULT="$TEST_RESULTS" \
                     -p PRODUCT="$PRODUCT" \
-                    -p VERSION="$VERSION"
+                    -p VERSION="$VERSION" \
+                    -p CONTAINER_IMAGE="$CONTAINER_IMAGE"
 
                 popd
                 rm -rf ibm-tools
