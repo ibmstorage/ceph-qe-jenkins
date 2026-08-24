@@ -25,7 +25,9 @@ regression:
     - name: "Tier-1 NFS Ganesha GRPC"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-grpc.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
-
+    - name: "Tier-1 NFS ganesha Scalable Stats for Prometheus"
+      suite: suites/tentacle/nfs/tier2-nfs-prometheus-stats.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
 upgrade:
   metadata:
     cloud:
