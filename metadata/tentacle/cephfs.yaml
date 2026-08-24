@@ -30,6 +30,9 @@ regression:
     - name: "Test Cephfs Mirroring"
       suite: suites/tentacle/cephfs/tier-1_cephfs_mirror.yaml
       global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
+    - name: "Test Cephfs Mirroring 9.2 enhancements"
+      suite: suites/tentacle/cephfs/tier-1_cephfs_mirror.yaml
+      global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
     - name: "Test Cephfs with Erasure"
       suite: suites/tentacle/cephfs/tier-2_fs_erasure.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
@@ -90,6 +93,9 @@ extended_regression:
     - name: "Test cephfs Mirroring System"
       suite: suites/tentacle/cephfs/tier-2_cephfs_mirroring_system.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_mirror_ha.yaml
+    - name: "Test Cephfs Mirroring Multi threading performance improvemnets"
+      suite: suites/tentacle/cephfs/tier-2_cephfs_mirror_snapshot_sync_perf.yaml
+      global-conf: conf/tentacle/cephfs/tier-1_cephfs_mirror.yaml
 upgrade:
   metadata:
     cloud:
