@@ -415,6 +415,16 @@ credentials:
               username: jenkins
               usernameSecret: true
 
+          - basicSSHUserPrivateKey:
+              description: "SSH Private key for AWS agent access"
+              id: "cephQeSaSvcFips"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:/secrets/ceph_qe_sa_svc_fips}"
+              scope: SYSTEM
+              username: cephuser
+              usernameSecret: true
+
 security:
   globalJobDslSecurityConfiguration:
     # Permit Job DSL to be run without the hassle of script security
