@@ -130,7 +130,11 @@ def call(Map parameters) {
     }
 
     // Check for FIPS mode
-    args += parameters.enableFipsMode ? ["--custom-config enable-fips-mode=True"] : []
+    def enableFipsMode = parameters.get("enableFipsMode")
+    if (enableFipsMode == null && binding.hasVariable("params")) {
+        enableFipsMode = params?.ENABLE_FIPS_MODE
+    }
+    args += (enableFipsMode != null && enableFipsMode.toString().toBoolean()) ? ["--custom-config enable-fips-mode=True"] : []
 
     // Check for Firewall mode
     args += parameters.enableFirewall ? ["--custom-config enable-firewall=True"] : []
