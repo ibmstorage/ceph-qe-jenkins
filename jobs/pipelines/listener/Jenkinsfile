@@ -155,7 +155,7 @@ pipeline {
                                 name: "CUSTOM_CONFIG", value: customConfigs
                             ),
                             booleanParam(name: "UPDATE_BVT_RESULTS", value: true),
-                            booleanParam(name: "TRIGGER_ODF_INTEROP", value: true)
+                            booleanParam(name: "TRIGGER_DATA_FOUNDATION_INTEROP", value: true)
                         ]
                     ])
 

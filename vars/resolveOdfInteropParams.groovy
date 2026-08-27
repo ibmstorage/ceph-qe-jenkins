@@ -13,6 +13,7 @@
  *   - ocpChannel / ocpChannelOverride: "released" (default) or "nightly"
  *   - odfBuildChannel / odfChannel: "released" (default) or "nightly" — catalog source when no image override
  *   - odfCatalogImage: when set, takes precedence over odfBuildChannel
+ *   - product: odf (default) | fdf — selects ODF vs FDF catalog auto-resolve
  *
  * Also supports BVT-style: JOB_NAME <stream>-bvt-ci + BUILD_VERSION + overrides (no inferAuto).
  */
@@ -79,6 +80,7 @@ def call(Map parameters) {
 }
 
 def inferAuto(Map p) {
+    def product = (p.product ?: 'odf').toString().trim().toLowerCase()
     def img = p.cephImage?.toString()?.trim()
     if (!img) {
         throw new RuntimeException('inferAuto: cephImage (CEPH_IMAGE) is required')
@@ -92,6 +94,7 @@ def inferAuto(Map p) {
         (p.odfBuildChannel ?: p.odfChannel ?: defaults.odfChannel ?: 'released').toString().trim()
     )
     def odfCatalogImage = p.odfCatalogImage?.toString()?.trim() ?: ''
+    def psf = p.pullSecretFile?.toString()?.trim() ?: ''
 
     def bv = p.rhcsBuildVersion?.toString()?.trim()
     if (bv) {
@@ -103,14 +106,15 @@ def inferAuto(Map p) {
         }
         return resolveByRhcsVersion(
             rhcsVer, ocpMinor,
-            "RHCS_BUILD_VERSION '${bv}' → RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → API (OCP=${ocpChannel}, ODF=${odfBuildChannel})",
+            "RHCS_BUILD_VERSION '${bv}' → RHCS '${rhcsVer}' → OCP/${product == 'fdf' ? 'FDF' : 'ODF'} ${ocpMinor} → API (OCP=${ocpChannel}, ${product == 'fdf' ? 'FDF' : 'ODF'}=${odfBuildChannel})",
             ocpChannel,
             odfBuildChannel,
-            odfCatalogImage
+            odfCatalogImage,
+            product,
+            psf
         )
     }
 
-    def psf = p.pullSecretFile?.toString()?.trim()
     if (!psf) {
         throw new RuntimeException(
             'inferAuto: set RHCS_BUILD_VERSION (e.g. 9.1) or pass pullSecretFile so podman can read the image'
@@ -139,10 +143,12 @@ def inferAuto(Map p) {
 
     return resolveByRhcsVersion(
         rhcsVer, ocpMinor,
-        "podman + cephadm: ceph_git_nice_ver '${nice}' → RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → API (OCP=${ocpChannel}, ODF=${odfBuildChannel})",
+        "podman + cephadm: ceph_git_nice_ver '${nice}' → RHCS '${rhcsVer}' → OCP/${product == 'fdf' ? 'FDF' : 'ODF'} ${ocpMinor} → API (OCP=${ocpChannel}, ${product == 'fdf' ? 'FDF' : 'ODF'}=${odfBuildChannel})",
         ocpChannel,
         odfBuildChannel,
-        odfCatalogImage
+        odfCatalogImage,
+        product,
+        psf
     )
 }
 
@@ -165,12 +171,22 @@ def validateBuildChannel(String channel, String label) {
     }
 }
 
-def resolveOdfCatalogPullSpec(String odfCatalogImage, String odfBuildChannel, String ocpMinor) {
-    if (odfCatalogImage) {
-        echo "resolveOdfInteropParams: using ODF_CATALOG_IMAGE (ODF build channel ignored)"
-        return odfCatalogImage
+def resolveOdfCatalogPullSpec(
+    String catalogImage,
+    String buildChannel,
+    String ocpMinor,
+    String product = 'odf',
+    String pullSecretFile = ''
+) {
+    def productLabel = product == 'fdf' ? 'FDF' : 'ODF'
+    if (catalogImage) {
+        echo "resolveOdfInteropParams: using ${productLabel}_CATALOG_IMAGE (build channel ignored)"
+        return catalogImage
     }
-    if (odfBuildChannel == 'nightly') {
+    if (buildChannel == 'nightly') {
+        if (product == 'fdf') {
+            return resolveFdfCatalog(odfMinor: ocpMinor, pullSecretFile: pullSecretFile).pullSpec
+        }
         return resolveOdfDevCatalog(odfMinor: ocpMinor).pullSpec
     }
     return ''
@@ -306,7 +322,9 @@ def resolveByRhcsVersion(
     String howMsg = null,
     String ocpChannel = 'released',
     String odfBuildChannel = 'released',
-    String odfCatalogImage = ''
+    String odfCatalogImage = '',
+    String product = 'odf',
+    String pullSecretFile = ''
 ) {
     def resolved = resolveOcpFromOdfMinor(ocpMinor, ocpChannel)
     if (!resolved) {
@@ -316,9 +334,10 @@ def resolveByRhcsVersion(
 
     def stream = rhcsMajorToStream(parseLeadingMajor(rhcsVer, 'rhcsVer'))
     def odfOperatorChannel = "stable-${ocpMinor}"
-    def catalogPullSpec = resolveOdfCatalogPullSpec(odfCatalogImage, odfBuildChannel, ocpMinor)
+    def catalogPullSpec = resolveOdfCatalogPullSpec(odfCatalogImage, odfBuildChannel, ocpMinor, product, pullSecretFile)
 
-    def msg = howMsg ?: "RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → OCP ${resolved.ocpVersion} (${resolved.ocpChannel}), ODF ${odfOperatorChannel}"
+    def productLabel = product == 'fdf' ? 'FDF' : 'ODF'
+    def msg = howMsg ?: "RHCS '${rhcsVer}' → OCP/${productLabel} ${ocpMinor} → OCP ${resolved.ocpVersion} (${resolved.ocpChannel}), ${productLabel} ${odfOperatorChannel}"
     if (catalogPullSpec) {
         msg += " + catalog ${catalogPullSpec.split('/')[-1].take(48)}"
     } else if (odfBuildChannel == 'released') {

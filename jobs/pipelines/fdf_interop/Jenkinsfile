@@ -1,0 +1,220 @@
+// FDF Interop: OCP + IBM Fusion Data Foundation on IBM Cloud.
+// Deploy, FIO IO workloads (run-tests), then teardown. No ocs-ci tests.
+
+@Library("ceph-qe-libs@main") _
+
+pipeline {
+    agent { label "agents-interop" }
+
+    options {
+        timeout(time: 48, unit: 'HOURS')
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+    }
+
+    environment {
+        IBM_CLOUD_API_KEY       = credentials('ibmc-api-key')
+        IBM_COS_HMAC_ACCESS_KEY = credentials('ibm-cos-acces-key')
+        IBM_COS_HMAC_SECRET_KEY = credentials('ibm-cos-secret-key')
+        AWS_ACCESS_KEY_ID       = credentials('aws-systest-access')
+        AWS_SECRET_ACCESS_KEY   = credentials('aws-systest-secret-access')
+        VENV_DIR   = "${WORKSPACE}/ceph-interop/.venv"
+        INTEROP_PRODUCT = "fdf"
+    }
+
+    stages {
+
+        stage("Initialize Environment") {
+            steps {
+                script {
+                    def envName = params.ENV_NAME?.trim()
+                    if (!envName) {
+                        envName = "fdf-interop-${env.BUILD_NUMBER}"
+                    }
+                    env.ENV_NAME = envName
+                    echo "Environment name: ${env.ENV_NAME}"
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} - ${env.ENV_NAME}"
+                }
+            }
+        }
+
+        stage("Validate Parameters") {
+            steps {
+                script {
+                    def validation = null
+                    withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                        validation = validateInteropJob(
+                            product: 'fdf',
+                            params: params,
+                            pullSecretFile: env.PULL_SECRET_FILE,
+                            defaults: [ocpChannel: 'nightly', fdfChannel: 'nightly'],
+                            credentials: [
+                                ibmApiKey    : env.IBM_CLOUD_API_KEY,
+                                ibmCosAccess : env.IBM_COS_HMAC_ACCESS_KEY,
+                                ibmCosSecret : env.IBM_COS_HMAC_SECRET_KEY,
+                                awsAccessKey : env.AWS_ACCESS_KEY_ID,
+                                awsSecretKey : env.AWS_SECRET_ACCESS_KEY,
+                            ],
+                        )
+                    }
+
+                    if (validation.skip) {
+                        error("Unsupported RHCS version -- exiting gracefully as NOT_BUILT")
+                    }
+                    if (validation.errors) {
+                        error("Validation failed:\n" + validation.errors.collect { "  - ${it}" }.join("\n"))
+                    }
+
+                    currentBuild.description = formatInteropBuildDescription(
+                        product: 'fdf',
+                        envName: env.ENV_NAME,
+                        cephImage: params.CEPH_IMAGE,
+                    )
+                }
+            }
+        }
+
+        stage("Clone ceph-interop") {
+            steps {
+                dir("ceph-interop") {
+                    git(
+                        url: params.CEPH_INTEROP_REPO,
+                        branch: params.CEPH_INTEROP_BRANCH.trim(),
+                        credentialsId: "ceph-qe-sa-pat"
+                    )
+                }
+            }
+        }
+
+        stage("Setup Environment") {
+            steps {
+                dir("ceph-interop") {
+                    sh """
+                        python3.12 -m venv ${VENV_DIR}
+                        ${VENV_DIR}/bin/pip3.12 install --upgrade pip "setuptools<71" wheel
+                        ${VENV_DIR}/bin/pip3.12 install --no-build-isolation -e .
+                    """
+                }
+            }
+        }
+
+        stage("Ceph image metadata") {
+            steps {
+                script {
+                    def img = params.CEPH_IMAGE?.trim()
+                    if (!img) { return }
+                    withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                        fetchCephImageMetadata(image: img, pullSecretFile: env.PULL_SECRET_FILE)
+                    }
+                    currentBuild.description = formatInteropBuildDescription(
+                        product: 'fdf',
+                        envName: env.ENV_NAME,
+                        cephImage: params.CEPH_IMAGE,
+                    )
+                }
+            }
+        }
+
+        stage("Prepare Credentials") {
+            steps {
+                dir("ceph-interop") {
+                    script {
+                        sh 'mkdir -p configs'
+                        def secretPath = "configs/pull-secret.json"
+                        withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                            sh "cp \"\${PULL_SECRET_FILE}\" ${secretPath} && chmod 600 ${secretPath}"
+                        }
+                        writeYaml(file: 'configs/credentials.yaml', data: [
+                            aws: [access_key_id: env.AWS_ACCESS_KEY_ID, secret_access_key: env.AWS_SECRET_ACCESS_KEY],
+                            pull_secret_path: "${env.WORKSPACE}/ceph-interop/${secretPath}",
+                            accounts: [ibm_qe: [ibmcloud: [
+                                api_key: env.IBM_CLOUD_API_KEY,
+                                cos_hmac_access_key_id: env.IBM_COS_HMAC_ACCESS_KEY,
+                                cos_hmac_secret_access_key: env.IBM_COS_HMAC_SECRET_KEY,
+                            ]]],
+                        ], overwrite: true)
+                    }
+                }
+            }
+        }
+
+        stage("Update Config") {
+            steps {
+                dir("ceph-interop") {
+                    updateCephInteropConfig(product: 'fdf', envName: env.ENV_NAME, params: params)
+                }
+            }
+        }
+
+        stage("Deploy OCP + FDF") {
+            steps {
+                dir("ceph-interop") {
+                    script {
+                        env.TEARDOWN_REQUIRED = 'true'
+                        def paths = cephInteropPaths(envName: env.ENV_NAME, clusterId: env.CLUSTER_ID)
+                        try {
+                            sh """
+                                ${VENV_DIR}/bin/ceph-interop deploy \
+                                    --context '${env.CONTEXT_PATH}' \
+                                    --env-name '${env.ENV_NAME}' \
+                                    --cluster-id '${env.CLUSTER_ID}' \
+                                    --credentials configs/credentials.yaml \
+                                    --configuration '${env.CONFIGURATION_PATH}'
+                            """
+                            readCephInteropClusterState(envName: env.ENV_NAME, clusterId: env.CLUSTER_ID)
+                            env.DEPLOY_PASSED = 'true'
+                            echo "FDF deploy succeeded: ${env.OCP_CLUSTER_NAME ?: env.ENV_NAME}"
+                        } catch (Exception deployErr) {
+                            def oc = paths.absOcBinary
+                            def ns = "openshift-storage"
+                            echo "DEPLOY FAILED — collecting diagnostics"
+                            sh """
+                                ${oc} get storagecluster ocs-storagecluster -n ${ns} -o yaml 2>&1 || true
+                                ${oc} get csv -n ${ns} 2>&1 || true
+                                ${oc} get pods -n ${ns} -o wide 2>&1 || true
+                                ${oc} get catalogsource -n openshift-marketplace isf-data-foundation-catalog -o yaml 2>&1 || true
+                            """
+                            throw deployErr
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Run IO Workloads") {
+            steps {
+                dir("ceph-interop") {
+                    sh """
+                        ${VENV_DIR}/bin/ceph-interop run-tests \
+                            --context '${env.CONTEXT_PATH}' \
+                            --env-name '${env.ENV_NAME}' \
+                            --cluster-id '${env.CLUSTER_ID}' \
+                            --credentials configs/credentials.yaml \
+                            --configuration '${env.CONFIGURATION_PATH}' \
+                            -m workload tests/workloads/test_fio_rbd_cephfs.py -v
+                    """
+                    script {
+                        env.WORKLOAD_PASSED = 'true'
+                    }
+                }
+            }
+        }
+
+    }
+
+    post {
+        always {
+            script {
+                if (env.PIPELINE_SKIP == 'true') {
+                    currentBuild.result = 'NOT_BUILT'
+                    return
+                }
+                runInteropPostActions(
+                    product: 'fdf',
+                    cosPrefix: 'fdf-interop',
+                    includeOcsci: false,
+                )
+            }
+        }
+    }
+}

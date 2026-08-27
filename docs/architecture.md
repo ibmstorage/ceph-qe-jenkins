@@ -129,13 +129,14 @@ These pipelines mirror container images and RPM repositories from upstream regis
 | Sync Blue Compose | `sync-blue-compose` | Copy compose archive from IBM Artifactory |
 | Sync Mirror | `sync-mirror` | Mirror OS RPM repositories |
 
-### 3. ODF Interop Pipeline
+### 3. Interop Pipelines (ODF + FDF)
 
-| Pipeline | Job Name | Purpose |
-|---|---|---|
-| ODF Interop | `odf-interop` | Deploy OCP + ODF on IBM Cloud; run IO workloads and ocs-ci acceptance tests |
+| Pipeline | Job Name | Jenkinsfile | Purpose |
+|---|---|---|---|
+| ODF Interop | `odf-interop` | `jobs/pipelines/odf_interop/Jenkinsfile` | Deploy OCP + ODF, IO workloads, ocs-ci acceptance + tier-1 |
+| FDF Interop | `fdf-interop` | `jobs/pipelines/fdf_interop/Jenkinsfile` | Deploy OCP + FDF + IO workloads (no ocs-ci) |
 
-This pipeline runs on the dedicated `agents-interop` agent with an 8-hour timeout. It is triggered automatically by `bvt-ci` (when `BUILD_TYPE=rh` and `TRIGGER_ODF_INTEROP=true`) or manually.
+The ODF job is triggered by `bvt-ci` when `BUILD_TYPE=rh` and `TRIGGER_DATA_FOUNDATION_INTEROP=true`. FDF is triggered when `BUILD_TYPE=ibm` and the same flag is set (e.g. from `sync-blue-ceph-images`).
 
 ### 4. Maintenance Pipelines
 
@@ -175,7 +176,7 @@ This pipeline runs on the dedicated `agents-interop` agent with an 8-hour timeou
 │  4. Run all suites in parallel on IBM Cloud / AWS VMs               │
 │  5. cleanupCluster after each suite                                 │
 │  6. publishTestResults → Report Portal, Google Sheets, email, COS   │
-│  7. If SUCCESS + BUILD_TYPE=rh + TRIGGER_ODF_INTEROP → odf-interop  │
+│  7. If SUCCESS + TRIGGER_DATA_FOUNDATION_INTEROP → odf-interop (RH) or fdf-interop (IBM) │
 └────────────┬──────────────────────────────┬────────────────────────┘
              │  (downstream)                │  (manual / scheduled)
              ▼                              ▼
@@ -403,5 +404,6 @@ Dashboard views are declared in `views/infra_view.groovy` and group jobs by rege
 ## Related Documentation
 
 - [ODF Interop Pipeline](jobs/odf_interop.md)
+- [FDF Interop Pipeline](jobs/fdf_interop.md)
 - [Sync Manifest Images](jobs/sync_manifest_images.md)
 - [Cleanup Registry Images](jobs/cleanup_registry_images.md)

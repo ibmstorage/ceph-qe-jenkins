@@ -4,6 +4,43 @@
 
 The ODF Interop pipeline automates the deployment and testing of OpenShift Container Platform (OCP) with OpenShift Data Foundation (ODF) on IBM Cloud infrastructure. It provides end-to-end testing capabilities for Ceph storage integration with ODF.
 
+## ceph-interop CLI (framework migration)
+
+This pipeline uses the **new ceph-interop framework** (not legacy `run.py`):
+
+| Action | Command |
+|--------|---------|
+| Deploy | `ceph-interop deploy --context … --env-name ENV_NAME` |
+| IO workloads | `ceph-interop run-tests --env-name ENV_NAME --suite tests/workloads -m workload` |
+| Teardown | `ceph-interop teardown --env-name ENV_NAME --level all` |
+
+Setup installs the CLI with `pip install --no-build-isolation -e .` (dependencies from `pyproject.toml`).
+
+### Identity model
+
+| Concept | Jenkins param / env | ceph-interop flag |
+|---------|---------------------|-------------------|
+| Workspace key | `ENV_NAME` (default `interop-BUILD_NUMBER`) | `--env-name` |
+| OpenShift cluster name | Auto-generated; read from `state.json` after deploy | (internal) |
+| Cluster slot in context | From deployment context YAML (e.g. `ocp-1`) | `--cluster-id` (set from context after Update Config) |
+
+Deprecated: `CLUSTER_NAME` is an alias for `ENV_NAME` only — it no longer sets the OpenShift cluster name.
+
+### Artifact paths
+
+```
+ceph-interop/work/context/{ENV_NAME}/ocp-1/
+├── state.json
+├── bin/oc
+├── openshift/auth/kubeconfig
+└── workload-report-*.txt
+```
+
+Configuration and deployment context are taken from the **ceph-interop** checkout (`configs/configuration.yaml` and `deployments/infra/ocp/ocp-ibm-vpc-odf-internal-storage.yaml`), patched per build into isolated files under `deployments/jenkins/`:
+
+- `deployments/jenkins/interop-{ENV_NAME}.yaml` — deployment context
+- `deployments/jenkins/interop-{ENV_NAME}-configuration.yaml` — patched profiles (checkout `configs/configuration.yaml` is not modified)
+
 ## Pipeline Capabilities
 
 ### Workflow
@@ -17,7 +54,7 @@ The pipeline always executes the complete end-to-end workflow:
 ## Key Features
 
 ### Automated Cluster Management
-- **Auto-generated cluster names**: Format `ocp-ibmc-<build-number>-<random-hex>`
+- **Environment name**: `interop-<build-number>` (or `ENV_NAME` override); OpenShift name auto-generated as `ocp-ibmc-<4hex>`
 - **IBM Cloud VPC deployment**: Uses existing VPC infrastructure
 - **DNS management**: Automatic Route53 configuration via AWS
 - **Credential management**: Secure injection from Jenkins secrets
@@ -26,13 +63,13 @@ The pipeline always executes the complete end-to-end workflow:
 - **Custom Ceph images**: Test specific Ceph versions/builds
 - **ODF operator channels**: Support for stable and nightly builds
 - **IO workload verification**: FIO-based testing on RBD and CephFS
-- **Configurable PVC count**: Test with multiple persistent volumes
+- **Configurable PVC count**: Currently ignored by `tests/workloads` (hardcoded `pvc_count=1` until ceph-interop adds `--interop-pvc-count`)
 
 ### Artifact Collection
-- **Cluster state files**: `state.json` and `configs/<cluster>-state.json`
-- **Authentication files**: Kubeconfig and cluster credentials
-- **Workload reports**: FIO test results and performance metrics
-- **Complete cluster artifacts**: Compressed archive of cluster directory
+- **Cluster state**: `work/context/{ENV_NAME}/ocp-1/state.json`
+- **Authentication files**: `work/context/{ENV_NAME}/ocp-1/openshift/auth/`
+- **Workload reports**: `work/context/{ENV_NAME}/ocp-1/workload-report-*.txt`
+- **Complete cluster artifacts**: `cluster-artifacts-{ENV_NAME}.tar.gz`
 
 ## Required Parameters
 
@@ -40,8 +77,8 @@ The pipeline always executes the complete end-to-end workflow:
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
+| `ENV_NAME` | (empty) | ceph-interop `--env-name` (default `odf-interop-BUILD_NUMBER`) |
 | `CEPH_IMAGE` | Ceph container image to test (REQUIRED) | `quay.io/rhceph-ci/rhceph@sha256:abc123...` |
-| `OCP_CHANNEL` | OCP build channel | `released` (default) or `nightly` |
 | `OCP_VERSION` | OpenShift version (optional if auto-resolved) | `4.21.10` |
 
 **Supported RHCS versions:** 8.0, 8.1 (squid) and 9.0, 9.1, 9.2 (tentacle). Unsupported versions (e.g. reef / RHCS 7) are detected and the build exits gracefully with status `NOT_BUILT`.
@@ -81,9 +118,11 @@ For **released** ODF installs, the ceph-interop deployer queries the cluster `od
 
 The pipeline runs [`scripts/ocs-build.sh`](../../scripts/ocs-build.sh):
 
-1. Finds `latest-stable-{minor}.X` on `quay.io/rhceph-dev/ocs-registry`
-2. Matches the konflux tag with the same manifest digest
-3. Returns a **tag-based** pull spec, e.g. `quay.io/rhceph-dev/ocs-registry:4.22.0-105.konflux`
+1. Paginates Quay for `*.konflux` tags matching the ODF minor (`filter_tag_name=like:{minor}.`)
+2. Returns the **highest** tag by version sort (newest dev build), e.g. `quay.io/rhceph-dev/ocs-registry:4.23.0-42.konflux`
+3. Use `ocs-build.sh --stable` locally to match the `latest-stable-{minor}.X` digest instead (older stable-aligned build)
+
+Returns a **tag-based** pull spec suitable for catalog source deployment.
 
 For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-interop deployer uses `redhat-operators` and picks the highest published `stable-M.m` channel ≤ the mapped minor.
 
@@ -99,22 +138,22 @@ For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-intero
 | `DEVICE_SIZE` | `50` | OSD disk size in GB |
 | `DEVICE_COUNT` | `3` | Number of OSD disks per worker |
 | `PVC_COUNT` | `2` | PVCs per storage type for workload tests |
-| `SSH_KEY_NAMES` | `ceph-qe-sa,ceph-qe-sa-svc` | IBM Cloud SSH keys |
 | `EMAIL_ADDRESS` | devops DL + stakeholders | Notification email recipients (comma-separated) |
+
+IBM Cloud SSH key names are fixed in the Jenkins configuration template (`ceph-qe-sa`, `ceph-qe-sa-svc`); they are not job parameters.
 
 ### Repository Configuration
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `CEPH_INTEROP_REPO` | `https://github.ibm.com/ceph-qe-ng/ceph-interop.git` | Deployment automation repository |
-| `CEPH_INTEROP_BRANCH` | `main` | Branch to checkout |
+| `CEPH_INTEROP_BRANCH` | `new` | Branch to checkout (framework on `new`; `main` is legacy) |
 
 ## Pipeline Stages
 
-### 1. Initialize Cluster Name
-- Generates unique cluster name automatically
-- Format: `ocp-ibmc-<build-number><random-hex>`
-- Sets `env.CLUSTER_NAME` for use throughout pipeline
+### 1. Initialize Environment
+- Sets `INTEROP_PRODUCT` (default `odf`) and `ENV_NAME`
+- OpenShift cluster name is resolved after deploy from `state.json`
 
 ### 2. Validate Parameters
 - Validates all required parameters
@@ -128,42 +167,31 @@ For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-intero
 
 ### 4. Setup Environment
 - Creates Python virtual environment
-- Installs dependencies from requirements.txt
-- Verifies Python 3.12+ availability
+- Installs `pip install --no-build-isolation -e .` from `pyproject.toml` (registers `ceph-interop` CLI)
 
 ### 5. Prepare Credentials
-- Writes credentials.yaml using Jenkins secrets
-- Creates pull-secret.json for image registry access
-- Sets restrictive file permissions
+- Writes `configs/credentials.yaml` with `accounts.ibm_qe.ibmcloud` (matches `credential_profile: ibm_qe`)
 
 ### 6. Update Config
-- Reads existing deployment.yaml
-- Updates with job parameters
-- Configures OCP, ODF, and infrastructure settings
+- Writes per-build `deployments/jenkins/interop-{ENV_NAME}-configuration.yaml` (from checkout `configs/configuration.yaml`) and `deployments/jenkins/interop-{ENV_NAME}.yaml` (deployment context)
+- Patches deployment context (`deployments/jenkins/interop-{ENV_NAME}.yaml`)
 
 ### 7. Deploy OCP + ODF
-- Creates OCP cluster on IBM Cloud VPC
-- Installs ODF operator with custom Ceph image
-- Configures storage cluster
+- `ceph-interop deploy --context … --env-name ENV_NAME`
 
 ### 8. Run IO Workloads
-- Creates PVCs on RBD and CephFS
-- Runs FIO performance tests
-- Generates workload reports
+- `ceph-interop run-tests --suite tests/workloads -m workload`
 
 ### 9. Teardown (Mandatory)
-- Cleans up all cluster resources
-- Removes VPC infrastructure
-- Always executed at the end of the pipeline
+- `ceph-interop teardown --env-name ENV_NAME --level all`
 
 ## Post-Build Actions
 
 ### Artifact Archival
-- `state.json` - Cluster state and metadata
-- `configs/<cluster>-state.json` - Legacy state file
-- `cluster-artifacts-<cluster>.tar.gz` - Complete cluster directory
-- `work/clusters/<cluster>/openshift/auth/*` - Authentication files
-- `work/clusters/<cluster>/workload-report-*.txt` - Test results
+- `work/context/{ENV_NAME}/ocp-1/state.json`
+- `cluster-artifacts-{ENV_NAME}.tar.gz`
+- `work/context/{ENV_NAME}/ocp-1/openshift/auth/*`
+- `work/context/{ENV_NAME}/ocp-1/workload-report-*.txt`
 
 ### Email Notifications
 - Sent for all build results (success, failure, aborted)
@@ -183,7 +211,7 @@ For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-intero
 
 ### BVT-style auto-resolve (released OCP + released ODF)
 
-Matches what **bvt-ci** passes when `TRIGGER_ODF_INTEROP` is enabled:
+Matches what **bvt-ci** passes when `TRIGGER_DATA_FOUNDATION_INTEROP` is enabled:
 
 ```
 CEPH_IMAGE=quay.io/rhceph-dev/rhceph-9-rhel9:...
@@ -286,6 +314,7 @@ After merging the `odf-interop` branch to `main`:
 
 ## Related Documentation
 
+- [FDF Interop Pipeline](./fdf_interop.md)
 - [Cleanup Registry Images](./cleanup_registry_images.md)
 - [Sync Manifest Images](./sync_manifest_images.md)
 - [ceph-interop Repository](https://github.ibm.com/ceph-qe-ng/ceph-interop)

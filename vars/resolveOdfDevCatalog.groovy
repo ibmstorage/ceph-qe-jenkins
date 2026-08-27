@@ -1,13 +1,14 @@
 /**
  * Resolve the Konflux ODF catalog index image for an ODF/OCP minor.
  *
- * Runs scripts/ocs-build.sh from the pipeline SCM checkout (stable-tag digest
- * match → konflux build) and returns the tag-based pull spec.
+ * Runs scripts/ocs-build.sh from the pipeline SCM checkout and returns the
+ * tag-based pull spec.
  *
- * Resolution order:
- *   1. Find the latest-stable-{minor}.X tag and match its digest to a *.konflux tag.
- *   2. If no digest match is found, fall back to the latest *.konflux tag by version sort
- *      (warnings printed to the build log).
+ * Default resolution (ocs-build.sh with no flags):
+ *   Highest *.konflux tag for the minor by version sort (newest dev build).
+ *
+ * Optional stable resolution (ocs-build.sh --stable):
+ *   Match latest-stable-{minor}.X digest to a *.konflux tag; fallback with WARNING.
  *
  * Returns [tag, digest, pullSpec, stableTag].
  * Throws if no *.konflux tag exists at all for the requested minor version.

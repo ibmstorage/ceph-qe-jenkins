@@ -279,6 +279,7 @@ Documentation lives in [`docs/`](docs/).
 |---|---|
 | [`docs/architecture.md`](docs/architecture.md) | High-level architecture: repo layout, pipelines, agents, shared library reference |
 | [`docs/jobs/odf_interop.md`](docs/jobs/odf_interop.md) | ODF Interop pipeline parameters and usage |
+| [`docs/jobs/fdf_interop.md`](docs/jobs/fdf_interop.md) | FDF Interop pipeline parameters and usage |
 | [`docs/jobs/sync_manifest_images.md`](docs/jobs/sync_manifest_images.md) | Image sync from manifest repo |
 | [`docs/jobs/cleanup_registry_images.md`](docs/jobs/cleanup_registry_images.md) | Registry image cleanup |
 

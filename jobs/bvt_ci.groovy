@@ -107,9 +107,9 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("EMAIL_ADDRESS", "cephqe-devops@wwpdl.vnet.ibm.com, ibmceph-build@wwpdl.vnet.ibm.com", "Email Address")
 
                 booleanParam(
-                    "TRIGGER_ODF_INTEROP",
+                    "TRIGGER_DATA_FOUNDATION_INTEROP",
                     false,
-                    "Enabling this parameter flag will trigger odf-interop pipeline when BUILD_TYPE=RH and this BVT succeeds"
+                    "After successful BVT, trigger odf-interop (BUILD_TYPE=RH) or fdf-interop (BUILD_TYPE=IBM)"
                 )
             }
         }

@@ -23,6 +23,12 @@ def job = pipelineJob("odf-interop") {
 
         parameters {
             stringParam(
+                "ENV_NAME",
+                "",
+                "ceph-interop --env-name workspace key (default: interop-BUILD_NUMBER). Overrides deprecated CLUSTER_NAME alias."
+            )
+
+            stringParam(
                 "CEPH_INTEROP_REPO",
                 "https://github.ibm.com/ceph-qe-ng/ceph-interop.git",
                 "Ceph Interop repository URL"
@@ -31,7 +37,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "CEPH_INTEROP_BRANCH",
                 "main",
-                "Branch of the ceph-interop repository to checkout"
+                "Branch of the ceph-interop repository to checkout (default: main)"
             )
 
             // ── Ceph (required) ─────────────────────────────────────
@@ -93,12 +99,6 @@ def job = pipelineJob("odf-interop") {
             )
 
             stringParam(
-                "SSH_KEY_NAMES",
-                "ceph-qe-sa,ceph-qe-sa-svc",
-                "Comma-separated IBM Cloud SSH key names for VSI access (e.g. ceph-qe-sa,ceph-qe-sa-svc)"
-            )
-
-            stringParam(
                 "MASTER_COUNT",
                 "3",
                 "Number of master (control plane) nodes"
@@ -125,7 +125,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "CLUSTER_NAME",
                 "",
-                "Cluster name — auto-generated (leave empty). Pipeline always runs: deploy → workload → teardown"
+                "(Deprecated) Alias for ENV_NAME. OpenShift cluster name is auto-generated and read from state.json after deploy."
             )
 
             stringParam(
