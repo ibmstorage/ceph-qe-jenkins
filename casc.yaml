@@ -269,6 +269,12 @@ credentials:
               secret: "${readFile:/secrets/ibm_jira_token}"
 
           - string:
+              description: "Access Token - icr-preprod"
+              id: "preprod-icr-token"
+              scope: GLOBAL
+              secret: "${readFile:/secrets/preprod_icr_io_passwd}"
+
+          - string:
               description: "Access Token - icr-stg"
               id: "stg-icr-token"
               scope: GLOBAL
