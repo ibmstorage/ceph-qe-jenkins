@@ -114,8 +114,11 @@ def call(Map parameters) {
             // Add changed files
             sh("git add .")
 
-            // Commit changes (shell injection hardening tracked separately)
-            sh("git commit -m '${commitMessage}'")
+            // Pass commit message via environment variable so shell never
+            // interprets user-controlled content — no temp file, no staging risk.
+            withEnv(["COMMIT_MSG=${commitMessage}"]) {
+                sh('git commit -m "$COMMIT_MSG"')
+            }
 
             // Push changes to repo — retry on transient network failures,
             // abort with a clear message if the remote was never updated
