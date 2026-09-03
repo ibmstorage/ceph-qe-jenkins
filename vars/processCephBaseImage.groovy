@@ -9,75 +9,50 @@
 
 def call(String image) {
 
-    // Constants
-    final String PROD_REGISTRY = "cp.icr.io"
-    final String STG_REGISTRY = "cp.stg.icr.io"
-    final String PREPROD_REGISTRY = "preprod.icr.io"
-    final String VENDOR = "ibm"
+    if (!image?.toString()?.trim()) {
+        throw new RuntimeException("Mandatory parameter 'image' is missing or empty")
+    }
 
     Map result = [:]
-
-    // Build credential list — only include preprod token when image is from preprod registry
-    def credList = [
-        string(credentialsId: "icr-token", variable: "icr_token"),
-        string(credentialsId: "stg-icr-token", variable: "stg_icr_token")
-    ]
-    if ( image.startsWith(PREPROD_REGISTRY) ) {
-        credList << string(credentialsId: "preprod-icr-token", variable: "preprod_icr_token")
-    }
-
-    withCredentials(credList) {
-
-        // Login to the registry
-        def crLoginStatus = 1
-        if ( image.startsWith(PROD_REGISTRY) ) {
-            crLoginStatus = sh(
-                returnStatus: true,
-                script: "podman login ${PROD_REGISTRY} --username cp --password ${icr_token}"
-                )
-        } else if ( image.startsWith(STG_REGISTRY) ) {
-            crLoginStatus = sh(
-                returnStatus: true,
-                script: "podman login ${STG_REGISTRY} --username cp --password ${stg_icr_token}"
-            )
-        } else if ( image.startsWith(PREPROD_REGISTRY) ) {
-            crLoginStatus = sh(
-                returnStatus: true,
-                script: "podman login ${PREPROD_REGISTRY} --username cp --password ${preprod_icr_token}"
-            )
-        } else {
-            throw new RuntimeException("Unsupported registry. Expected ${PROD_REGISTRY}, ${STG_REGISTRY} or ${PREPROD_REGISTRY}")
-        }
-
-        if ( crLoginStatus != 0 ) {
-            throw new RuntimeException("Unable to pull the specified ceph-base image.")
-        }
-    }
-
-    // This is IBM specific
-    result["vendor"] = VENDOR
-
-    // Pull the ceph-common version
-    try {
-        sh(script: "podman image pull " + image)
-    } catch (Exception e) {
-        throw new RuntimeException("Failed to pull image: ${image}. Error: ${e.message}")
+    def ref = image.toLowerCase()
+    if (ref.contains("ibm-ceph")) {
+        result["vendor"] = "ibm"
+        result["buildType"] = "IBM"
+    } else if (ref.contains("rh-osbs") || ref.contains("rhceph")) {
+        result["vendor"] = "redhat"
+        result["buildType"] = "RH"
+    } else {
+        throw new RuntimeException(
+            "Unsupported ceph base image vendor for: ${image}. " +
+            "Expected image reference to contain ibm-ceph, rhceph, or rh-osbs."
+        )
     }
 
     def cephVersion = ""
     try {
-        def cephVerCmd = "podman run --rm --entrypoint '' " + image
-        cephVerCmd += " rpm -qa --qf '%{version}-%{release}' ceph-common"
-        cephVersion = sh(
-            returnStdout: true,
-            script: cephVerCmd
-        ).trim()
-        echo("Debug: The ceph-common version found in " + image + " is " + cephVersion)
+        withCredentials([file(credentialsId: "all-cr-auth", variable: "CR_AUTH_FILE")]) {
+
+            sh(script: "podman pull --authfile \${CR_AUTH_FILE} " + image)
+
+            def cephVerCmd = "podman run --rm --entrypoint '' " + image
+            cephVerCmd += " rpm -qa --qf '%{version}-%{release}' ceph-common"
+            cephVersion = sh(
+                returnStdout: true,
+                script: cephVerCmd
+            ).trim()
+            echo("Debug: The ceph-common version found in " + image + " is " + cephVersion)
+        }
     } catch (Exception e) {
-        throw new RuntimeException("Failed to extract ceph version from image. Error: ${e.message}")
+        throw new RuntimeException("Failed to process ceph base image ${image}: ${e.message}")
     }
 
-    // The output would be => 20.1.0-185.el9cp
+    if (!cephVersion) {
+        throw new RuntimeException("No ceph-common version found in image: ${image}")
+    }
+
+    // cephVersion is the raw rpm output e.g. "20.2.1-185.el9cp"
+    // result["cephVersion"] strips the trailing .el*cp suffix  e.g. "20.2.1-185"
+    // The raw string is used below for startsWith/endsWith checks; callers use result["cephVersion"]
     def lastDotIndex = cephVersion.lastIndexOf(".")
     if ( lastDotIndex != -1 ) {
         result["cephVersion"] = cephVersion.substring(0, lastDotIndex)
@@ -133,19 +108,20 @@ def call(String image) {
         result["osPlatform"] = "rhel-10"
     }
 
+    if ( !result["osPlatform"] ) {
+        throw new RuntimeException(
+            "Unable to determine osPlatform from ceph version: ${cephVersion}. " +
+            "Expected version string to end with el8cp, el9cp, or el10cp."
+        )
+    }
+
     // Cleanup pulled image
+    // Auth was done via authfile (not podman login), so no logout is needed
     try {
         sh(script: "podman rmi ${image}")
         println("Successfully cleaned up image: ${image}")
     } catch (Exception e) {
         println("Warning: Failed to remove image ${image}. Error: ${e.message}")
-    }
-
-    // Logout
-    try {
-        sh(script:"podman logout --all")
-    } catch (Exception e) {
-        println("Warning: Failed to logout from registries. Error: ${e.message}")
     }
 
     // Return the result

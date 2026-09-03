@@ -125,10 +125,42 @@ pipeline {
                     }
 
                     // read manifest to get compose
-                    repoBuild = readFromManifest(recipe: buildInfo.recipe, job: job)
+                    def repoBuild = readFromManifest(recipe: buildInfo.recipe, job: job)
+
+                    // For RH builds, guard against compose/container version mismatch.
+                    // The compose listener writes nightly.version; the konflux listener
+                    // brings containers. Both must carry the same build number before
+                    // BVT is triggered, otherwise the run would be on mismatched artefacts.
+                    if (buildInfo.type?.toLowerCase() == "redhat" && cephBase) {
+                        def composeVersion = repoBuild?."${buildTag}"?.version
+                        if (!composeVersion) {
+                            echo(
+                                "Compose version missing from manifest (${buildTag}.version is null) — " +
+                                "skipping BVT trigger until manifest is updated."
+                            )
+                            currentBuild.description = "BVT skipped: compose version missing from manifest"
+                            return
+                        }
+                        def imageInfo = processCephBaseImage(cephBase)
+                        if (composeVersion != imageInfo.cephVersion) {
+                            echo(
+                                "Compose/container version mismatch — skipping BVT trigger.\n" +
+                                "  Compose (manifest nightly.version): ${composeVersion}\n" +
+                                "  Container (from image):             ${imageInfo.cephVersion}\n" +
+                                "BVT will be triggered once both sides carry the same build."
+                            )
+                            currentBuild.description = (
+                                "BVT skipped: compose=${composeVersion}, " +
+                                "container=${imageInfo.cephVersion}"
+                            )
+                            return
+                        }
+                        echo(
+                            "Compose and container versions match (${composeVersion}) — proceeding with BVT trigger."
+                        )
+                    }
 
                     // Create repo url and check if it is available in the manifest
-
                     def repoUrl = repoBuild?."${buildTag}"?.repositories?."${repoDc}"?."${platform}"
                     if (!repoUrl) {
                         error(

@@ -224,6 +224,28 @@ def call(Map parameters) {
         jobConfig.containerImage = params.CONTAINER_IMAGE
     }
 
+    if ( ! jobConfig.containerImage?.toString()?.trim() ) {
+        error("Container image is required but not set")
+    }
+
+    // For RH builds, validate that the container image version matches the manifest version.
+    // Compose and containers arrive via separate pipelines for RH, so a mismatch is possible.
+    // IBM builds are excluded — their sync pipeline guarantees consistency.
+    // Skip the check when CONTAINER_IMAGE is explicitly provided by the user (e.g. manual test
+    // executor runs) — the guard is only meaningful for fully automated flows where the image
+    // comes from the manifest.
+    if ( jobConfig.buildType?.toLowerCase() == "rh" && !params.CONTAINER_IMAGE ) {
+        def imageInfo = processCephBaseImage(jobConfig.containerImage)
+        def manifestVersion = recipeContent."${params.RELEASE}".version
+        if ( manifestVersion != imageInfo.cephVersion ) {
+            error(
+                "The ceph version in recipe file (${manifestVersion}) and image " +
+                "(${imageInfo.cephVersion}) don't match."
+            )
+        }
+        jobConfig.cephVersion = imageInfo.cephVersion
+    }
+
     // Snapshot nightly AFTER all overrides (REPO, CONTAINER_IMAGE) are applied so
     // promotion reflects the exact repo/image that sanity validated, not raw manifest data.
     if (recipeContent.nightly) {

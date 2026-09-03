@@ -414,13 +414,13 @@ Reads the qe-ceph-manifest YAML files for a given vendor and release version and
 
 **File:** [`vars/processCephBaseImage.groovy`](../vars/processCephBaseImage.groovy)
 
-Parses an IBM-registry Ceph container image URL to derive the vendor, version components, Ceph release name, and OS platform without pulling the image.
+Pulls a Ceph container image and inspects the `ceph-common` RPM inside it to derive the vendor, version components, Ceph release name, and OS platform. Supports both IBM (`cp.icr.io`, `cp.stg.icr.io`, `preprod.icr.io`) and Red Hat (`quay.io/rhceph-ci`, `rh-osbs`) registries. Authentication is handled via the shared `all-cr-auth` credential (same authfile used by `syncBlueImages` and `checkImageInRegistry`).
 
 ### Parameters
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `image` | String | ✔ | Full container image URL from an IBM registry |
+| `image` | String | ✔ | Fully qualified container image reference (IBM or RH registry) |
 
 ### Return Value
 
@@ -428,11 +428,12 @@ Parses an IBM-registry Ceph container image URL to derive the vendor, version co
 
 | Key | Type | Description |
 |---|---|---|
-| `vendor` | String | Always `ibm` for IBM-registry images |
-| `cephVersion` | String | Ceph package version, e.g. `20.1.0` |
-| `releaseVersion` | String | Product release version |
-| `release` | String | Ceph release code name, e.g. `tentacle` |
-| `osPlatform` | String | Target OS, e.g. `rhel-9` |
+| `vendor` | String | `ibm` for IBM images, `redhat` for RH images |
+| `buildType` | String | `IBM` or `RH` |
+| `cephVersion` | String | Ceph package version stripped of OS suffix, e.g. `19.2.1-405` |
+| `releaseVersion` | String | Product release version, e.g. `8.1` |
+| `release` | String | Ceph release code name, e.g. `squid` |
+| `osPlatform` | String | Target OS platform, e.g. `rhel-9` |
 
 ---
 
