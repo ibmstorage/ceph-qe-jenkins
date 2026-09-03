@@ -196,6 +196,9 @@ pipeline {
                 }
 
                 echo "Send results to ${params.EMAIL_ADDRESS}"
+                // The build team requested to trigger SPS pipeline only for blue builds.
+                def boolPublishSPS = params.BUILD_TYPE?.toLowerCase() == "ibm"
+
                 publishTestResults(
                     cephVersion: jobConfigs.cephVersion,
                     rhsCephRepo: jobConfigs.rhsCephRepo,
@@ -203,6 +206,7 @@ pipeline {
                     buildType: jobConfigs.buildType,
                     rhBuild: jobConfigs.rhBuild,
                     platform: jobConfigs.platform,
+                    release: params.RELEASE,
                     cloudType: jobConfigs.cloudType,
                     logDir: jobConfigs.logDir,
                     resultsDir: jobConfigs.resultsDir,
@@ -215,7 +219,7 @@ pipeline {
                     rpLaunchDesc: jobConfigs.rpLaunchDesc,
                     rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
                     rpProjectName: jobConfigs.rpProjectName,
-                    triggerSPS: true
+                    triggerSPS: boolPublishSPS
                 )
             }
         }

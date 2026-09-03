@@ -26,6 +26,12 @@ def call(Map parameters) {
         )
     }
 
+    // Check release type of the build
+    def releaseType = parameters.get("release") ?: "nightly"
+    if ( !parameters.get("release") ) {
+        echo "WARNING: 'release' not provided to publishTestResults, defaulting to 'nightly'"
+    }
+
     // Check for results parameters
     def resultsDir = parameters.get("resultsDir")
     def resultsSummary = parameters.get("resultsSummary")
@@ -162,7 +168,8 @@ def call(Map parameters) {
                 wrkspace: logDir,
                 product: buildType,
                 cephVersion: cephVersion,
-                containerImage: containerImage
+                containerImage: containerImage,
+                release: releaseType
             )
         } catch (Exception e) {
             echo "SPS BVT Validator job failed due to ${e.message}."

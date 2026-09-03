@@ -17,6 +17,9 @@ def call(Map parameters) {
         usernamePassword(credentialsId: 'ceph-qe-sa-pat', usernameVariable: 'GHI_USER', passwordVariable: 'GHI_TOKEN'),
         string(credentialsId: 'sps-api-key', variable: 'CD_TEKTON_PIPELINE_APIKEY')
     ]) {
+        // paramemters.release holds the value nightly, rc, etc
+        // The parameter in SPS job that needs to be set is BUILD_TYPE
+        // The below are coded in handshake with the build team.
         withEnv([
             "CD_TEKTON_PIPELINE_URL=https://api.us-south.devops.cloud.ibm.com/pipeline/v2",
             "CD_TEKTON_PIPELINE_AUTH_TYPE=iam",
@@ -24,7 +27,8 @@ def call(Map parameters) {
             "TEST_RESULTS=${parameters.results}",
             "PRODUCT=${parameters.product}",
             "VERSION=${parameters.cephVersion}",
-            "CONTAINER_IMAGE=${parameters.containerImage}"
+            "CONTAINER_IMAGE=${parameters.containerImage}",
+            "BUILD_TYPE=${parameters.release}"
         ]) {
             sh '''
                 set -eo pipefail
@@ -43,7 +47,8 @@ def call(Map parameters) {
                     -p BVT_RESULT="$TEST_RESULTS" \
                     -p PRODUCT="$PRODUCT" \
                     -p VERSION="$VERSION" \
-                    -p CONTAINER_IMAGE="$CONTAINER_IMAGE"
+                    -p CONTAINER_IMAGE="$CONTAINER_IMAGE" \
+                    -p BUILD_TYPE="$BUILD_TYPE"
 
                 popd
                 rm -rf ibm-tools

@@ -88,15 +88,23 @@ pipeline {
                         return
                     }
 
+                    // Retrieve the bild details based on provided build type
+                    def buildSection = buildInfo[params.BUILD_TYPE]
+                    if ( !buildSection ) {
+                        println("No manifest section found ${params.BUILD_TYPE}")
+                        currentBuild.result = 'UNSTABLE'
+                        return
+                    }
+
                     // If ceph versions don't match let's abort as the ceph-base image is not synced
-                    if ( buildInfo?.nightly?.version != imageInfo?.cephVersion ) {
+                    if ( buildSection?.version != imageInfo?.cephVersion ) {
                         println("The ceph version in recipe file and image don't match.")
                         return
                     }
 
                     // Gather the repoURL - use default region or from params if available
                     def region = params.REGION ?: DEFAULT_REGION
-                    def repoURL = buildInfo.nightly.repositories."${region}"?."${imageInfo.osPlatform}"
+                    def repoURL = buildSection.repositories."${region}"?."${imageInfo.osPlatform}"
 
                     if ( !repoURL ) {
                         println("Repository URL not found for region: ${region}, platform: ${imageInfo.osPlatform}")
@@ -106,7 +114,7 @@ pipeline {
 
                     // Gather the custom configs for images
                     def customConfigs = ""
-                    buildInfo.nightly.images.each { key, image ->
+                    buildSection.images.each { key, image ->
                         if ( key == "ceph-base" ) {
                             return  // continue in closure
                         }
@@ -136,6 +144,9 @@ pipeline {
                                 string(name: "REPO", value: repoURL),
                                 string(name: "CONTAINER_IMAGE", value: cephBaseImage),
                                 string(name: "CUSTOM_CONFIG", value: customConfigs),
+                                // params.BUILD_TYPE is passed as RELEASE as BVT understands build_type is ibm or RH
+                                // they assume release is rc, nightly, etc
+                                string(name: "RELEASE", value: params.BUILD_TYPE),
                                 booleanParam(name: "UPDATE_BVT_RESULTS", value: true),
                                 booleanParam(name: "TRIGGER_DATA_FOUNDATION_INTEROP", value: true)
                             ]
