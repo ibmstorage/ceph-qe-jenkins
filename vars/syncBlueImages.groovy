@@ -19,10 +19,12 @@ def call(Map parameters) {
         def imageAndTag = imageSplit.join('/')
 
         // Identify the local image repository to be used
-        if ( imageRegistry == "cp.stg.icr.io" ) {
-            target_repo = "ibm-stage/"
-        } else if ( imageRegistry == "cp.icr.io" ) {
+        if ( imageRegistry == "cp.icr.io" ) {
             target_repo = "ibm-prod/"
+        } else if ( imageRegistry == "cp.stg.icr.io" ) {
+            target_repo = "ibm-stage/"
+        } else if ( imageRegistry == "preprod.icr.io" ) {
+            target_repo = "ibm-stage/"
         } else if ( imageRegistry == "registry.stage.redhat.io" ) {
             target_repo = "rh-stage/"
         } else if ( imageRegistry == "quay.io" ) {

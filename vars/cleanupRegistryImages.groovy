@@ -240,8 +240,10 @@ def determineTargetRepo(String sourceRegistry, String vendor) {
             return "ibm-prod/"
         } else if (sourceRegistry == "cp.stg.icr.io") {
             return "ibm-stage/"
-        } else {
+        } else if (sourceRegistry == "preprod.icr.io") {
             return "ibm-stage/"
+        } else {
+            throw new RuntimeException("Unsupported IBM registry: ${sourceRegistry}")
         }
     } else if (vendor == "redhat") {
         if (sourceRegistry == "registry.redhat.io") {

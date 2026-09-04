@@ -12,14 +12,21 @@ def call(String image) {
     // Constants
     final String PROD_REGISTRY = "cp.icr.io"
     final String STG_REGISTRY = "cp.stg.icr.io"
+    final String PREPROD_REGISTRY = "preprod.icr.io"
     final String VENDOR = "ibm"
 
     Map result = [:]
 
-    withCredentials([
+    // Build credential list — only include preprod token when image is from preprod registry
+    def credList = [
         string(credentialsId: "icr-token", variable: "icr_token"),
         string(credentialsId: "stg-icr-token", variable: "stg_icr_token")
-    ]) {
+    ]
+    if ( image.startsWith(PREPROD_REGISTRY) ) {
+        credList << string(credentialsId: "preprod-icr-token", variable: "preprod_icr_token")
+    }
+
+    withCredentials(credList) {
 
         // Login to the registry
         def crLoginStatus = 1
@@ -33,8 +40,13 @@ def call(String image) {
                 returnStatus: true,
                 script: "podman login ${STG_REGISTRY} --username cp --password ${stg_icr_token}"
             )
+        } else if ( image.startsWith(PREPROD_REGISTRY) ) {
+            crLoginStatus = sh(
+                returnStatus: true,
+                script: "podman login ${PREPROD_REGISTRY} --username cp --password ${preprod_icr_token}"
+            )
         } else {
-            throw new RuntimeException("Unsupported registry. Expected ${PROD_REGISTRY} or ${STG_REGISTRY}")
+            throw new RuntimeException("Unsupported registry. Expected ${PROD_REGISTRY}, ${STG_REGISTRY} or ${PREPROD_REGISTRY}")
         }
 
         if ( crLoginStatus != 0 ) {
