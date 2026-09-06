@@ -36,4 +36,7 @@ def job = pipelineJob("dns-cleanup") {
             stringParam("BRANCH", "main", "Ceph CI git branch")
         }
     }
+    triggers {
+        cron('30 00 * * *')
+    }
 }
