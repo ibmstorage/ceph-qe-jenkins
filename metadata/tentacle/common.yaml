@@ -135,6 +135,16 @@ released:
         - ibm
       platform:
         - rhel-9
+    - name: "Upgrade RHCS 9.0 released to 9x latest"
+      suite: suites/tentacle/upgrades/tier1-upgrade-rhcs-9x-to-9x-latest.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      build:
+        - rh
+    - name: "Upgrade IBMSC 9.0 released to 9x latest"
+      suite: suites/tentacle/upgrades/tier1-upgrade-ibm-9x-to-9x-latest.yaml
+      global-conf: conf/tentacle/upgrades/1admin-3node-1client-upgrade.yaml
+      build:
+        - ibm
     - name: "Test DMFG Tier-2 OSD Scenarios"
       suite: suites/tentacle/cephadm/tier2-osd-scenarios.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
