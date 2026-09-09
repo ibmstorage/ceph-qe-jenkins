@@ -15,6 +15,9 @@ pipeline {
     options {
         // Set build archieve policy
         buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+        // RBD regression takes ~36h; timeout set to 40h to cover worst case.
+        // Other FGs (NvmeOF, RGW, CephFS etc.) complete well within this limit.
+        timeout(time: 40, unit: 'HOURS')
     }
 
     agent {

@@ -18,6 +18,7 @@ pipeline {
 
         // Disable parallel execution
         disableConcurrentBuilds()
+        timeout(time: 2, unit: 'HOURS')
     }
 
     agent {

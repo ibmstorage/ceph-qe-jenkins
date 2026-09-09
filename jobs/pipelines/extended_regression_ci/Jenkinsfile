@@ -14,6 +14,9 @@ pipeline {
     options {
         // Set build archieve policy
         buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+        // RBD extended regression takes ~27h; timeout set to 30h to cover worst case.
+        // Other FGs complete well within this limit.
+        timeout(time: 30, unit: 'HOURS')
     }
 
     agent {

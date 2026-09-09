@@ -9,6 +9,7 @@ def prefix = ""
 pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "7"))
+        timeout(time: 8, unit: 'HOURS')
     }
 
     agent {
