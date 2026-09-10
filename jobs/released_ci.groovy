@@ -88,7 +88,6 @@ jobsConfiguration.each { jobConfig ->
                     }
                     referencedParameter("CLOUD_TYPE")
                 }
-                booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SOS_REPORT", false, "Capture SOS report")
                 stringParam("EMAIL_ADDRESS", "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com", "Email Address")

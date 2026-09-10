@@ -190,8 +190,8 @@ Test suite metadata lives in `metadata/<release>/<fg>.yaml`. The `validate-metad
         ibmc: bx2-4x16
       tags:          # optional — used for tag-based filtering
         - bvt
-      custom-config: # optional — key/value pairs passed to the test
-        enable-fips-mode: true
+      custom-config: # optional — key/value pairs passed to run.py via execTestSuites
+        enable-fips-mode: true  # only this suite when using metadata-driven CI jobs
 ```
 
 ### Rules enforced by `validate-metadata`

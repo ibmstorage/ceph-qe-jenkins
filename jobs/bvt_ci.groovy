@@ -97,7 +97,6 @@ for (jobConfig in jobsConfiguration) {
                     referencedParameter("CLOUD_TYPE")
                 }
 
-                booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
                 booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
                 booleanParam("SKIP_SUBSCRIPTION", true, "Disable registering VMs with RHEL CDN")
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")

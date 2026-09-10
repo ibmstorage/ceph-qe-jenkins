@@ -78,20 +78,19 @@ pipeline {
                 script {
                     // Iterate over suite list
                     suites.upgrade.suites.each { suite ->
-                        // Prioritize test-level global_conf over stage-level globalConf
+                        def suiteName = suite.name
+                        def suitePath = suite.suite
+                        def suiteVmSize = suite.vm_size
+                        def suiteCustomConfig = suite.custom_config
                         def effectiveGlobalConf = suite.global_conf ?: suites.upgrade.metadata?.globalConf
-
-                        // Prioritize test-level inventory over default inventory
                         def effectiveInventory = suite.inventory ?: jobConfigs.inventory
+                        def stageCustomConfig = suites.upgrade.metadata?.custom_config
 
-                        // Debug
-                        echo "Executing suite: ${suite.suite} with config: ${effectiveGlobalConf}, inventory: ${effectiveInventory}"
+                        echo "Executing suite: ${suitePath} with config: ${effectiveGlobalConf}, inventory: ${effectiveInventory}"
 
-                        // Create stages based on test suite
-                        testSuitesMap[suite.name] = {
-                            stage(suite.name) {
-                                // Set log directory
-                                def logDir = [jobConfigs.logDir, suite.name].join("/")
+                        testSuitesMap[suiteName] = {
+                            stage(suiteName) {
+                                def logDir = [jobConfigs.logDir, suiteName].join("/")
 
                                 // Generate a random prefix for resources
                                 def prefix = "${jobConfigs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
@@ -108,19 +107,20 @@ pipeline {
                                         platform: jobConfigs.platform,
                                         logDir: logDir,
                                         globalConf: effectiveGlobalConf,
-                                        suite: suite.suite,
+                                        suite: suitePath,
                                         ibmcCredFile: jobConfigs.ibmcCredFile,
                                         inventory: effectiveInventory,
                                         logLevel: jobConfigs.logLevel,
                                         customConfig: jobConfigs.customConfig,
+                                        stageCustomConfig: stageCustomConfig,
+                                        suiteCustomConfig: suiteCustomConfig,
                                         buildType: jobConfigs.buildType,
-                                        enableFipsMode: jobConfigs.enableFipsMode,
                                         enableFirewall: jobConfigs.enableFirewall,
                                         rhsCephRepo: jobConfigs.rhsCephRepo,
                                         hotfixRepo: jobConfigs.hotfixRepo,
                                         containerImage: jobConfigs.containerImage,
                                         additionalArgs: jobConfigs.additionalArgs,
-                                        vmFlavor: suite.vm_size ?: jobConfigs.vmFlavor,
+                                        vmFlavor: suiteVmSize ?: jobConfigs.vmFlavor,
                                         skipSosReport: jobConfigs.skipSosReport,
                                         vpcName: jobConfigs.vpcName,
                                         skipSubscription: jobConfigs.skipSubscription,

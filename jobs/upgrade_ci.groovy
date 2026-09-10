@@ -147,7 +147,6 @@ jobsConfiguration.each { jobConfig ->
             }
 
             choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC")
-            booleanParam("ENABLE_FIPS_MODE", false, "Enable FIPS mode")
             booleanParam("ENABLE_FIREWALL", false, "Enable firewall")
             booleanParam("SKIP_SUBSCRIPTION", true, "Skip RHEL subscription")
             booleanParam("SKIP_SOS_REPORT", true, "Skip SOS report collection")

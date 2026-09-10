@@ -217,12 +217,15 @@ post { always }        → publishTestResults(…)
 ```
 
 Each suite closure:
-1. Calls `execTestSuites()` which invokes `cephci/run.py` inside the Python venv
-2. On completion (success or failure), calls `cleanupCluster()` in a `finally` block
-3. Generates an `xunit.xml` result file collected by `publishTestResults`
+1. Binds per-suite fields (`suite`, `custom_config`, etc.) before building the parallel stage map (avoids Groovy late-binding bugs)
+2. Calls `execTestSuites()` with `stageCustomConfig` and `suiteCustomConfig` from metadata, which invokes `cephci/run.py` inside the Python venv
+3. On completion (success or failure), calls `cleanupCluster()` in a `finally` block
+4. Generates an `xunit.xml` result file collected by `publishTestResults`
 
 **Metadata-driven suite selection:**
 Test suites are not hardcoded. `fetchTestSuites()` invokes `scripts/fetchTestSuites.py` which reads YAML files under `metadata/{ceph-release}/{fg}.yaml`, filtering by platform, build type, and tags. This makes it possible to add or remove test cases without touching any Jenkinsfile.
+
+Per-suite `custom-config` in metadata (for example `enable-fips-mode: true`) is exposed as `suite.custom_config` and passed to `execTestSuites` as `--custom-config key=value` on that suite only. Metadata CI jobs do not expose `ENABLE_FIPS_MODE`; use suite metadata for FIPS in CI, or test-executor / `CUSTOM_CONFIG` for ad-hoc runs.
 
 ---
 
@@ -241,7 +244,7 @@ This repository is registered as the global Jenkins shared library `ceph-qe-libs
 | `generateJobConfigs` | Validate params; read manifest; build unified `jobConfig` map for the pipeline |
 | `setupCephCiRepo` | Clone cephci git repo, create Python venv, inject credentials |
 | `fetchTestSuites` | Query `fetchTestSuites.py` and return structured suite list |
-| `execTestSuites` | Build and execute `run.py` command; validate `xunit.xml` output |
+| `execTestSuites` | Merge job and metadata `custom-config`; build and execute `run.py`; validate `xunit.xml` output |
 | `cleanupCluster` | Destroy provisioned cloud resources after a test |
 | `publishTestResults` | Generate results, post to Report Portal / Google Sheets, upload to COS, send email |
 | `readFromManifest` | Clone `qe-ceph-manifest` and parse a YAML recipe file |

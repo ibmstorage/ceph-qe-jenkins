@@ -60,7 +60,7 @@ def call(Map parameters) {
     jobDir += [jobConfig.platform]
     jobConfig.rpLaunchName += "[${jobConfig.platform}]"
 
-    // Get FIPS config
+    // FIPS for test-executor only; metadata CI jobs use per-suite custom-config in execTestSuites
     jobConfig.enableFipsMode = params.ENABLE_FIPS_MODE
 
     // Get FIREWALL config

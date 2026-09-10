@@ -104,13 +104,30 @@ def call(Map parameters) {
     def logLevel = parameters.get("logLevel")
     args += logLevel ? ["--log-level ${logLevel}"] : []
 
-    // Check for custom-config parameter
-    def customConfig = parameters.get("customConfig")
-    if ( customConfig ) {
-        customConfig.each { val ->
-            if (val) {
-                args += ["--custom-config ${val.replace('@sha256', '')}"]
+    // Merge job, stage, and suite custom-config (e.g. enable-fips-mode from metadata).
+    // Copy job customConfig first — appending in-place mutates jobConfigs.customConfig and
+    // leaks entries across parallel suite stages.
+    def customConfig = []
+    (parameters.get("customConfig") ?: []).each { val ->
+        if (val) {
+            customConfig << val.toString()
+        }
+    }
+    ["stageCustomConfig", "suiteCustomConfig"].each { key ->
+        def csv = parameters.get(key)
+        if (!csv?.toString()?.trim()) {
+            return
+        }
+        csv.toString().split(",").each { pair ->
+            def trimmed = pair.trim()
+            if (trimmed) {
+                customConfig << trimmed
             }
+        }
+    }
+    customConfig.each { val ->
+        if (val) {
+            args += ["--custom-config ${val.replace('@sha256', '')}"]
         }
     }
 
@@ -129,12 +146,15 @@ def call(Map parameters) {
         args += ["--product redhat"]
     }
 
-    // Check for FIPS mode
-    def enableFipsMode = parameters.get("enableFipsMode")
-    if (enableFipsMode == null && binding.hasVariable("params")) {
-        enableFipsMode = params?.ENABLE_FIPS_MODE
+    // Job-level FIPS applies only when per-suite metadata is not in use (e.g. test-executor).
+    // Metadata-driven jobs pass suiteCustomConfig; FIPS comes from that suite's custom-config only.
+    if (!parameters.containsKey("suiteCustomConfig")) {
+        def enableFipsMode = parameters.get("enableFipsMode")
+        if (enableFipsMode == null && binding.hasVariable("params")) {
+            enableFipsMode = params?.ENABLE_FIPS_MODE
+        }
+        args += (enableFipsMode != null && enableFipsMode.toString().toBoolean()) ? ["--custom-config enable-fips-mode=True"] : []
     }
-    args += (enableFipsMode != null && enableFipsMode.toString().toBoolean()) ? ["--custom-config enable-fips-mode=True"] : []
 
     // Check for Firewall mode
     args += parameters.enableFirewall ? ["--custom-config enable-firewall=True"] : []

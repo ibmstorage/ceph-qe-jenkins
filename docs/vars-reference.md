@@ -165,6 +165,8 @@ None.
 
 Invokes a Ceph CI test suite inside a cloud environment and publishes the resulting `xunit.xml` file as a Jenkins test report.
 
+Builds the `run.py` command line, including `--custom-config` entries from the job, stage metadata, and per-suite metadata (see below).
+
 ### Parameters
 
 | Name | Type | Required | Description |
@@ -182,11 +184,30 @@ Invokes a Ceph CI test suite inside a cloud environment and publishes the result
 | `inventory` | String | ✔ | Ansible inventory file path |
 | `containerImage` | String | ✔ | Ceph container image URL |
 | `buildType` | String | ✔ | Build type — `IBM` or `RH` |
-| `customConfig` | List | ✗ | Additional `--custom-config` key-value pairs |
-| `enableFips` | Boolean | ✗ | Enable FIPS mode on test nodes |
+| `customConfig` | List | ✗ | Job-level `--custom-config` pairs (from `CUSTOM_CONFIG` and manifest images via `generateJobConfigs`) |
+| `stageCustomConfig` | String | ✗ | Comma-separated `key=value` pairs from stage metadata (`metadata.<job>.metadata.custom-config` in YAML) |
+| `suiteCustomConfig` | String | ✗ | Comma-separated `key=value` pairs from suite metadata (`custom-config` on the suite entry). Passed by metadata-driven pipelines (BVT, sanity, regression, etc.) |
+| `enableFipsMode` | Boolean | ✗ | Enable FIPS via `--custom-config enable-fips-mode=True`. Used when `suiteCustomConfig` is **not** passed (e.g. test-executor) |
 | `enableFirewall` | Boolean | ✗ | Enable firewall during tests |
-| `repos` | List | ✗ | Extra repository URLs to configure |
-| Additional flags | — | ✗ | Any other `ceph-ci` CLI flags passed through |
+| `manifestSection` | String | ✗ | Manifest release section passed to `run.py` as `--build` |
+| Additional flags | — | ✗ | Other parameters (`rhsCephRepo`, `vmFlavor`, `vpcName`, etc.) passed through to `run.py` |
+
+### Custom-config merge order
+
+When building `run.py` arguments, `execTestSuites` merges custom-config in this order (each entry becomes `--custom-config key=value`):
+
+1. `customConfig` — job/manifest entries (copied into a new list so parallel suite stages do not mutate a shared list)
+2. `stageCustomConfig` — stage-level metadata
+3. `suiteCustomConfig` — per-suite metadata (e.g. `enable-fips-mode=true` from `metadata/*/common.yaml`)
+
+IBM/RH product flags and ibmc/aws profile settings are appended after this block.
+
+### FIPS behavior
+
+| Caller | `ENABLE_FIPS_MODE` / `enableFipsMode` | Per-suite metadata `enable-fips-mode` |
+|---|---|---|
+| Metadata-driven CI jobs (BVT, sanity, regression, etc.) | Not available — use per-suite metadata | Applied when set on that suite |
+| Test executor (no `suiteCustomConfig`) | Applied when the job parameter is true | N/A — use `CUSTOM_CONFIG` or `ENABLE_FIPS_MODE` |
 
 ### Return Value
 
@@ -261,7 +282,7 @@ Calls the `ceph-ci` metadata Python script to discover which test suites should 
 
 ### Return Value
 
-`Map` — parsed JSON structure from the metadata script containing suite names and their execution configurations.
+`Map` — parsed JSON structure from the metadata script containing suite names and their execution configurations. Each suite entry includes `custom_config` (comma-separated `key=value` string from YAML `custom-config`) when defined; stage-level entries appear under `metadata.custom_config`.
 
 ---
 
@@ -293,7 +314,7 @@ Reads the following Jenkins `params` and the `parameters` argument map:
 | `params` | `ADDITIONAL_ARGS` | Comma-separated extra CLI arguments |
 | `params` | `FG` | Feature group (regression/extended jobs) |
 | `params` | `SUITE` | Test suite path (MTE jobs) |
-| `params` | `ENABLE_FIPS_MODE` | Boolean — enable FIPS |
+| `params` | `ENABLE_FIPS_MODE` | Boolean — enable FIPS on **test-executor** only; metadata CI jobs (BVT, sanity, regression, etc.) do not expose this parameter — FIPS comes from per-suite metadata |
 | `params` | `ENABLE_FIREWALL` | Boolean — enable firewall |
 | `params` | `ENABLE_REPORT_PORTAL` | Boolean — post results to Report Portal |
 | `params` | `ENABLE_GSHEET` | Boolean — post results to Google Sheets |
