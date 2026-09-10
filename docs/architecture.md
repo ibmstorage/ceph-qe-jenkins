@@ -258,7 +258,7 @@ This repository is registered as the global Jenkins shared library `ceph-qe-libs
 | `processCephBaseImage` | Introspect IBM Ceph image via podman; extract version, release, OS platform |
 | `fetchCephImageMetadata` | Run `cephadm version` inside container to get Ceph version metadata |
 | `fetchCephVersion` | Run `dnf repoquery` inside UBI container to read Ceph package version |
-| `updateBvtResults` / `updateSanityResults` | Parse result JSON; promote build to `stable` in manifest if PASS |
+| `updateBvtResults` / `updateSanityResults` | Parse result JSON; promote to `stable` in manifest if PASS (sanity copies full `nightly` section) |
 | `checkImageInRegistry` | HTTP-check whether an image already exists in the local registry |
 | `cleanupRegistryImages` | Remove orphaned images from local NGINX registry |
 | `generatePrefixString` | Generate a short random suffix for VM/resource naming |

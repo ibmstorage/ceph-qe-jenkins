@@ -830,21 +830,20 @@ None.
 
 **File:** [`vars/updateSanityResults.groovy`](../vars/updateSanityResults.groovy)
 
-Reads the sanity suite results summary and, only when **all** suites report `PASS`, writes the build information to the manifest via [`writeToManifest`](#writetomanifest).
+Reads the sanity suite results summary and, when **all** suites report `PASS` and `manifestSection` is `nightly`, promotes the full `nightlySection` snapshot to the manifest `stable` section via [`writeToManifest`](#writetomanifest).
 
 ### Parameters
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `resultsSummary` | String | ✔ | Path to the JSON results summary file |
-| `job` | String | ✔ | Job name |
-| `buildType` | String | ✔ | Build vendor |
-| `rhBuild` | String | ✔ | Build version |
-| `platform` | String | ✔ | Target platform |
-| `cephVersion` | String | ✔ | Ceph version |
-| `rhsCephRepo` | String | ✔ | Ceph RPM repository URL |
-| `containerImage` | String | ✔ | Ceph container image URL |
-| `customImages` | Map | ✗ | Additional image key-value pairs to record in the manifest |
+| `resultsSummary` | String | ✔* | Path to the JSON results summary file (`results.json`) written by `publishTestResults` |
+| `manifestSection` | String | ✔ | Manifest section under test (`params.RELEASE`, e.g. `nightly` or `stable`). Non-`nightly` values skip promotion |
+| `nightlySection` | Map | ✔* | Snapshot of the manifest `nightly` section from `generateJobConfigs` |
+| `job` | String | ✔* | Job name |
+| `buildType` | String | ✔* | Build vendor |
+| `rhBuild` | String | ✔* | Build version |
+
+\* Required only when promoting (`manifestSection` is `nightly`).
 
 ### Return Value
 
@@ -885,16 +884,21 @@ Parses and validates the JSON message emitted by a Konflux build pipeline, extra
 
 **File:** [`vars/writeToManifest.groovy`](../vars/writeToManifest.groovy)
 
-Merges build information into the appropriate YAML recipe file in `qe-ceph-manifest` and pushes the commit to GitHub.
+Updates a YAML recipe file in `qe-ceph-manifest` and pushes the commit to GitHub. Supports either a full manifest-section replace (`sectionContent`) or legacy field-by-field updates (`buildInfo`).
 
 ### Parameters
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `buildInfo` | Map | ✔ | Build details — must include `recipe`, `version`, `repositories`, and `images` |
 | `buildTag` | String | ✔ | Manifest section to update — `stable`, `nightly`, or `rc` |
 | `job` | String | ✔ (or `jobDir`) | Job name used to derive the manifest working directory |
 | `jobDir` | String | ✔ (or `job`) | Explicit manifest working directory path |
+| `recipe` | String | ✗ | Recipe file path (preferred over `buildInfo.recipe`) |
+| `sectionContent` | Map | ✗ | Full manifest section to replace `buildTag` with (sanity promotion) |
+| `sectionSource` | String | ✗ | Source label for the commit message when using `sectionContent` |
+| `buildInfo` | Map | ✗ | Legacy build details — `recipe`, `version`, `repositories`, and `images` |
+
+Either `sectionContent` or a non-empty `buildInfo.images` map must be provided.
 
 ### Return Value
 

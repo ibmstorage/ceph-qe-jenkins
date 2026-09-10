@@ -5,6 +5,7 @@ import main.groovy.cephJobLib.ibmcConfigs
 import main.groovy.cephJobLib.jobConfigs
 import main.groovy.cephJobLib.rpConfigs
 import main.groovy.cephJobLib.manifestConfigs
+import main.groovy.cephJobLib.ManifestUtils
 
 
 def call(Map parameters) {
@@ -149,7 +150,7 @@ def call(Map parameters) {
     // Fetch ceph version
     jobConfig.cephVersion = recipeContent."${params.RELEASE}".version
 
-    //Set the manifest section
+    // Manifest release section used by sanity promotion (params.RELEASE, e.g. nightly/stable)
     jobConfig.manifestSection = params.RELEASE
 
     /* -----------------------------------------------------------------------------
@@ -216,6 +217,18 @@ def call(Map parameters) {
     // if CONTAINER_IMAGE is provided, use the provided image
     if ( params.CONTAINER_IMAGE ) {
         jobConfig.containerImage = params.CONTAINER_IMAGE
+    }
+
+    // Snapshot nightly AFTER all overrides (REPO, CONTAINER_IMAGE) are applied so
+    // promotion reflects the exact repo/image that sanity validated, not raw manifest data.
+    if (recipeContent.nightly) {
+        jobConfig.nightlySection = ManifestUtils.buildPromotionSection(
+            recipeContent.nightly,
+            containerImage: jobConfig.containerImage,
+            rhsCephRepo: jobConfig.rhsCephRepo,
+            platform: jobConfig.platform,
+            repoDC: repoDC
+        )
     }
 
     // Debug info

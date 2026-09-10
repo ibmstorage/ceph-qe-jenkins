@@ -1,15 +1,49 @@
-// Method to update Sanity results to manifest file
+// Promote nightly manifest section to stable after a passing sanity run
 
 def call(Map parameters) {
-    // Check for results parameters
-    def resultsSummary = parameters.get("resultsSummary")
-    if (!resultsSummary) {
+    def manifestSection = parameters.get("manifestSection")
+    if (!manifestSection) {
         throw new RuntimeException(
-            "Mandatory results parameters are not provided"
+            "Mandatory parameter 'manifestSection' is not provided"
         )
     }
 
-    // Get sanity results
+    // Skip before validating promotion-only params (stable/rc runs must not fail)
+    if (manifestSection.toLowerCase() != "nightly") {
+        echo "Skipped manifest promotion: manifest section is '${manifestSection}', only nightly runs promote to stable."
+        return
+    }
+
+    def resultsSummary = parameters.get("resultsSummary")
+    if (!resultsSummary) {
+        throw new RuntimeException(
+            "Mandatory parameter 'resultsSummary' is not provided"
+        )
+    }
+
+    def nightlySection = parameters.get("nightlySection")
+    if (!nightlySection) {
+        throw new RuntimeException(
+            "Mandatory parameter 'nightlySection' is not provided"
+        )
+    }
+
+    def job = parameters.get("job")
+    if (!job) {
+        throw new RuntimeException(
+            "Mandatory parameter 'job' is not provided"
+        )
+    }
+
+    def buildType = parameters.get("buildType")
+    def rhBuild = parameters.get("rhBuild")
+    if (!buildType || !rhBuild) {
+        throw new RuntimeException(
+            "Mandatory parameters 'buildType' and 'rhBuild' are not provided"
+        )
+    }
+
+    // resultsSummary is a path to results.json written by publishTestResults
     def results = readJSON file: resultsSummary
 
     // Check Sanity status - all suites must pass
@@ -22,67 +56,22 @@ def call(Map parameters) {
 
     if (failedSuites.size() > 0) {
         echo "Sanity failed for suites: ${failedSuites.join(', ')}"
-        echo "Not updating results to manifest"
+        echo "Not promoting nightly to stable in manifest"
         return
     }
 
-    echo "All sanity suites passed. Proceeding to update manifest."
+    def bt = buildType.toLowerCase()
+    def recipeVendor = bt == "rh" ? "redhat" : bt
+    def recipeFile = "${recipeVendor}/${rhBuild}.yaml"
 
-    // Check for job parameters
-    def job = parameters.get("job")
-    if (!job) {
-        throw new RuntimeException(
-            "Mandatory parameter `job` not provided"
-        )
-    }
-
-    // Set build parameters
-    def buildInfo = [:]
-
-    // Check for mandatory job parameters
-    def buildType = parameters.get("buildType")
-    def rhBuild = parameters.get("rhBuild")
-    if (!buildType || !rhBuild) {
-        throw new RuntimeException(
-            "Mandatory job parameters are not provided"
-        )
-    }
-
-    // Set recipe path
-    buildInfo.recipe = "${buildType.toLowerCase()}"
-    if (buildType.toLowerCase() == "rh") {
-        buildInfo.recipe = "redhat"
-    }
-    buildInfo.recipe += "/${rhBuild}.yaml"
-
-    // Check for mandatory build parameters
-    def platform = parameters.get("platform")
-    def cephVersion = parameters.get("cephVersion")
-    def rhsCephRepo = parameters.get("rhsCephRepo")
-    def containerImage = parameters.get("containerImage")
-    if (!platform || !cephVersion || !rhsCephRepo || !containerImage) {
-        throw new RuntimeException(
-            "Mandatory build parameters are not provided"
-        )
-    }
-
-    // Set build info for build parameters
-    buildInfo.version = cephVersion
-    buildInfo.repositories = [:]
-    buildInfo.repositories."${platform}" = rhsCephRepo
-    buildInfo.images = [:]
-    buildInfo.images."ceph-base" = containerImage
-
-    // Add custom images if provided
-    def customImages = parameters.get("customImages")
-    if (customImages) {
-        customImages.each { key, value ->
-            buildInfo.images."${key}" = value
-        }
-    }
+    echo "All sanity suites passed. Promoting nightly section to stable in ${recipeFile}."
 
     // Write to manifest
     writeToManifest(
-        buildInfo: buildInfo, buildTag: "stable", job: job
+        recipe: recipeFile,
+        buildTag: "stable",
+        sectionContent: nightlySection,
+        sectionSource: "nightly",
+        job: job
     )
 }

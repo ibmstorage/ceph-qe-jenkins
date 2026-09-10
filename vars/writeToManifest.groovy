@@ -4,16 +4,88 @@ import main.groovy.cephJobLib.jobConfigs
 import main.groovy.cephJobLib.manifestConfigs
 
 
+@NonCPS
+def orderNestedMap(sourceMap, referenceMap = null) {
+    if (!(sourceMap instanceof Map)) {
+        return sourceMap
+    }
+    def result = new LinkedHashMap()
+    if (referenceMap instanceof Map) {
+        referenceMap.each { key, refValue ->
+            if (sourceMap.containsKey(key)) {
+                def value = sourceMap[key]
+                result[key] = (value instanceof Map && refValue instanceof Map) ?
+                    orderNestedMap(value, refValue) :
+                    value
+            }
+        }
+    }
+    sourceMap.each { key, value ->
+        if (!result.containsKey(key)) {
+            result[key] = value instanceof Map ?
+                orderNestedMap(value, null) :
+                value
+        }
+    }
+    return result
+}
+
+// Manifest sections use version -> repositories -> images key order for readable diffs.
+// Extra top-level keys (e.g. future fields) are preserved and appended after these
+// canonical keys; they are not dropped.
+@NonCPS
+def normalizeManifestSection(section, referenceSection = null) {
+    if (section == null) {
+        return null
+    }
+    def ordered = new LinkedHashMap()
+    def topLevelKeys = ["version", "repositories", "images"]
+    topLevelKeys.each { key ->
+        if (section.containsKey(key)) {
+            if (key == "images" || key == "repositories") {
+                ordered[key] = orderNestedMap(
+                    section[key],
+                    referenceSection?."${key}"
+                )
+            } else {
+                ordered[key] = section[key]
+            }
+        }
+    }
+    section.each { key, value ->
+        if (!topLevelKeys.contains(key)) {
+            ordered[key] = value
+        }
+    }
+    return ordered
+}
+
+
 def call(Map parameters) {
     // Set commit message
     def commitMessage = "Update recipe"
 
-    // Check for mandatory build parameters
-    def buildInfo = parameters.buildInfo
-    def buildTag = parameters.buildTag
-    if (!buildInfo || !buildTag) {
+    def buildInfo = parameters.get("buildInfo") ?: [:]
+    def buildTag = parameters.get("buildTag")
+    def sectionContent = parameters.get("sectionContent")
+    // Prefer top-level 'recipe' parameter; 'buildInfo.recipe' is deprecated
+    def recipe = parameters.get("recipe") ?: buildInfo.recipe
+
+    if (!buildTag) {
         throw new RuntimeException(
-            "Mandatory build parameters are not provided"
+            "Mandatory parameter 'buildTag' is not provided"
+        )
+    }
+
+    if (!recipe) {
+        throw new RuntimeException(
+            "Mandatory parameter 'recipe' is not provided (via 'recipe' or 'buildInfo.recipe')"
+        )
+    }
+
+    if (!sectionContent && (!buildInfo.images || buildInfo.images.isEmpty())) {
+        throw new RuntimeException(
+            "Either 'sectionContent' or 'buildInfo.images' (non-empty) must be provided"
         )
     }
 
@@ -33,58 +105,70 @@ def call(Map parameters) {
     }
 
     // Get recipe file content
-    def recipeContent = readFromManifest(recipe: buildInfo.recipe, jobDir: jobDir)
+    def recipeContent = readFromManifest(recipe: recipe, jobDir: jobDir)
 
-    // Initialize tag map if not present
-    if (!recipeContent."${buildTag}") {
-        recipeContent."${buildTag}" = [:]
-    }
+    commitMessage += " ${recipe}"
+    def recipePath = "${jobDir}/${recipe}"
 
-    // Set recipe file
-    commitMessage += " ${buildInfo.recipe}"
-    def recipe = "${jobDir}/${buildInfo.recipe}"
-
-
-    // Initialize images map if not present
-    if (!recipeContent."${buildTag}".images) {
-        recipeContent."${buildTag}".images = [:]
-    }
-
-    // Update images from build info
-    buildInfo.images.each { key, val ->
-        // Debug
-        echo "Updating build image ${val} for ${key}"
-        recipeContent."${buildTag}".images."${key}" = "${val}"
-    }
-
-    if (buildInfo.repositories) {
-        // Debug
-        echo "Updating build version ${buildInfo.version}"
-
-        // Update ceph version
-        recipeContent."${buildTag}".version = "${buildInfo.version}"
-
-        // Initialize repositories map if not present
-        if (!recipeContent."${buildTag}".repositories) {
-            recipeContent."${buildTag}".repositories = [:]
+    if (sectionContent) {
+        def sectionSource = parameters.get("sectionSource")
+        def sourceLabel = sectionSource ?: "provided content"
+        echo "Replacing '${buildTag}' manifest section with ${sourceLabel}"
+        // sectionContent is an isolated snapshot from the caller (e.g. generateJobConfigs)
+        def sourceSection = sectionContent
+        def orderReference = recipeContent."${buildTag}" ?: sourceSection
+        recipeContent."${buildTag}" = normalizeManifestSection(
+            sourceSection,
+            orderReference
+        )
+        commitMessage += sectionSource ?
+            " - copy ${sectionSource} to ${buildTag}" :
+            " - replace ${buildTag} section"
+    } else {
+        // Initialize tag map if not present
+        if (!recipeContent."${buildTag}") {
+            recipeContent."${buildTag}" = [:]
         }
 
-        // Update repositories if present
-        buildInfo.repositories.each { platform, repo ->
-            // Debug
-            echo "Updating build repository ${repo} for ${platform}"
-            recipeContent."${buildTag}".repositories."${manifestConfigs.DEFAULT_DC}"."${platform}" = "${repo}"
+        // Initialize images map if not present
+        if (!recipeContent."${buildTag}".images) {
+            recipeContent."${buildTag}".images = [:]
         }
 
-        // Update commit message
-        commitMessage += " with version ${buildInfo.version}"
+        // Update images from build info
+        if (buildInfo.images) {
+            buildInfo.images.each { key, val ->
+                echo "Updating build image ${val} for ${key}"
+                recipeContent."${buildTag}".images."${key}" = "${val}"
+            }
+        }
+
+        if (buildInfo.repositories) {
+            echo "Updating build version ${buildInfo.version}"
+
+            // Update ceph version
+            recipeContent."${buildTag}".version = "${buildInfo.version}"
+
+            // Initialize repositories map if not present
+            if (!recipeContent."${buildTag}".repositories) {
+                recipeContent."${buildTag}".repositories = [:]
+            }
+
+            // Update repositories if present
+            buildInfo.repositories.each { platform, repo ->
+                echo "Updating build repository ${repo} for ${platform}"
+                recipeContent."${buildTag}".repositories."${manifestConfigs.DEFAULT_DC}"."${platform}" = "${repo}"
+            }
+
+            // Update commit message
+            commitMessage += " with version ${buildInfo.version}"
+        }
     }
 
-    // Debug
-    echo "Updating build content to ${recipe}"
+    echo "Writing manifest changes to ${recipePath}"
 
     // Write build info to recipe
-    writeYaml file: recipe, data: recipeContent, overwrite: true
+    writeYaml file: recipePath, data: recipeContent, overwrite: true
 
     // Change directory to manifest repo
     dir(jobDir) {
