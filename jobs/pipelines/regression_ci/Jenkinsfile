@@ -29,6 +29,19 @@ pipeline {
                     // Validate mandatory parameters
                     jobConfigs = generateJobConfigs(job: job)
 
+                    // pass LOG_LEVEL DEBUG only for Tentacle NvmeOF
+                    def timerCauses = currentBuild.getBuildCauses(
+                        'hudson.triggers.TimerTrigger$TimerTriggerCause'
+                    )
+                    def isTentacle = (env.JOB_BASE_NAME ?: env.JOB_NAME)
+                        .toLowerCase().contains("tentacle")
+                    if (!timerCauses.isEmpty() &&
+                        params.FG.equalsIgnoreCase("nvmeof") &&
+                        isTentacle) {
+                        jobConfigs.logLevel = "DEBUG"
+                        echo "Timer-triggered Tentacle NvmeOF regression: using LOG_LEVEL=DEBUG"
+                    }
+
                     // Debug
                     echo "Parameters validated successfully ..."
                 }
