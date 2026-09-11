@@ -180,8 +180,9 @@ def call(Map parameters) {
             return
         }
 
-        // Skip adding crimson_image and ceph_csi_image to customConfig
-        if ( image == "crimson_image" || image == "ceph_csi_image" ) {
+        // Skip images not consumed in CI runs
+        if ( image == "crimson_image" || image == "ceph_csi_image" || image == "object_browser_image" ||
+             image == "rgw_standalone_image" || image == "rgw_developer_experience_image" ) {
             return
         }
 
