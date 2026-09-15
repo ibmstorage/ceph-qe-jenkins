@@ -39,18 +39,26 @@ upgrade:
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "TEST Ceph NFS Ganesha Upgrade from 8.0 to 9.0 Latest"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-8x-to-9x-latest.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 8.1x to 9.0 Latest"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-7-1x-to-8.1x-to-9x-latest.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
     - name: "TEST Ceph NFS Ganesha Upgrade from 9.0x to 9.x Latest"
       suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-9x-to-9x-latest.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
       platform:
         - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
