@@ -80,7 +80,7 @@ def job = pipelineJob("fdf-interop") {
             stringParam(
                 "FDF_OPERATOR_CHANNEL",
                 "",
-                "Optional OLM operator channel e.g. stable-4.22"
+                "Optional OLM operator channel e.g. stable-5.0"
             )
 
             choiceParam(

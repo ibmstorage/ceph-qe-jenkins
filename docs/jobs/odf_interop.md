@@ -85,15 +85,17 @@ The pipeline always executes the complete end-to-end workflow:
 
 The pipeline resolves the OCP patch version **dynamically** via the [OpenShift Release API](https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com). It tries the latest stable (released) version first; if no GA release exists for that OCP minor, it falls back to the latest nightly automatically.
 
-**RHCS → ODF version mapping:**
+**RHCS → interop version mapping** (same minor for OCP and ODF/FDF):
 
-| RHCS | Upstream Ceph | Ceph Stream | ODF Minor |
-|------|---------------|-------------|-----------|
-| 8.0  | 19.2.0-xxx    | squid       | 4.18      |
-| 8.1  | 19.2.1-xxx    | squid       | 4.20      |
-| 9.0  | 20.1.0-xxx    | tentacle    | 4.21      |
-| 9.1  | 20.2.1-xxx    | tentacle    | 4.22      |
-| 9.2  | 20.2.2-xxx    | tentacle    | 4.23      |
+| RHCS | Upstream Ceph | Ceph Stream | OCP / ODF(FDF) |
+|------|---------------|-------------|----------------|
+| 8.0  | 19.2.0-xxx    | squid       | 4.18           |
+| 8.1  | 19.2.1-xxx    | squid       | 4.20           |
+| 9.0  | 20.1.0-xxx    | tentacle    | 4.21           |
+| 9.1  | 20.2.1-xxx    | tentacle    | 4.22           |
+| 9.2  | 20.2.2-xxx    | tentacle    | 5.0            |
+
+RHCS 9.2 resolves OCP from the **5.0** release stream (`5.0.0-0.nightly`, `stable-5.0` operator channel, catalog tags `5.0.*` / `v5.0*`). OCP 4.23 is the legacy co-release label for the same generation.
 
 For **released** ODF installs, the ceph-interop deployer queries the cluster `odf-operator` PackageManifest and picks the highest published `stable-M.m` channel ≤ the mapped minor (e.g. `stable-4.22` → `stable-4.21` until 4.22 ships in `redhat-operators`).
 
@@ -112,14 +114,14 @@ For **released** ODF installs, the ceph-interop deployer queries the cluster `od
 |-----------|---------|-------------|
 | `ODF_CHANNEL` | **released** | `released` or `nightly` — selects build source when no catalog image is provided |
 | `ODF_CATALOG_IMAGE` | (empty) | Optional catalog index image; **takes precedence over `ODF_CHANNEL`** |
-| `ODF_OPERATOR_CHANNEL` | (empty) | Optional OLM channel e.g. `stable-4.22` (auto `stable-{minor}` from matrix when empty) |
+| `ODF_OPERATOR_CHANNEL` | (empty) | Optional OLM channel e.g. `stable-5.0` (auto `stable-{odfMinor}` from matrix when empty) |
 
 ### ODF catalog resolution (`ODF_CHANNEL=nightly`, no `ODF_CATALOG_IMAGE`)
 
 The pipeline runs [`scripts/ocs-build.sh`](../../scripts/ocs-build.sh):
 
 1. Paginates Quay for `*.konflux` tags matching the ODF minor (`filter_tag_name=like:{minor}.`)
-2. Returns the **highest** tag by version sort (newest dev build), e.g. `quay.io/rhceph-dev/ocs-registry:4.23.0-42.konflux`
+2. Returns the **highest** tag by version sort (newest dev build), e.g. `quay.io/rhceph-dev/ocs-registry:5.0.0-42.konflux`
 3. Use `ocs-build.sh --stable` locally to match the `latest-stable-{minor}.X` digest instead (older stable-aligned build)
 
 Returns a **tag-based** pull spec suitable for catalog source deployment.

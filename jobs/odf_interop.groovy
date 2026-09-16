@@ -82,7 +82,7 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "ODF_OPERATOR_CHANNEL",
                 "",
-                "Optional OLM operator channel e.g. stable-4.22. Leave empty with OCP_VERSION for auto-resolve stable-{minor} from matrix."
+                "Optional OLM operator channel e.g. stable-5.0. Leave empty with OCP_VERSION for auto-resolve stable-{odfMinor} from matrix."
             )
 
             // ── IBM Cloud ───────────────────────────────────────────

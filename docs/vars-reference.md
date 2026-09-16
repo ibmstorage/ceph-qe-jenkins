@@ -522,11 +522,11 @@ Resolves the OCP version, OCP channel, and ODF channel required for an ODF inter
 | Key | Type | Example |
 |---|---|---|
 | `cephStream` | String | `tentacle` |
-| `matrixKey` | String | `tentacle` |
-| `ocpVersion` | String | `4.21.11` |
+| `matrixKey` | String | `9.2` |
+| `ocpVersion` | String | `5.0.0-0.nightly-2026-09-13-163645` |
 | `ocpChannel` | String | `released` |
-| `odfChannel` | String | `stable-4.21` |
-| `ocsVersion` | String | `4.21` |
+| `odfChannel` | String | `stable-5.0` |
+| `ocsVersion` | String | `5.0` |
 
 ### Internal Helpers
 
@@ -535,10 +535,10 @@ Resolves the OCP version, OCP channel, and ODF channel required for an ODF inter
 | `inferAuto(Map p)` | Resolves parameters from `RHCS_BUILD_VERSION` or by pulling the Ceph image |
 | `parseLeadingMajor(String s, String label)` | Extracts the leading integer from a version string |
 | `rhcsMajorToStream(int maj)` | Maps RHCS major version to Ceph stream: `8 → squid`, `9 → tentacle` |
-| `upstreamCephMajorToStream(int cephMajor)` | Maps upstream Ceph major to stream: `19 → squid`, `≥20 → tentacle` |
-| `resolveByStream(String stream, String howMsg)` | Looks up the stream in the interop matrix and returns the resolved row |
+| `rhcsToInteropMinor()` | Maps RHCS to aligned OCP/ODF minor (`9.2` → `5.0`) |
+| `lookupRhcsInteropMinor(String rhcsVer)` | Matrix lookup or `null` |
+| `upstreamCephVersionMap()` | Maps upstream Ceph (`20.2.2`) to RHCS (`9.2`) |
 | `extractCephStream(String jobName)` | Extracts `<stream>` from a job name matching `<stream>-bvt-ci` |
-| `odfInteropMatrix()` | Returns the static map of supported streams to OCP/ODF version rows |
 
 ---
 

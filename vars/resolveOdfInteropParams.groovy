@@ -1,14 +1,14 @@
 /**
  * Resolve OCP + ODF versions from RHCS build version or Ceph container image.
  *
- * Maintains a slim RHCS-to-ODF-minor mapping and dynamically resolves the
- * latest OCP patch version via the OpenShift Release API at runtime.
+ * Maintains a slim RHCS-to-interop-minor mapping (aligned OCP + ODF/FDF minor) and
+ * dynamically resolves the latest OCP patch version via the OpenShift Release API.
  *
  * Supported RHCS versions: 8.0 (squid), 8.1 (squid), 9.0 (tentacle), 9.1 (tentacle), 9.2 (tentacle).
  * Returns null for unsupported versions so the caller can exit gracefully.
  *
  * inferAuto:
- *   - RHCS_BUILD_VERSION (e.g. 9.1) → rhcsToOcpMinor → API → OCP/ODF
+ *   - RHCS_BUILD_VERSION (e.g. 9.1) → rhcsToInteropMinor → API → OCP/ODF
  *   - else: podman + cephadm version --verbose → ceph_git_nice_ver (e.g. 20.2.1) → RHCS → API → OCP/ODF
  *   - ocpChannel / ocpChannelOverride: "released" (default) or "nightly"
  *   - odfBuildChannel / odfChannel: "released" (default) or "nightly" — catalog source when no image override
@@ -45,23 +45,23 @@ def call(Map parameters) {
         )
     }
 
-    def ocpMinor = rhcsToOcpMinor()[rhcsVer]
-    if (!ocpMinor) {
-        echo "resolveOdfInteropParams: RHCS '${rhcsVer}' is not in the interop mapping (supported: ${rhcsToOcpMinor().keySet()})"
+    def interopMinor = lookupRhcsInteropMinor(rhcsVer)
+    if (!interopMinor) {
+        echo "resolveOdfInteropParams: RHCS '${rhcsVer}' is not in the interop mapping (supported: ${rhcsToInteropMinor().keySet()})"
         return null
     }
 
     def ocpChannel = normalizeOcpChannel(ocpChOverride ?: 'released')
-    def resolved = resolveOcpFromOdfMinor(ocpMinor, ocpChannel)
+    def resolved = resolveOcpFromInteropMinor(interopMinor, ocpChannel)
     if (!resolved) {
-        echo "resolveOdfInteropParams: could not resolve OCP version for OCP ${ocpMinor}"
+        echo "resolveOdfInteropParams: could not resolve OCP version for OCP ${interopMinor}"
         return null
     }
 
     def ocpVersion = ocpVerOverride ?: resolved.ocpVersion
-    def odfOperatorChannel = odfOpChOverride ?: "stable-${ocpMinor}"
+    def odfOperatorChannel = odfOpChOverride ?: "stable-${interopMinor}"
 
-    def bvtMsg = "BVT-style: stream '${stream}', RHCS '${rhcsVer}' → OCP/ODF ${ocpMinor} → API"
+    def bvtMsg = "BVT-style: stream '${stream}', RHCS '${rhcsVer}' → ${interopLabel('odf', interopMinor)} → API"
     if (ocpVerOverride || ocpChOverride || odfOpChOverride) {
         bvtMsg += ' (with parameter overrides)'
     }
@@ -75,7 +75,7 @@ def call(Map parameters) {
         ocpPullSpec        : resolved.ocpPullSpec,
         odfOperatorChannel : odfOperatorChannel,
         odfChannel         : odfOperatorChannel,
-        ocsVersion         : ocpMinor,
+        ocsVersion         : interopMinor,
     ]
 }
 
@@ -99,14 +99,14 @@ def inferAuto(Map p) {
     def bv = p.rhcsBuildVersion?.toString()?.trim()
     if (bv) {
         def rhcsVer = parseRhcsVersion(bv, 'RHCS_BUILD_VERSION')
-        def ocpMinor = rhcsToOcpMinor()[rhcsVer]
-        if (!ocpMinor) {
-            echo "resolveOdfInteropParams: RHCS_BUILD_VERSION '${bv}' (parsed as '${rhcsVer}') is not in the interop mapping (supported: ${rhcsToOcpMinor().keySet()})"
+        def interopMinor = lookupRhcsInteropMinor(rhcsVer)
+        if (!interopMinor) {
+            echo "resolveOdfInteropParams: RHCS_BUILD_VERSION '${bv}' (parsed as '${rhcsVer}') is not in the interop mapping (supported: ${rhcsToInteropMinor().keySet()})"
             return null
         }
         return resolveByRhcsVersion(
-            rhcsVer, ocpMinor,
-            "RHCS_BUILD_VERSION '${bv}' → RHCS '${rhcsVer}' → OCP/${product == 'fdf' ? 'FDF' : 'ODF'} ${ocpMinor} → API (OCP=${ocpChannel}, ${product == 'fdf' ? 'FDF' : 'ODF'}=${odfBuildChannel})",
+            rhcsVer, interopMinor,
+            "RHCS_BUILD_VERSION '${bv}' → RHCS '${rhcsVer}' → ${interopLabel(product, interopMinor)} → API (OCP=${ocpChannel}, ${product == 'fdf' ? 'FDF' : 'ODF'}=${odfBuildChannel})",
             ocpChannel,
             odfBuildChannel,
             odfCatalogImage,
@@ -135,15 +135,15 @@ def inferAuto(Map p) {
         return null
     }
 
-    def ocpMinor = rhcsToOcpMinor()[rhcsVer]
-    if (!ocpMinor) {
+    def interopMinor = lookupRhcsInteropMinor(rhcsVer)
+    if (!interopMinor) {
         echo "resolveOdfInteropParams: RHCS '${rhcsVer}' (from upstream '${nice}') is not in the interop mapping"
         return null
     }
 
     return resolveByRhcsVersion(
-        rhcsVer, ocpMinor,
-        "podman + cephadm: ceph_git_nice_ver '${nice}' → RHCS '${rhcsVer}' → OCP/${product == 'fdf' ? 'FDF' : 'ODF'} ${ocpMinor} → API (OCP=${ocpChannel}, ${product == 'fdf' ? 'FDF' : 'ODF'}=${odfBuildChannel})",
+        rhcsVer, interopMinor,
+        "podman + cephadm: ceph_git_nice_ver '${nice}' → RHCS '${rhcsVer}' → ${interopLabel(product, interopMinor)} → API (OCP=${ocpChannel}, ${product == 'fdf' ? 'FDF' : 'ODF'}=${odfBuildChannel})",
         ocpChannel,
         odfBuildChannel,
         odfCatalogImage,
@@ -174,7 +174,7 @@ def validateBuildChannel(String channel, String label) {
 def resolveOdfCatalogPullSpec(
     String catalogImage,
     String buildChannel,
-    String ocpMinor,
+    String odfMinor,
     String product = 'odf',
     String pullSecretFile = ''
 ) {
@@ -185,9 +185,9 @@ def resolveOdfCatalogPullSpec(
     }
     if (buildChannel == 'nightly') {
         if (product == 'fdf') {
-            return resolveFdfCatalog(odfMinor: ocpMinor, pullSecretFile: pullSecretFile).pullSpec
+            return resolveFdfCatalog(odfMinor: odfMinor, pullSecretFile: pullSecretFile).pullSpec
         }
-        return resolveOdfDevCatalog(odfMinor: ocpMinor).pullSpec
+        return resolveOdfDevCatalog(odfMinor: odfMinor).pullSpec
     }
     return ''
 }
@@ -228,19 +228,33 @@ def rhcsMajorToStream(int maj) {
     return [8: 'squid', 9: 'tentacle'][maj]
 }
 
-def rhcsToOcpMinor() {
+def rhcsToInteropMinor() {
     return [
         '8.0': '4.18',
         '8.1': '4.20',
         '9.0': '4.21',
         '9.1': '4.22',
-        '9.2': '4.23',
+        '9.2': '5.0',  // OCP 5.0 / ODF(FDF) 5.0 (4.23 is the legacy co-release stream label)
     ]
 }
 
-/** @deprecated Use rhcsToOcpMinor */
+/** @deprecated Use rhcsToInteropMinor */
+def rhcsToOcpMinor() {
+    return rhcsToInteropMinor()
+}
+
+/** @deprecated Use rhcsToInteropMinor */
 def rhcsToOdfMinor() {
-    return rhcsToOcpMinor()
+    return rhcsToInteropMinor()
+}
+
+def lookupRhcsInteropMinor(String rhcsVer) {
+    return rhcsToInteropMinor()[rhcsVer]
+}
+
+def interopLabel(String product, String interopMinor) {
+    def productLabel = product == 'fdf' ? 'FDF' : 'ODF'
+    return "OCP/${productLabel} ${interopMinor}"
 }
 
 def upstreamCephVersionMap() {
@@ -261,28 +275,33 @@ def upstreamCephToRhcsVersion(String niceVer) {
 // OCP version resolution via OpenShift Release API
 // ──────────────────────────────────────────────────────────────────────
 
-def resolveOcpFromOdfMinor(String odfMinor, String preferredChannel = 'released') {
+def resolveOcpFromInteropMinor(String interopMinor, String preferredChannel = 'released') {
     if (preferredChannel == 'nightly') {
-        return queryNightlyOcp(odfMinor)
+        return queryNightlyOcp(interopMinor)
     }
 
-    def released = queryReleasedOcp(odfMinor)
+    def released = queryReleasedOcp(interopMinor)
     if (released) {
         return released
     }
 
-    echo "resolveOdfInteropParams: no GA release found for OCP ${odfMinor}, trying nightly"
-    return queryNightlyOcp(odfMinor)
+    echo "resolveOdfInteropParams: no GA release found for OCP ${interopMinor}, trying nightly"
+    return queryNightlyOcp(interopMinor)
 }
 
-def queryReleasedOcp(String odfMinor) {
-    def ocpMajor = odfMinor.split('\\.')[0]
-    def url = "${ocpReleaseApiBase()}/${ocpMajor}-stable/latest?prefix=${odfMinor}"
+/** @deprecated Use resolveOcpFromInteropMinor */
+def resolveOcpFromOdfMinor(String odfMinor, String preferredChannel = 'released') {
+    return resolveOcpFromInteropMinor(odfMinor, preferredChannel)
+}
+
+def queryReleasedOcp(String interopMinor) {
+    def ocpMajor = interopMinor.split('\\.')[0]
+    def url = "${ocpReleaseApiBase()}/${ocpMajor}-stable/latest?prefix=${interopMinor}"
     return queryOcpReleaseApi(url, 'released')
 }
 
-def queryNightlyOcp(String odfMinor) {
-    def url = "${ocpReleaseApiBase()}/${odfMinor}.0-0.nightly/latest"
+def queryNightlyOcp(String interopMinor) {
+    def url = "${ocpReleaseApiBase()}/${interopMinor}.0-0.nightly/latest"
     return queryOcpReleaseApi(url, 'nightly')
 }
 
@@ -318,7 +337,7 @@ def queryOcpReleaseApi(String url, String channel) {
 
 def resolveByRhcsVersion(
     String rhcsVer,
-    String ocpMinor,
+    String interopMinor,
     String howMsg = null,
     String ocpChannel = 'released',
     String odfBuildChannel = 'released',
@@ -326,18 +345,18 @@ def resolveByRhcsVersion(
     String product = 'odf',
     String pullSecretFile = ''
 ) {
-    def resolved = resolveOcpFromOdfMinor(ocpMinor, ocpChannel)
+    def resolved = resolveOcpFromInteropMinor(interopMinor, ocpChannel)
     if (!resolved) {
-        echo "resolveOdfInteropParams: could not resolve OCP version for OCP/ODF ${ocpMinor} (RHCS ${rhcsVer}) from OpenShift Release API"
+        echo "resolveOdfInteropParams: could not resolve OCP version for OCP ${interopMinor} (RHCS ${rhcsVer}) from OpenShift Release API"
         return null
     }
 
     def stream = rhcsMajorToStream(parseLeadingMajor(rhcsVer, 'rhcsVer'))
-    def odfOperatorChannel = "stable-${ocpMinor}"
-    def catalogPullSpec = resolveOdfCatalogPullSpec(odfCatalogImage, odfBuildChannel, ocpMinor, product, pullSecretFile)
+    def odfOperatorChannel = "stable-${interopMinor}"
+    def catalogPullSpec = resolveOdfCatalogPullSpec(odfCatalogImage, odfBuildChannel, interopMinor, product, pullSecretFile)
 
     def productLabel = product == 'fdf' ? 'FDF' : 'ODF'
-    def msg = howMsg ?: "RHCS '${rhcsVer}' → OCP/${productLabel} ${ocpMinor} → OCP ${resolved.ocpVersion} (${resolved.ocpChannel}), ${productLabel} ${odfOperatorChannel}"
+    def msg = howMsg ?: "RHCS '${rhcsVer}' → ${interopLabel(product, interopMinor)} → OCP ${resolved.ocpVersion} (${resolved.ocpChannel}), ${productLabel} ${odfOperatorChannel}"
     if (catalogPullSpec) {
         msg += " + catalog ${catalogPullSpec.split('/')[-1].take(48)}"
     } else if (odfBuildChannel == 'released') {
@@ -353,7 +372,7 @@ def resolveByRhcsVersion(
         ocpPullSpec        : resolved.ocpPullSpec,
         odfOperatorChannel : odfOperatorChannel,
         odfChannel         : odfOperatorChannel,
-        ocsVersion         : ocpMinor,
+        ocsVersion         : interopMinor,
         odfBuildChannel    : odfBuildChannel,
         odfCatalogImage    : catalogPullSpec,
     ]

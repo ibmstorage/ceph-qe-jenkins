@@ -33,6 +33,8 @@ sync-blue-ceph-images (IBM ceph-base) → {release}-bvt-ci (BUILD_TYPE=IBM, TRIG
 
 Enable `TRIGGER_DATA_FOUNDATION_INTEROP` on BVT when `BUILD_TYPE=IBM`. `sync-blue-ceph-images` sets this automatically when it triggers BVT for IBM images.
 
+Version resolution uses the same RHCS matrix as [ODF Interop](./odf_interop.md) (RHCS 9.2 / Ceph 20.2.2 → OCP + FDF **5.0**).
+
 ## Differences from ODF Interop
 
 | Aspect | ODF (`odf-interop`) | FDF (`fdf-interop`) |
