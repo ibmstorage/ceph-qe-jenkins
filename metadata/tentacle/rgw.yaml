@@ -107,6 +107,9 @@ regression:
     - name: "Tier-2 RGW conditional delete" # 54 mins, 37 secs
       suite: suites/tentacle/rgw/tier-2_rgw_conditional_put_delete.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 RGW SMB Basic ops" # 54 mins, 37 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_smb.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
 extended_regression:
   metadata:
     cloud:
