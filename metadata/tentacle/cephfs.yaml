@@ -130,3 +130,18 @@ upgrade:
         - rhel-10
       vm-size:
         ibmc: cx2-4x8
+      suites:
+    - name: "TEST CephFS Upgrade from 9.0x to 9.x Latest"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_9x_to_9x_latest.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
+    - name: "TEST CephFS Upgrade from 9.1x to 9.x Latest"
+      suite: suites/tentacle/cephfs/tier-0_cephfs_upgrade_9-1_to_9x_latest.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_upgrade.yaml
+      platform:
+        - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
