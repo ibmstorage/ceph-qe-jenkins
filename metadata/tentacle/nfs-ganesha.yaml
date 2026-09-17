@@ -28,6 +28,10 @@ regression:
     - name: "Tier-1 NFS ganesha Scalable Stats for Prometheus"
       suite: suites/tentacle/nfs/tier2-nfs-prometheus-stats.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+# Copy into ceph-qe-ng/jenkins (tentacle NFS Ganesha 9.2 job matrix).
+# Regression block unchanged; append the last suite under upgrade:suites.
+# Requires cephci PR #6168 merged (or branch feat/tentacle-cephfs-nfs-9x-upgrade-suites).
+
 upgrade:
   metadata:
     cloud:
@@ -62,3 +66,11 @@ upgrade:
         - rhel-9
       vm-size:
         ibmc: cx2-4x8
+    - name: "TEST Ceph NFS Ganesha Upgrade from 9.1x to 9.x Latest"
+      suite: suites/tentacle/nfs/tier1-nfs-ganesha-upgrade-9-1-to-9x-latest.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-9
+      vm-size:
+        ibmc: cx2-4x8
+
