@@ -90,6 +90,14 @@ regression:
         build:
           - ibm
         version: [9.1, 9.2]
+      - name: "Test suite for BYOK namespace Feature"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_9-2_byok.yaml
+        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_2GW_1Client.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+        version: 9.2
 
 extended_regression:
     metadata:
