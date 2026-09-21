@@ -124,13 +124,13 @@ upgrade:
         - rhel-9
       build:
         - rh
-    # - name: Test DMFG upgrade RHCS 6x to 8x latest
-    #   suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-to-8x.yaml
-    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
-    #   platform:
-    #     - rhel-9
-    #   build:
-    #     - rh
+    - name: Test DMFG upgrade RHCS 6x to 8x latest
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
     - name: Test DMFG upgrade RHCS 8x to 8x latest
       suite: suites/squid/upgrades/tier1-upgrade-rhcs-8x-to-8x-latest.yaml
       global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
@@ -138,13 +138,13 @@ upgrade:
         - rhel-9
       build:
         - rh
-    # - name: Test DMFG upgrade IBM 6x to 8x
-    #   suite: suites/squid/upgrades/tier1-upgrade-ibm-6x-to-8x.yaml
-    #   global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
-    #   platform:
-    #     - rhel-9
-    #   build:
-    #     - ibm
+    - name: Test DMFG upgrade IBM 6x to 8x latest
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-6x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
     - name: Test DMFG upgrade IBM 7x to 8x
       suite: suites/squid/upgrades/tier1-upgrade-ibm-7x-to-8x.yaml
       global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
