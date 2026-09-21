@@ -25,6 +25,12 @@ regression:
       - name: "tier-2 rbd group mirror misc"
         suite: suites/tentacle/rbd/tier-2_rbd_group_mirror_misc.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror dynamic"
+        suite: suites/tentacle/rbd/tier-2_rbd_group_mirror_dynamic.yaml
+        global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd migration key import"
+        suite: suites/tentacle/rbd/tier-2_rbd_migration_key_import_9_2.yaml
+        global-conf: conf/tentacle/rbd/5-node-2-clusters-with-nvmeof.yaml
       - name: "tier-2 default namespace mirroring"
         suite: suites/tentacle/rbd/tier-2_default_namespace_mirroring.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
@@ -62,15 +68,9 @@ extended_regression:
       - name: "tier-3 rbd mirror encrypted image"
         suite: suites/tentacle/rbd/tier-3_rbd_mirror_encrypted_image.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
-      - name: "tier-2 rbd mirror failback"
-        suite: suites/tentacle/rbd/tier-2_rbd_mirror_failback.yaml
-        global-conf: conf/tentacle/rbd/3_clusters_5_node.yaml
       - name: "tier-2 rbd mirror scale osd"
         suite: suites/tentacle/rbd/tier-2_rbd_mirror_scale_osd.yaml
         global-conf: conf/tentacle/rbd/rbd_mirror_large.yaml
-      - name: "tier-2 rbd mirror recreate secondary cluster"
-        suite: suites/tentacle/rbd/tier-2_rbd_mirror_recreate_secondary_cluster.yaml
-        global-conf: conf/tentacle/rbd/3_clusters_5_node.yaml
       - name: "tier-4 rbd negative scenarios"
         suite: suites/tentacle/rbd/tier-4_rbd_negative_scenarios.yaml
         global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
@@ -104,6 +104,9 @@ extended_regression:
       - name: "tier-2 rbd group mirror scale"
         suite: suites/tentacle/rbd/tier-2_rbd_group_mirror_scale.yaml
         global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror recreate secondary cluster"
+        suite: suites/tentacle/rbd/tier-2_rbd_mirror_recreate_secondary_cluster.yaml
+        global-conf: conf/tentacle/rbd/3_clusters_5_node.yaml
 
 upgrade:
     metadata:

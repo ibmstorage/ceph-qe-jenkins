@@ -72,15 +72,9 @@ extended_regression:
       - name: "tier-3 rbd mirror encrypted image"
         suite: suites/squid/rbd/tier-3_rbd_mirror_encrypted_image.yaml
         global-conf: conf/squid/rbd/5-node-2-clusters.yaml
-      - name: "tier-2 rbd mirror failback"
-        suite: suites/squid/rbd/tier-2_rbd_mirror_failback.yaml
-        global-conf: conf/squid/rbd/3_clusters_5_node.yaml
       - name: "tier-2 rbd mirror scale osd"
         suite: suites/squid/rbd/tier-2_rbd_mirror_scale_osd.yaml
         global-conf: conf/squid/rbd/rbd_mirror_large.yaml
-      - name: "tier-2 rbd mirror recreate secondary cluster"
-        suite: suites/squid/rbd/tier-2_rbd_mirror_recreate_secondary_cluster.yaml
-        global-conf: conf/squid/rbd/3_clusters_5_node.yaml
       - name: "tier-4 rbd negative scenarios"
         suite: suites/squid/rbd/tier-4_rbd_negative_scenarios.yaml
         global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
@@ -116,6 +110,9 @@ extended_regression:
         global-conf: conf/squid/rbd/5-node-2-clusters.yaml
         version:
           - 8.1
+      - name: "tier-2 rbd mirror recreate secondary cluster"
+        suite: suites/squid/rbd/tier-2_rbd_mirror_recreate_secondary_cluster.yaml
+        global-conf: conf/squid/rbd/3_clusters_5_node.yaml
 
 upgrade:
     metadata:
