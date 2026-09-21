@@ -3,16 +3,21 @@ def jobsConfiguration = []
 
 def LOG_LEVELS = ["ERROR", "INFO", "DEBUG"]
 
-// FG → VPC mapping
+// FG → VPC mapping (Jenkins default = only entry). Quota / ownership matrix:
+// Sydney ci-vpc-01 (Madhavi/RGW),
+// Frankfurt vpc-cephci (Shantha/CephCI),
+// Dallas vpc-vivek-dallas (Vivek/DMFG),
+// London vpc-neha-london (Neha/CephFS, RADOS, NFS-Ganesha),
+// Madrid vpc-manohar-madrid (Manohar/Block, RBD, NvmeOF).
 def FG_VPC = [
-    "DMFG"       : ["ci-vpc-01"],
-    "callhome"   : ["ci-vpc-01"],
-    "smb"        : ["ci-vpc-01"],
-    "CephFS"     : ["vpc-cephfs"],
-    "RADOS"      : ["vpc-cephfs"],
-    "NFS-Ganesha": ["vpc-nfsg"],
-    "RBD"        : ["vpc-block"],
-    "NvmeOF"     : ["vpc-block"],
+    "DMFG"       : ["vpc-vivek-dallas"],
+    "callhome"   : ["vpc-vivek-dallas"],
+    "smb"        : ["vpc-vivek-dallas"],
+    "CephFS"     : ["vpc-neha-london"],
+    "RADOS"      : ["vpc-neha-london"],
+    "NFS-Ganesha": ["vpc-neha-london"],
+    "RBD"        : ["vpc-manohar-madrid"],
+    "NvmeOF"     : ["vpc-manohar-madrid"],
     "RGW"        : ["ci-vpc-01"]
 ]
 

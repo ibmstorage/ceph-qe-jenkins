@@ -3,7 +3,10 @@ def jobsConfiguration = []
 
 // Method to generate required job metadata
 def generate_jobs(data) {
-    def vpc = ["vpc-block", "vpc-cephci", "vpc-cephfs", "vpc-dmfg", "vpc-nfsg", "vpc-rgw", "ci-vpc-01"]
+    def vpc = [
+        "vpc-cephci", "ci-vpc-01",
+        "vpc-vivek-dallas", "vpc-neha-london", "vpc-manohar-madrid"
+    ]
     def logLevel = ["ERROR", "INFO", "DEBUG"]
     def buildType = ["IBM", "RH"]
 

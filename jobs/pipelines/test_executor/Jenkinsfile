@@ -1,5 +1,5 @@
 // Import shared library
-@Library("ceph-qe-libs@main") _
+@Library("ceph-qe-libs@new-region-vpc-support") _
 
 def job = "executor"
 def jobConfigs = [:]

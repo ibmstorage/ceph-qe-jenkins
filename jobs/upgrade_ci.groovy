@@ -4,17 +4,17 @@ def jobsConfiguration = []
 // Supported Ceph versions
 def CEPH_VERSIONS = ["Tentacle", "Squid", "Reef"]
 
-// FG → VPC mapping
+// FG → VPC mapping — keep in sync with regression_ci.groovy (see quota matrix in that file).
 def FG_VPC = [
-    "DMFG"       : ["ci-vpc-01"],
-    "callhome"   : ["ci-vpc-01"],
-    "smb"        : ["ci-vpc-01"],
-    "RGW"        : ["ci-vpc-01"],
-    "CephFS"     : ["vpc-cephfs"],
-    "RADOS"      : ["vpc-cephfs"],
-    "NFS-Ganesha": ["vpc-nfsg"],
-    "RBD"        : ["vpc-block"],
-    "NvmeOF"     : ["vpc-block"]
+    "DMFG"       : ["vpc-vivek-dallas"],
+    "callhome"   : ["vpc-vivek-dallas"],
+    "smb"        : ["vpc-vivek-dallas"],
+    "CephFS"     : ["vpc-neha-london"],
+    "RADOS"      : ["vpc-neha-london"],
+    "NFS-Ganesha": ["vpc-neha-london"],
+    "RBD"        : ["vpc-manohar-madrid"],
+    "NvmeOF"     : ["vpc-manohar-madrid"],
+    "RGW"        : ["ci-vpc-01"]
 ]
 
 // Ceph release specific configuration

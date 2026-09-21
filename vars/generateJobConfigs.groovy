@@ -91,24 +91,28 @@ def call(Map parameters) {
         jobConfig.customConfig = params.CUSTOM_CONFIG.split(",") as List
     }
 
-    // Set inventory file (released builds use IBMC_LIVE_INVENTORY on IBM Cloud)
-    if ( jobConfig.cloudType == "ibmc" && params.RELEASE?.toLowerCase() == "released" ) {
-        jobConfig.inventory = cephciConfigs.IBMC_LIVE_INVENTORY[jobConfig.platform]
-    } else if ( params.INVENTORY ) {
-        jobConfig.inventory = params.INVENTORY
-    } else if ( jobConfig.cloudType == "ibmc" ) {
-        jobConfig.inventory = cephciConfigs.IBMC_INVENTORY[jobConfig.platform]
-    } else if ( jobConfig.cloudType == "aws" ) {
-        jobConfig.inventory = cephciConfigs.AWS_INVENTORY[jobConfig.platform] ?: cephciConfigs.AWS_INVENTORY["rhel-9"]
-    } else {
-        abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")
-    }
-
-    // Get the VPC Name (IBM Cloud only; AWS uses credentials)
+    // Get the VPC Name first (IBM Cloud only) so inventory can follow the VPC.
     if ( jobConfig.cloudType == "ibmc" ) {
         jobConfig.vpcName = params.VPC_NAME ?: cephciConfigs.VPC_NAME
     } else if ( jobConfig.cloudType == "aws" ) {
         jobConfig.vpcName = null  // Not used for AWS cleanup
+    }
+
+    // Set inventory file.
+    // Precedence: explicit INVENTORY → released LIVE (EU) → shared regional → EU default.
+    if ( params.INVENTORY ) {
+        jobConfig.inventory = params.INVENTORY
+    } else if ( jobConfig.cloudType == "ibmc" && params.RELEASE?.toLowerCase() == "released" ) {
+        jobConfig.inventory = cephciConfigs.IBMC_LIVE_INVENTORY[jobConfig.platform]
+    } else if ( jobConfig.cloudType == "ibmc" ) {
+        jobConfig.inventory = cephciConfigs.resolveIbmcInventory(
+            jobConfig.platform, jobConfig.vpcName
+        )
+        println("IBMC inventory for vpc=${jobConfig.vpcName} platform=${jobConfig.platform}: ${jobConfig.inventory}")
+    } else if ( jobConfig.cloudType == "aws" ) {
+        jobConfig.inventory = cephciConfigs.AWS_INVENTORY[jobConfig.platform] ?: cephciConfigs.AWS_INVENTORY["rhel-9"]
+    } else {
+        abort("Inventory file not provided for cloud type: ${jobConfig.cloudType}")
     }
 
     // Get subscription manager execution (released jobs require RHEL CDN subscription)
