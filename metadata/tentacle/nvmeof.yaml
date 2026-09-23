@@ -140,7 +140,7 @@ upgrade:
         - ibmc
         - aws
     suites:
-     - name: "TEST NVMe Upgrade from 9.1x to 9.2 Latest with all features enabled"
+      - name: "TEST NVMe Upgrade from 9.1x to 9.2 Latest with all features enabled"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_comprehensive_upgrade.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
         vm-size:
