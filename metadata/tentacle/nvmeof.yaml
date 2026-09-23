@@ -126,6 +126,13 @@ extended_regression:
           ibmc: cx2-8x16
         build:
           - ibm
+      - name: "Extended tests on NVMeoF alerts and health checks and events"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof-alerts_health-checks-events-extended.yaml
+        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
 
 upgrade:
     metadata:
@@ -133,6 +140,17 @@ upgrade:
         - ibmc
         - aws
     suites:
+     - name: "TEST NVMe Upgrade from 9.1x to 9.2 Latest with all features enabled"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_comprehensive_upgrade.yaml
+        global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        platform:
+          - rhel-10
+        build:
+          - ibm
+        version:
+          - 9.2
       - name: "TEST NVMe Upgrade from 9.1x to 9.2 Latest"
         suite: suites/tentacle/nvmeof/tier-2_nvmeof_91-to-9x_upgrade.yaml
         global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
