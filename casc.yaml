@@ -70,7 +70,7 @@ jenkins:
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "infra-vm-jenkins-agent-01"
         nodeDescription: "Workflow executor"
-        numExecutors: 5
+        numExecutors: 10
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
     - permanent:
@@ -96,7 +96,7 @@ jenkins:
             sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
         name: "infra-vm-jenkins-agent-03"
         nodeDescription: "Workflow executor"
-        numExecutors: 5
+        numExecutors: 10
         remoteFS: "/data/jenkins"
         retentionStrategy: "always"
     - permanent:
