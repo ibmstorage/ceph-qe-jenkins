@@ -99,6 +99,9 @@ extended_regression:
     - name: "Test CephFS Idmapped Mount Tests"
       suite: suites/tentacle/cephfs/tier-2_cephfs_test-idmap.yaml
       global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
+    - name: "Test CephFS Subvolume Quarantine Functionality"
+      suite: suites/tentacle/cephfs/tier-1_cephfs_subvolume_quarantine.yaml
+      global-conf: conf/tentacle/cephfs/tier-2_cephfs_7-node-cluster.yaml
 upgrade:
   metadata:
     cloud:
