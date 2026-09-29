@@ -1,0 +1,199 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    ## Cephadm-ansible boostrap module does not support the --automatically-accept-license flag.
+    ## Hence these suites will fail on IBM Ceph Storage 9.1 builds.
+    ## Therefore, cephadm-ansible test suites that depend on it are temporarily commented out.
+    ## These suites will be re-enabled once the support is added; QE BZ IBMCEPH-15709
+
+    # - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Registry Details"
+    #  suite: suites/umbrella/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-registry-details.yaml
+    #  global-conf: conf/umbrella/smoke/1admin-4node-1client-bvt.yaml
+    # - name: "Test DMFG Tier-1 Cephadm Ansible Wrapper Bootstrap with Custom SSH"
+    #  suite: suites/umbrella/cephadm/tier1-cephadm-ansible-wrapper-bootstrap-with-custom-ssh.yaml
+    #  global-conf: conf/umbrella/smoke/1admin-4node-1client-bvt.yaml
+    - name: "Test DMFG Tier-1 Ceph API Auth"
+      suite: suites/umbrella/cephmgr/tier1-cephapi-auth-api.yaml
+      global-conf: conf/umbrella/cephmgr/1admin-4node-1client-ceph-mgr.yaml
+    - name: "Test DMFG Tier-1 Cehadm Ansible Wrapper Modules"
+      suite: suites/umbrella/cephadm/tier1-cephadm-ansible-wrapper-modules.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-1 Cephadm Clients"
+      suite: suites/umbrella/cephadm/tier1-cephadm-clients.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-1 Remove Cluster"
+      suite: suites/umbrella/cephadm/tier1-remove-cluster.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-1 OS Tuning Profiles"
+      suite: suites/umbrella/cephadm/tier1-os-tuning-profiles.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-1 Mix OS Deployment"
+      suite: suites/umbrella/cephadm/tier1-mix-os-deployment.yaml
+      global-conf: conf/umbrella/cephadm/1admin-4node-1client-mix-os.yaml
+    - name: "Test DMFG Tier-1 Container CLI Args"
+      suite: suites/umbrella/cephadm/tier1-container-cli-args.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-1 SSL Dashboard Port"
+      suite: suites/umbrella/cephadm/tier1-ssl-dashboard-port.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-1 Node-exporter Operations"
+      suite: suites/umbrella/cephadm/tier1_node_exporter_operation.yaml
+      global-conf: conf/umbrella/cephadm/2admin-5node-1client-cluster.yaml
+    # - name: "Test DMFG Tier-1 OSD Crush Device Class"
+    #  suite: suites/umbrella/cephadm/tier1-osd-crush-device-class.yaml
+    #  global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+    # - name: "Test DMFG Tier-2 Bootstrap with Spec"
+    #  suite: suites/umbrella/cephadm/tier2-bootstrap-along-with-spec-file.yaml
+    #  global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+    - name: "Test DMFG Tier-2 Ceph Volume"
+      suite: suites/umbrella/ceph_volume/tier2-ceph-volume.yaml
+      global-conf: conf/umbrella/ceph_volume/1admin-4node-1client-ceph-volume.yaml
+    # - name: "Test DMFG Tier-2 Permissive Mode Scenarios"
+    #  suite: suites/umbrella/cephadm/tier2-permissive-mode-scenarios.yaml
+    #  global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-2 RGW with Warn State"
+      suite: suites/umbrella/cephadm/tier2-rgw-with-warn-state.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-2 Verify Custom Container"
+      suite: suites/umbrella/cephadm/tier2-verify-custom-container.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Test DMFG Tier-2 OSD Scenarios"
+      suite: suites/umbrella/cephadm/tier2-osd-scenarios.yaml
+      global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+
+    ## IBMC cloud provider support is not yet implemented.
+    ## Therefore, ceph-volume test suites that depend on it are temporarily commented out.
+    ## These suites will be re-enabled once IBMC support is added.
+
+    # - name: "Test DMFG Tier-1 Ceph-Volume Sanity"
+    #   suite: suites/umbrella/ceph_volume/tier1-ceph-volume-sanity.yaml
+    #   global-conf: conf/umbrella/ceph_volume/1admin-4node-1client-ceph-volume.yaml
+    # - name: "Test DMFG Tier-2 Ceph-Volume Redeploy"
+    #   suite: suites/umbrella/ceph_volume/tier2-ceph-volume-redeploy.yaml
+    #   global-conf: conf/umbrella/ceph_volume/1admin-1client-5node-single-volume.yaml
+    # - name: "Test DMFG Tier-2 Ceph-Volume Non-collocated"
+    #   suite: suites/umbrella/ceph_volume/tier2-ceph-volume-non-collocated.yaml
+    #   global-conf: conf/umbrella/ceph_volume/1admin-1client-5node-single-volume.yaml
+    # - name: "Test DMFG Tier-2 Ceph-Volume lvm"
+    #   suite: suites/umbrella/ceph_volume/tier2-ceph-volume-lvm.yaml
+    #   global-conf: conf/umbrella/ceph_volume/2admin-5node-1client.yaml
+    - name: "Test DMFG Tier-4 Service Operations"
+      suite: suites/umbrella/cephadm/tier4-service-operations.yaml
+      global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+
+extended_regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Test DMFG Tier-0 Cephadm"
+      suite: suites/umbrella/cephadm/tier0-cephadm.yaml
+      global-conf: conf/umbrella/cephadm/1admin-8node-1client-cluster.yaml
+#    - name: "Test DMFG Tier-2 RHOS01 Multiple Subnet Openstack Only"
+#      suite: suites/umbrella/cephadm/tier2-rhos01-multiple-subnet-openstack-only.yaml
+#      global-conf: conf/umbrella/cephadm/rhos01-1admin-5node-multiple-subnet.yaml
+    # - name: "Test DMFG Tier-2 Cluster Elasticity"
+    #   suite: suites/umbrella/cephadm/tier2-cluster-elasticity.yaml
+    #   global-conf: conf/umbrella/cephadm/1admin-10node-1client-cephadm-scale.yaml
+    - name: "Test DMFG Tier-2 Ceph-MGR"
+      suite: suites/umbrella/cephmgr/tier2-cephmgr.yaml
+      global-conf: conf/umbrella/cephmgr/1admin-4node-1client-ceph-mgr.yaml
+    # - name: "Test DMFG Tier-4 Crash Configuration"
+    #   suite: suites/umbrella/cephadm/tier4-crash-configuration.yaml
+    #   global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#   metadata:
+#     cloud:
+#       - ibmc
+#       - aws
+#   suites:
+#     - name: "Test DMFG upgrade RHCS 7x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-7x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - rh
+#     - name: "Test DMFG upgrade RHCS 8x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-8x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - rh
+#     - name: "Test DMFG upgrade with monitoring stack RHCS 8x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-8x-released-to-9x.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - rh
+#     - name: "Test DMFG upgrade with monitoring stack RHCS 7x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-7x-released-to-9x.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - rh
+#     - name: "Test DMFG staggered upgrade RHCS 8x to 9x"
+#       suite: suites/umbrella/upgrades/tier2-upgrade-rhcs-staggered-8x-released-to-9x.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - rh
+#     - name: "Test DMFG staggered upgrade RHCS 9x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - rh
+#     - name: "Test DMFG upgrade IBMSC 7x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-7x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test DMFG upgrade IBMSC 8x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-8x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test DMFG upgrade IBMSC 9x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test DMFG upgrade with monitoring stack IBMSC 8x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-ibm-8x-released-to-9x.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test DMFG upgrade with monitoring stack IBM 7x to 9x"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-ibm-7x-released-to-9x.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test DMFG staggered upgrade IBMSC 8x to 9x"
+#       suite: suites/umbrella/upgrades/tier2-upgrade-ibm-staggered-8x-released-to-9x.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm

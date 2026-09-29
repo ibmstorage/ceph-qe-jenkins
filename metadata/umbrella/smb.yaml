@@ -1,0 +1,173 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Test SMB Tier-1 Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB AD Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-ad-dc.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB CTDB Clustering Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-ctdb-clustering.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB VSS Snapshot Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-vss.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Firewall Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-firewall.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Torture Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-smbtorture.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Colocation Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-colocation.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB QoS Test Cases"
+      suite: suites/umbrella/smb/tier-1-smb-qos.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Service Sepration"
+      suite: suites/umbrella/smb/tier-1-smb-exo.yaml
+      global-conf: conf/umbrella/smb/2admin-8node-2client-2cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test IP based access control"
+      suite: suites/umbrella/smb/tier-1-smb-ip-based-access-control.yaml
+      global-conf: conf/umbrella/smb/1admin-5node-2client-ip-access.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Share Quota capacity"
+      suite: suites/umbrella/smb/tier-1-smb-share-quota-capacity.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB BYOK"
+      suite: suites/umbrella/smb/tier-1-smb-byok.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    # Commented out for now, as the macos tests need to be updated for the 10.0 release.
+    # - name: "Test SMB macos support"
+    #   suite: suites/umbrella/smb/tier-1-smb-macos.yaml
+    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+    #   vm-size:
+    #     ibmc: cx2-8x16
+    #     aws: m6g.xlarge
+    #   version:
+    #       - 9.2
+    # - name: "Test SMB intergation with certmgr for GRPC service"
+    #   suite: suites/umbrella/smb/tier-1-grpc-certmgr.yaml
+    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+    #   vm-size:
+    #     ibmc: cx2-8x16
+    #     aws: m6g.xlarge
+    #   version:
+    #       - 9.2
+    # - name: "Test ceph-smb-ctl remote control"
+    #   suite: suites/umbrella/smb/tier-1-smb-remote-control.yaml
+    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+    #   vm-size:
+    #     ibmc: cx2-8x16
+    #     aws: m6g.xlarge
+    #   version:
+    #       - 9.2
+    # - name: "Test SMB intergation with certmgr for BYOK"
+    #   suite: suites/umbrella/smb/tier-1-byok-certmgr.yaml
+    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+    #   vm-size:
+    #     ibmc: cx2-8x16
+    #     aws: m6g.xlarge
+    #   version:
+    #       - 9.2
+extended_regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Test SMB Tier-2 Test Cases"
+      suite: suites/umbrella/smb/tier-2-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Tier-3 Test Cases"
+      suite: suites/umbrella/smb/tier-3-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Tier-4 Test Cases"
+      suite: suites/umbrella/smb/tier-3-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    # Commented out for now, as the macos tests need to be updated for the 10.0 release.
+    # - name: "Test SMB macos Tier-4 Test Cases"
+    #   suite: suites/umbrella/smb/tier-4-smb-macos.yaml
+    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+    #   vm-size:
+    #     ibmc: cx2-8x16
+    #     aws: m6g.xlarge
+    #   version:
+    #       - 9.2
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#   metadata:
+#     cloud:
+#       - ibmc
+#       - aws
+#   suites:
+#     - name: "Test SMB upgrade IBMSC 8x to 9x latest"
+#       suite: suites/umbrella/smb/tier-0-smb-upgrade-ibm-8x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test SMB upgrade IBMSC 9x to 9x latest"
+#       suite: suites/umbrella/smb/tier-0-smb-upgrade-ibm-9x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm
+#     - name: "Test SMB upgrade IBMSC 8x to 9x latest with Casesensitivity Disable"
+#       suite: suites/umbrella/smb/tier-1-smb-disable-casesensitivity-upgrade-ibm-8x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+#       platform:
+#         - rhel-9
+#       build:
+#         - ibm

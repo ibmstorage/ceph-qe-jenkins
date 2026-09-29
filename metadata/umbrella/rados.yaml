@@ -1,0 +1,170 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+      # VM count: 11
+    - name: "RADOS Test - OSD Rebalance"
+      suite: suites/umbrella/rados/tier-2_rados_test-osd-rebalance.yaml
+      global-conf: conf/umbrella/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - EC Pool OSD Rebalance"
+      suite: suites/umbrella/rados/tier-2_rados_test-ecpool-osd-rebalance.yaml
+      global-conf: conf/umbrella/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - Trim"
+      suite: suites/umbrella/rados/tier-2_rados_trim_tests.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - Mon DB Trimming"
+      suite: suites/umbrella/rados/tier-2_rados_test-mon-db-trimming.yaml
+      global-conf: conf/umbrella/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - Bugfixes"
+      suite: suites/umbrella/rados/tier-2_rados_test-bugfixes.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - CBT and COT"
+      suite: suites/umbrella/rados/tier-2_rados_test_cot_cbt.yaml
+      global-conf: conf/umbrella/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name: "RADOS Test - PG Split and Merge"
+      suite: suites/umbrella/rados/tier-2_rados_test-pg-split-merge.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - OMAP"
+      suite: suites/umbrella/rados/tier-2_rados_test_omap.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - Scrub Tests"
+      suite: suites/umbrella/rados/tier-3_rados_test-4-node-scrub-tests.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    - name: "RADOS Test - Scrub Tests 2"
+      suite: suites/umbrella/rados/tier-3_rados_test-4-node-scrub-tests-2.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    - name: "RADOS Test - Location Stretch Mode"
+      suite: suites/umbrella/rados/tier-3_rados_test-location-stretch-mode.yaml
+      global-conf: conf/umbrella/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+    - name: "RADOS Test - Parameters"
+      suite: suites/umbrella/rados/tier-2_rados_test_parameters.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - 5+2 EC Pools"
+      suite: suites/umbrella/rados/tier-3_rados_test_5+2_ecpools.yaml
+      global-conf: conf/umbrella/rados/9-node-ec-cluster-1-client.yaml
+      # VM count: 9
+    - name: "RADOS Test - Tentacle New Features"
+      suite: suites/umbrella/rados/tier-2_rados_test-new-features.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    - name: "RADOS Test - Stretch Mode Tentacle New Features"
+      suite: suites/umbrella/rados/tier-3_rados_test-stretch-mode-new-features.yaml
+      global-conf: conf/umbrella/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+    - name: "RADOS Test - EC Partial Write Optimization"
+      suite: suites/umbrella/rados/tier-3_rados_ec_partial_reads_writes.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    - name: "RADOS Test - OSD Thrashing tests"
+      suite: suites/umbrella/rados/tier-3_rados_osd_thrashing_tests.yaml
+      global-conf: conf/umbrella/rados/9-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    - name: "RADOS Test - OSD deployment workflows"
+      suite: suites/umbrella/rados/tier-2_rados_test_osd_deployment_workflows.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+    # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+    # - name: "RADOS Test - OSD ok to upgrade tests"
+    #   suite: suites/umbrella/rados/tier-2_rados_test_osd_ok_to_upgrade.yaml
+    #   global-conf: conf/umbrella/rados/16-node-cluster-1-client.yaml
+      # VM count: 17
+extended_regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "RADOS Test - Pool Functionalities"
+      suite: suites/umbrella/rados/tier-2_rados_test-pool-functionalities.yaml
+      global-conf: conf/umbrella/rados/11-node-cluster.yaml
+      # VM count: 11
+    - name: "RADOS Test - Bluestore"
+      suite: suites/umbrella/rados/tier-2_rados_test_bluestore.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - CIDR Blocklisting"
+      suite: suites/umbrella/rados/tier-3_rados_cidr_blocklisting.yaml
+      global-conf: conf/umbrella/rados/13-node-cluster-4-clients.yaml
+      # VM count: 17
+    - name: "RADOS Test - OSD Recovery"
+      suite: suites/umbrella/rados/tier-4_rados_test-pool-osd-recovery.yaml
+      global-conf: conf/umbrella/rados/13-node-cluster.yaml
+      # VM count: 13
+    - name: "RADOS Test - Scrubbing"
+      suite: suites/umbrella/rados/tier-2_rados_test-scrubbing.yaml
+      global-conf: conf/umbrella/rados/7-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Tier4 tests"
+      suite: suites/umbrella/rados/tier-4_rados_tests.yaml
+      global-conf: conf/umbrella/rados/13-node-cluster.yaml
+      # VM count: 7
+    - name: "RADOS Test - 4 node EC Pools"
+      suite: suites/umbrella/rados/tier-3_rados_test-4-node-ecpools.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      # VM count: 6
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#   metadata:
+#     cloud:
+#       - ibmc
+#       - aws
+#   suites:
+#     - name: "RADOS Test - Drain Customer Issue"
+#       suite: suites/umbrella/rados/tier-2_rados_test-drain-customer-issue.yaml
+#       global-conf: conf/umbrella/rados/11-node-cluster.yaml
+#       # VM count: 11
+#       # 7.1z0 -> latest
+#     - name: "RADOS - Brownfield tests"
+#       suite: suites/umbrella/rados/tier-2_rados_test-brownfield.yaml
+#       global-conf: conf/umbrella/rados/7-node-cluster.yaml
+#       # VM count: 7
+#       # 7.1z1 -> 7.1z2 -> latest
+#     - name: "RADOS Test - EC Pool Recovery"
+#       suite: suites/umbrella/rados/tier-2_rados_ec-pool_recovery.yaml
+#       global-conf: conf/umbrella/rados/11-node-cluster.yaml
+#       # VM count: 11
+#       # 7.1 GA -> latest
+#     - name: "RADOS Test - Location Stretch Mode Upgrade"
+#       suite: suites/umbrella/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
+#       global-conf: conf/umbrella/rados/stretch-mode-host-location-attrs.yaml
+#       # VM count: 8
+#       # 7.1 GA -> 8.1 GA -> latest
+#     - name: "RADOS Test - 3 AZ Cluster"
+#       suite: suites/umbrella/rados/tier-3_rados_test-3-AZ-Cluster.yaml
+#       global-conf: conf/umbrella/rados/3AZ-cluster-rhos-1.yaml
+#       # VM count: 10
+#       # 8.1 GA -> latest
+#     - name: "RADOS Test - 8+6 MSR EC Pools"
+#       suite: suites/umbrella/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
+#       global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+#       # VM count: 6
+#       # 8.1 GA -> latest
+#     - name: "RADOS Test - 4 node FAST EC Pools"
+#       suite: suites/umbrella/rados/tier-3_rados_test-4-node-fast-ecpools.yaml
+#       global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+#       # VM count: 6
+#       # 8.1 GA -> latest
+#     - name: "RADOS Test - 6+2 EC Pools"
+#       suite: suites/umbrella/rados/tier-3_rados_test_6+2_ecpools.yaml
+#       global-conf: conf/umbrella/rados/9-node-ec-cluster-1-client.yaml
+#       # VM count: 9
+#       # 8.1 GA -> latest
+#     - name: "RADOS Test - holistic upgrade tests"
+#       suite: suites/umbrella/rados/tier-2_rados_test_ok_to_upgrade_holistic.yaml
+#       global-conf: conf/umbrella/rados/16-node-cluster-1-client.yaml
+#       # VM count: 17
+#       # 8.1 RC -> latest

@@ -1,0 +1,213 @@
+regression:
+    metadata:
+      cloud:
+        - ibmc
+        - aws
+    suites:
+      - name: "NVMeoTCP functional regression tests"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_functional_Regression.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_functional.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Restart, bdev lifecycle, cluster-under-IO, QoS negative, and GW placement"
+        suite: suites/umbrella/nvmeof/tier-3_nvmeof_operational_regression_suite.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_functional.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "HA Test - 4 NVMeoF Gateway failover and failback scenarios"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_4nodes_gateway_ha_tests.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "E2E Tests on NVMe Namespace Masking"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_e2e_ns-masking.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ns-masking-5_client.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "E2E Tests on NVMe Inband Authentication and N-1 multinode failover and failback"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_4-nvmeof-gwgroup_inbandauth_n_1_failover_tests.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+         - ibm
+      - name: "E2E Tests on NVMe Namespace reservation"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_e2e_ns-reservation.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ns_reservation-2_client.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+         - ibm
+      - name: "Tests on NVMe gateway CLI operations"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_gateway_operations.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_functional.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "[8.1] Tests on NVMe alerts and Health Checks"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof-alerts_health-checks-events.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Basic 4 NVMeoF GWgroup having 2 Gateways with HA Test suite"
+        suite: suites/umbrella/nvmeof/tier-1_nvmeof_4-nvmeof-gwgroup_2gw_tests.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Basic NVMeoF GWgroup having 8 Gateways with scaledown and scaleup"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_1gwgroup_8gwnodes_loadbalancing_tests.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_4-nvmeof-gwgroup_2gw_cluster.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      # Commented out for now, as the namespace masking tests need to be updated for the 10.0 release.
+      # - name: "Test suite to scale to 1GW with 32 subsystems and 16k namespace masking"
+      #   suite: suites/umbrella/nvmeof/tier-2_nvmeof_16K_namespace_masking_in_a_single_GW_group.yaml
+      #   global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+      #   vm-size:
+      #     ibmc: cx2-8x16
+      #   build:
+      #     - ibm
+      #   version: [9.1, 9.2]
+      # - name: "Test suite for 9.1 Features"
+      #   suite: suites/umbrella/nvmeof/tier-2_nvmeof_9-1_feature.yaml
+      #   global-conf: conf/umbrella/nvmeof/ceph_nvmeof_2GW_1Client.yaml
+      #   vm-size:
+      #     ibmc: cx2-8x16
+      #   build:
+      #     - ibm
+      #   version: [9.1, 9.2]
+      # - name: "Test suite for BYOK namespace Feature"
+      #   suite: suites/umbrella/nvmeof/tier-2_nvmeof_9-2_byok.yaml
+      #   global-conf: conf/umbrella/nvmeof/ceph_nvmeof_2GW_1Client.yaml
+      #   vm-size:
+      #     ibmc: cx2-8x16
+      #   build:
+      #     - ibm
+      #   version: [9.1, 9.2]
+
+extended_regression:
+    metadata:
+      cloud:
+        - ibmc
+        - aws
+    suites:
+      - name: "Scale to 4 GW groups with 2 GWs having 128 subsystems to 1024 namespaces"
+        suite: suites/umbrella/nvmeof/tier-3_4-group_2-gw_128-sub_1024-NS.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_4-group_2-gws_scale.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Deploy NVMeOf with hugepages enabled"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_hugepages_operations.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "QoS tests on NVMeoF namespaces"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_qos_sanity_tests.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Extended tests on NVMeoF alerts and health checks and events"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof-alerts_health-checks-events-extended.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#     metadata:
+#       cloud:
+#         - ibmc
+#         - aws
+#     suites:
+#       - name: "TEST NVMe Upgrade from 9.1x to 9.2 Latest with all features enabled"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_comprehensive_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         platform:
+#           - rhel-10
+#         build:
+#           - ibm
+#         version:
+#           - 9.2
+#       - name: "TEST NVMe Upgrade from 9.1x to 9.2 Latest"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_91-to-9x_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         platform:
+#           - rhel-10
+#         build:
+#           - ibm
+#         version:
+#           - 9.2
+#       - name: "TEST NVMe Upgrade from 9.0x to 9.2 Latest"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_90-to-9x_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         platform:
+#           - rhel-10
+#         build:
+#           - ibm
+#         version:
+#           - 9.2
+#       - name: "TEST NVMe Upgrade from 9.0x to 9.1 Latest"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_90-to-9x_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         platform:
+#           - rhel-10
+#         build:
+#           - ibm
+#         version:
+#           - 9.1
+#       - name: "TEST NVMe Upgrade from 8.1x to 9.x Latest"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_8x-to-9x_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         platform:
+#           - rhel-9
+#         build:
+#           - ibm
+#       - name: "TEST NVMe Upgrade from 7.1x to 9.x Latest"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_7x-to-9x_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         platform:
+#           - rhel-9
+#         build:
+#           - ibm
+#       - name: "TEST NVMe Upgrade from Build to Build Latest"
+#         suite: suites/umbrella/nvmeof/tier-2_nvmeof_b2b_upgrade.yaml
+#         global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+#         vm-size:
+#           ibmc: cx2-8x16
+#         build:
+#           - ibm

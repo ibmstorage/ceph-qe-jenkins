@@ -1,0 +1,126 @@
+regression:
+    metadata:
+      cloud:
+        - ibmc
+        - aws
+    suites:
+      - name: "tier-2 rbd regression Image migration"
+        suite: suites/umbrella/rbd/tier-2_rbd_regression_Image_migration.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror image operations"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_image_operations.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd migration external ceph"
+        suite: suites/umbrella/rbd/tier-2_rbd_migration_external_ceph.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd encryption"
+        suite: suites/umbrella/rbd/tier-2_rbd_encryption.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd group mirror"
+        suite: suites/umbrella/rbd/tier-2_rbd_group_mirror.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror failover"
+        suite: suites/umbrella/rbd/tier-2_rbd_group_mirror_failover.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror misc"
+        suite: suites/umbrella/rbd/tier-2_rbd_group_mirror_misc.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror dynamic"
+        suite: suites/umbrella/rbd/tier-2_rbd_group_mirror_dynamic.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd migration key import"
+        suite: suites/umbrella/rbd/tier-2_rbd_migration_key_import_9_2.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters-with-nvmeof.yaml
+      - name: "tier-2 default namespace mirroring"
+        suite: suites/umbrella/rbd/tier-2_default_namespace_mirroring.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd regression"
+        suite: suites/umbrella/rbd/tier-2_rbd_regression.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror snapshot regression"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_snapshot_regression.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror failover recovery"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_failover_recovery.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd namespace"
+        suite: suites/umbrella/rbd/tier-2_rbd_namespace.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd group"
+        suite: suites/umbrella/rbd/tier-2_rbd_group.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 non-default namespace mirroring"
+        suite: suites/umbrella/rbd/tier-2_non_default_namespace_mirroring.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+
+extended_regression:
+    metadata:
+      cloud:
+        - ibmc
+        - aws
+    suites:
+      - name: "tier-3 snap mirroring"
+        suite: suites/umbrella/rbd/tier-3_snap_mirroring.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd cache scenarios"
+        suite: suites/umbrella/rbd/tier-2_rbd_cache_scenarios.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 rbd mirror encrypted image"
+        suite: suites/umbrella/rbd/tier-3_rbd_mirror_encrypted_image.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror scale osd"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_scale_osd.yaml
+        global-conf: conf/umbrella/rbd/rbd_mirror_large.yaml
+      - name: "tier-4 rbd negative scenarios"
+        suite: suites/umbrella/rbd/tier-4_rbd_negative_scenarios.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd rest"
+        suite: suites/umbrella/rbd/tier-2_rbd_rest.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 rbd mirror secondary full"
+        suite: suites/umbrella/rbd/tier-3_rbd_mirror_secondary_full.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror metrics"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_metrics.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-3 journal mirroring"
+        suite: suites/umbrella/rbd/tier-3_journal_mirroring.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-3 rbd migration"
+        suite: suites/umbrella/rbd/tier-3_rbd_migration.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-3 namespace mirroring scale"
+        suite: suites/umbrella/rbd/tier-3_namespace_mirroring_scale.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd trash"
+        suite: suites/umbrella/rbd/tier-2_rbd_trash.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd trash purge"
+        suite: suites/umbrella/rbd/tier-2_rbd_trash_purge.yaml
+        global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      - name: "tier-2 rbd mirror image trash purge"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_image_trash_purge.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd group mirror scale"
+        suite: suites/umbrella/rbd/tier-2_rbd_group_mirror_scale.yaml
+        global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      - name: "tier-2 rbd mirror recreate secondary cluster"
+        suite: suites/umbrella/rbd/tier-2_rbd_mirror_recreate_secondary_cluster.yaml
+        global-conf: conf/umbrella/rbd/3_clusters_5_node.yaml
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#     metadata:
+#       cloud:
+#         - ibmc
+#         - aws
+#     suites:
+#       - name: "Test RBD Mirror upgrade from 7x GA to 9x latest"
+#         suite: suites/umbrella/rbd/tier-3_rbd_mirror_upgrade_7x_to_9x.yaml
+#         global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+#       - name: "Test RBD Mirror upgrade from 8x GA to 9x latest"
+#         suite: suites/umbrella/rbd/tier-3_rbd_mirror_upgrade_8x_to_9x.yaml
+#         global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+#       - name: "Test RBD Mirror upgrade from 9.0 GA to 9x latest"
+#         suite: suites/umbrella/rbd/tier-3_rbd_mirror_upgrade_9x_to_9x_latest.yaml
+#         global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml

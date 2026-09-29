@@ -1,0 +1,77 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Tier-1 NFS Ganesha Phase-2 v4.2"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-phase2-v4-2.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS Ganesha"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS Ganesha v3"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-v3.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS Ganesha v4.2"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-v4-2.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS Ganesha QoS"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-qos.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS Ganesha BYOK"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-byok.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS Ganesha GRPC"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-grpc.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 NFS ganesha Scalable Stats for Prometheus"
+      suite: suites/umbrella/nfs/tier2-nfs-prometheus-stats.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+# Copy into ceph-qe-ng/jenkins (tentacle NFS Ganesha 9.2 job matrix).
+# Regression block unchanged; append the last suite under upgrade:suites.
+# Requires cephci PR #6168 merged (or branch feat/umbrella-cephfs-nfs-9x-upgrade-suites).
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#   metadata:
+#     cloud:
+#       - ibmc
+#       - aws
+#   suites:
+#     - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 9.0 Latest"
+#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-7-1x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#       platform:
+#         - rhel-9
+#       vm-size:
+#         ibmc: cx2-4x8
+#     - name: "TEST Ceph NFS Ganesha Upgrade from 8.0 to 9.0 Latest"
+#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-8x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#       platform:
+#         - rhel-9
+#       vm-size:
+#         ibmc: cx2-4x8
+#     - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 8.1x to 9.0 Latest"
+#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-7-1x-to-8.1x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#       platform:
+#         - rhel-9
+#       vm-size:
+#         ibmc: cx2-4x8
+#     - name: "TEST Ceph NFS Ganesha Upgrade from 9.0x to 9.x Latest"
+#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-9x-to-9x-latest.yaml
+#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#       platform:
+#         - rhel-9
+#       vm-size:
+#         ibmc: cx2-4x8
+#     - name: "TEST Ceph NFS Ganesha Upgrade from 9.1x to 9.x Latest"
+#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-9-1-to-9x-latest.yaml
+#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#       platform:
+#         - rhel-9
+#       vm-size:
+#         ibmc: cx2-4x8
+

@@ -1,0 +1,298 @@
+bvt:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Build Verification Test"
+      suite: suites/umbrella/smoke/bvt.yaml
+      global-conf: conf/umbrella/common/3node-1client.yaml
+      build:
+        - rh
+      tags:
+        - bvt
+    - name: "Build Verification Test"
+      suite: suites/umbrella/smoke/bvt-ibm.yaml
+      global-conf: conf/umbrella/common/6node-1client.yaml
+      vm-size:
+        ibmc: cx2-8x16
+      build:
+        - ibm
+      tags:
+        - bvt
+
+sanity:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
+      suite: suites/umbrella/nvmeof/tier-1_nvmeof_sanity.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_sanity.yaml
+      vm-size:
+        ibmc: bx2-4x16
+      build:
+        - ibm
+    - name: "Basic E2E-Test with FIPS mode enabled"
+      suite: suites/umbrella/nvmeof/tier-2_nvmeof_e2e_fips.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_sanity.yaml
+      custom-config:
+        enable-fips-mode: true
+      build:
+        - ibm
+    - name: "HA test - 2 NVMe Gateway High availability Sanity"
+      suite: suites/umbrella/nvmeof/tier-1_nvmeof_ha_sanity.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      vm-size:
+        ibmc: bx2-4x16
+      build:
+         - ibm
+    - name: "Tier-2 RADOS Basic Regression"
+      suite: suites/umbrella/rados/tier-2-rados-basic-regression.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
+    - name: "tier-1 rbd"
+      suite: suites/umbrella/rbd/tier-1_rbd.yaml
+      global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
+    - name: "iscsi sanity"
+      suite: suites/umbrella/iscsi/iscsi_sanity.yaml
+      global-conf: conf/umbrella/iscsi/ceph_iscsi_functional.yaml
+      vm-size:
+        ibmc: bx2-4x16
+      build:
+        - ibm
+    - name: "tier-1 rbd_mirror"
+      suite: suites/umbrella/rbd/tier-1_rbd_mirror.yaml
+      global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+    - name: "Tier-1 rgw ibm"
+      suite: suites/umbrella/rgw/tier-1_rgw_ibm.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier2ier-1 rgw"
+      suite: suites/umbrella/rgw/tier-1_rgw.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw multisite"
+      suite: suites/umbrella/rgw/tier-1_rgw_multisite.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+    # - name: "Tier-2 rgw ms upgrade 9xsanity to 9xlatest"
+    #   suite: suites/umbrella/rgw/tier-2_rgw_ms_upgrade_9xsanity_to_9xlatest.yaml
+    #   global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    # - name: "Tier-2 rgw upgrade 9xsanity to 9xlatest"
+    #   suite: suites/umbrella/rgw/tier-2_rgw_upgrade_9xsanity_to_9xlatest.yaml
+    #   global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 CephFS Test"
+      suite: suites/umbrella/cephfs/tier-0_fs.yaml
+      global-conf: conf/umbrella/cephfs/tier-0_fs.yaml
+    - name: "Tier-0 NFS Ganesha"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v3"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-v3-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v4"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-vers-4-2-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha functional Sanity"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-func-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "SMB Sanity Tier-0 Test Cases"
+      suite: suites/umbrella/smb/tier-0-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      build:
+        - ibm
+    - name: "Tier-1 DMFG Service Apply Spec"
+      suite: suites/umbrella/cephadm/tier1-service-apply-spec.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Tier-2 Cephadm Agent Comprehensive Tests"
+      suite: suites/umbrella/cephadm/tier2-cephadm-agent.yaml
+      global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+
+released:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Test DMFG Tier-1 Cephadm Clients"
+      suite: suites/umbrella/cephadm/tier1-cephadm-clients.yaml
+      global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+    # - name: "Tier-1 upgrade rhcs 8x to 9x"
+    #   suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-8x-to-9x.yaml
+    #   global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+    #   build:
+    #     - rh
+    #   platform:
+    #     - rhel-9
+    # - name: "Tier-1 upgrade ibm 8x to 9x"
+    #   suite: suites/umbrella/upgrades/tier1-upgrade-ibm-8x-to-9x.yaml
+    #   global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+    #   build:
+    #     - ibm
+    #   platform:
+    #     - rhel-9
+    # - name: "Upgrade RHCS 9.0 released to 9x latest"
+    #   suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-to-9x-latest.yaml
+    #   global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+    #   build:
+    #     - rh
+    # - name: "Upgrade IBMSC 9.0 released to 9x latest"
+    #   suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-to-9x-latest.yaml
+    #   global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+    #   build:
+    #     - ibm
+    - name: "Test DMFG Tier-2 OSD Scenarios"
+      suite: suites/umbrella/cephadm/tier2-osd-scenarios.yaml
+      global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+
+    # NVMEoF tests
+    - name: "Basic E2E NVMeoF Sanity tests"
+      suite: suites/umbrella/nvmeof/tier-1_nvmeof_sanity.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_sanity.yaml
+      build:
+        - ibm
+      vm-size:
+        ibmc: cx2-8x16
+    - name: "Basic E2E-Test with FIPS mode enabled"
+      suite: suites/umbrella/nvmeof/tier-2_nvmeof_e2e_fips.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_sanity.yaml
+      build:
+        - ibm
+      custom-config:
+        enable-fips-mode: true
+      vm-size:
+        ibmc: cx2-8x16
+    - name: "NVMeoTCP functional regression tests"
+      suite: suites/umbrella/nvmeof/tier-2_nvmeof_functional_Regression.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_functional.yaml
+      build:
+        - ibm
+      vm-size:
+        ibmc: cx2-8x16
+    - name: "HA test - 2 NVMe Gateway High availability Sanity"
+      suite: suites/umbrella/nvmeof/tier-1_nvmeof_ha_sanity.yaml
+      global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      build:
+        - ibm
+      vm-size:
+        ibmc: cx2-8x16
+
+    # RBD and RBD Mirror tests
+    - name: "RBD Functional regression tests"
+      suite: suites/umbrella/rbd/tier-1_rbd.yaml
+      global-conf: conf/umbrella/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-2x8
+    - name: "RBD Mirror Functional regression tests"
+      suite: suites/umbrella/rbd/tier-1_rbd_mirror.yaml
+      global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      vm-size:
+        ibmc: bx2-2x8
+    - name: "tier-2 rbd group mirror tests"
+      suite: suites/umbrella/rbd/tier-2_rbd_group_mirror.yaml
+      global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
+      vm-size:
+        ibmc: bx2-2x8
+
+    # CephFS tests
+    - name: "Tier-1 CephFS Test"
+      suite: suites/umbrella/cephfs/tier-0_fs.yaml
+      global-conf: conf/umbrella/cephfs/tier-0_fs.yaml
+
+    # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+    # - name: "Test Cephfs Upgrade 8.1x to 9x"
+    #   suite: suites/umbrella/cephfs/tier-0_cephfs_upgrade_81_to_9x.yaml
+    #   global-conf: conf/umbrella/cephfs/tier-2_cephfs_upgrade.yaml
+    #   build:
+    #     - ibm
+    #   vm-size:
+    #     ibmc: bx2-2x8
+
+    # NFS-Ganesha tests
+    - name: "Tier-0 NFS Ganesha"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v3"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-v3-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha v4"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-vers-4-2-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "Tier-0 NFS Ganesha functional Sanity"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-func-sanity.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+
+    # RGW tests
+    - name: "Tier-1 rgw"
+      suite: suites/umbrella/rgw/tier-1_rgw.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 rgw multisite"
+      suite: suites/umbrella/rgw/tier-1_rgw_multisite.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+
+    # SMB tests
+    - name: "Tier-0 SMB"
+      suite: suites/umbrella/smb/tier-0-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      build:
+        - ibm
+      vm-size:
+        ibmc: cx2-8x16
+    - name: "Tier-1 SMB"
+      suite: suites/umbrella/smb/tier-1-smb.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      build:
+        - ibm
+      vm-size:
+        ibmc: cx2-8x16
+
+    # RADOS tests
+    - name: "Tier-2 RADOS Basic Regression"
+      suite: suites/umbrella/rados/tier-2-rados-basic-regression.yaml
+      global-conf: conf/umbrella/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: bx2-2x8
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# sanity-upgrade:
+#   metadata:
+#     cloud:
+#       - ibmc
+#       - aws
+#   suites:
+#     - name: "Upgrade RHCS 7x released to 9x latest"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-7x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       build:
+#         - rh
+#     - name: "Upgrade RHCS 8x released to 9x latest"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-8x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       build:
+#         - rh
+#     - name: "Upgrade RHCS 9x released to 9x latest"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       build:
+#         - rh
+#     - name: "Upgrade IBMSC 7x released to 9x latest"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-7x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       build:
+#         - ibm
+#     - name: "Upgrade IBMSC 8x released to 9x latest"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-8x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       build:
+#         - ibm
+#     - name: "Upgrade IBMSC 9x released to 9x latest"
+#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-released-to-9x-latest.yaml
+#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#       build:
+#         - ibm

@@ -1,0 +1,387 @@
+regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Tier1 RGW MS ecpool regression test" # 169 mins, 20 secs
+      suite: suites/umbrella/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
+      global-conf: conf/umbrella/rgw/ms-ec-profile-4+2-cluster.yaml
+    - name: "Tier2 RGW 3way MS" # 238 mins, 28 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_3_way_multisite.yaml
+      global-conf: conf/umbrella/rgw/3-way-ms-ec-profile-2+2@4nodes.yaml
+    - name: "Tier2 RGW regression test" # 198 mins, 0 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_regression_test.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW MS regression tests" # 193 mins, 8 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_regression_test.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    - name: "Tier-2 rgw multisite scenarios" # 231 mins, 39 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_multisite_scenarios.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    - name: "Tier4 RGW regression tests" # 251 mins, 49 secs
+      suite: suites/umbrella/rgw/tier-4-rgw.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW MS failover failback" # 160 mins, 20 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_failover_failback.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    - name: "Tier-2 RGW regression extended" # 300 mins, 37 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_regression_extended.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW MS bucket notifications" # 175 mins, 36 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_test_bucket_notifications.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-3 archivezone colocated datazone" # 95 mins, 43 secs
+      suite: suites/umbrella/rgw/tier-3_archive_zone_colocate_data_zone.yaml
+      global-conf: conf/umbrella/rgw/tier-3_archive_zone_colocate_data_zone_conf.yaml
+    - name: "Tier-2 SSL RGW ecpool" # 111 mins, 34 secs
+      suite: suites/umbrella/rgw/tier-2_ssl_rgw_ecpool_test.yaml
+      global-conf: conf/umbrella/rgw/ec-profile-4+2-cluster.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW ingress multirealm" # 70 mins, 35 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ingress_multi_realm.yaml
+      global-conf: conf/umbrella/rgw/tier-1_rgw_multirealm.yaml
+    - name: "Tier-2 SSL RGW regression" # 217 mins, 1 secs
+      suite: suites/umbrella/rgw/tier-2_ssl_rgw_regression_test.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW sanity with d3n enabled" # 105 mins, 13 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_test_basic_sanity_with_d3n_enabled.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW sts aswi" # 73 mins, 18 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_sts_aswi.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-1 RGW sw qat" # 39 mins, 37 secs
+      suite: suites/umbrella/rgw/tier-1_rgw_sw_qat.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW conditional delete" # 54 mins, 37 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_conditional_put_delete.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 RGW SMB Basic ops" # 54 mins, 37 secs
+      suite: suites/umbrella/rgw/tier-1_rgw_smb.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+extended_regression:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Tier-2 rgw ms archive" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms-archive.yaml
+      global-conf: conf/umbrella/rgw/rgw_ms_archive.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Migrate default single to multisite" # 150 mins, 35 secs
+      suite: suites/umbrella/rgw/migrate_default_single_to_multisite.yaml
+      global-conf: conf/umbrella/rgw/migrate_default_single_to_multisite.yaml
+    - name: "Tier-2 rgw ssl cephadm gen cert" # 106 mins, 55 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ssl_cephadm_gen_cert.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    - name: "Tier-2 rgw test lifecycle" # 347 mins, 35 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_test_lifecycle.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw test using s3cmd" # 406 mins, 55 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_test_using_s3cmd.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding granular sync" # 409 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms-archive_resharding_granular_sync.yaml
+      global-conf: conf/umbrella/rgw/rgw_ms_archive.yaml
+    - name: "Tier-2 rgw server access logging test"
+      suite: suites/umbrella/rgw/tier-2_rgw_server_access_logging_test.yaml
+      global-conf:  conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw multisite regression extended" # 254 mins, 1 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_multisite_regression_extended.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_spec.yaml
+    - name: "Tier-3 rgw 3AZ EC MS test" # 140 mins
+      suite: suites/umbrella/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
+      global-conf: conf/umbrella/rgw/3AZ-ec-ms.yaml
+    - name: "Tier-1 rgw ms datalog and crash" # 232 mins, 12 secs
+      suite: suites/umbrella/rgw/tier-1_rgw_ms_datalog_and_crash.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_spec.yaml
+    - name: "Tier-2 rgw test bucket notifications kafka ssl" # 51 mins, 55 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_test_bucket_notifications_kafka_ssl.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw single site regression" # 198 mins, 0 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_single_site_regression.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw ms granular sync policy" # 211 mins, 16 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_granular_sync_policy.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_spec.yaml
+    - name: "Tier-2 rgw ms async data notification" # 200 mins, 14 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_async_data_notification.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+      custom-config:
+        gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
+        gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
+        gklm-endpoint-ibmc: "10.245.64.172"
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_test_bucket_notifications.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw single site regression extended"
+      suite: suites/umbrella/rgw/tier-2_rgw_single_site_regression_extended.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw ms archive with haproxy" # 470 mins, 30 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_archive_with_haproxy.yaml
+      global-conf: conf/umbrella/rgw/tier-2_rgw_ms_archive_with_haproxy_conf.yaml
+    - name: "Tier-2 rgw singlesite to multisite" # 400 mins, 56 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_singlesite_to_multisite.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    - name: "Tier-2 ssl rgw ms ecpool test" # 155 mins, 21 secs
+      suite: suites/umbrella/rgw/tier-2_ssl_rgw_ms_ecpool_test.yaml
+      global-conf: conf/umbrella/rgw/ms-ec-profile-4+2-cluster-2rgw.yaml
+    - name: "Tier-2 rgw io ms spec to disable sync" # 80 mins, 05 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_io_ms_spec_to_disable_sync.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_spec.yaml
+    - name: "Tier-2 rgw cloud transition" # 70 mins, 58 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_cloud_transition.yaml
+      global-conf: conf/umbrella/rgw/cloud_transition.yaml
+    - name: "Tier-2 rgw 3way ms failover" # 360 mins, 21 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_3_way_ms_failover.yaml
+      global-conf: conf/umbrella/rgw/3-way_ms_4nodes_1client_cluster.yaml
+    - name: "Test granular s3test" # 75 mins, 46 secs
+      suite: suites/umbrella/rgw/test_granular_s3test.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms rgw_module"
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_rgw_module.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    - name: "Tier-2 rgw multisite bucket location constraint across zonegroups"
+      suite: suites/umbrella/rgw/tier-2_rgw_ms-bucket-location.yaml
+      global-conf: conf/umbrella/rgw/3-way-ms-ec-profile-2+2@4nodes.yaml
+    - name: "tier-2_ssl_rgw_regression_extended"
+      suite: suites/umbrella/rgw/tier-2_ssl_rgw_regression_extended.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+    # - name: "Tier-1 rgw upgrade 71GA to 9x latest"
+    #   suite: suites/umbrella/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
+    #   global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    #   platform:
+    #     - rhel-9
+    # - name: "Tier-1 rgw upgrade 81GA to 9x latest"
+    #   suite: suites/umbrella/rgw/tier-1_rgw_upgrade_81GA_to_9x_latest.yaml
+    #   global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    #   platform:
+    #     - rhel-9
+    # - name: "Tier-1 rgw archive ms upgrade 81GA to 9x latest"
+    #   suite: suites/umbrella/rgw/tier-1_rgw_archive_ms_upgrade_81GA_to_9x_latest.yaml
+    #   global-conf: conf/umbrella/rgw/rgw_ms_archive.yaml
+    #   platform:
+    #     - rhel-9
+    # - name: "Tier-1 rgw ms upgrade 81GA to 9x latest"
+    #   suite: suites/umbrella/rgw/tier-1_rgw_ms_upgrade_81GA_to_9x_latest.yaml
+    #   global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+    #   platform:
+    #     - rhel-9
+    # - name: "Tier-1 rgw upgrade ssl 81GA to 9x latest"
+    #   suite: suites/umbrella/rgw/tier-1_rgw_upgrade_ssl_81GA_to_9x_latest.yaml
+    #   global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    #   platform:
+    #     - rhel-9
+    # - name: "Tier-1 rgw upgrade ms ssl ecpool 81GA to 9x latest"
+    #   suite: suites/umbrella/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_81GA_to_9x_latest.yaml
+    #   global-conf: conf/umbrella/rgw/ms-ec-profile-4+2-cluster-2rgw.yaml
+    #   platform:
+    #     - rhel-9
+extended_regression_2:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "sanity rgw tests" # 169 mins, 20 secs
+      suite: suites/umbrella/rgw/sanity_rgw.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW multisite regression" # 193 mins, 8 secs
+      suite: suites/umbrella/rgw/sanity_rgw_multisite.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+      custom-config:
+        gklm-auth-cert-path: "cred-id:rgw-gklm-auth-crt"
+        gklm-auth-key-path: "cred-id:rgw-gklm-auth-key"
+        gklm-endpoint-ibmc: "10.245.64.172"
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 rgw bind port test"
+      suite: suites/umbrella/rgw/tier-1_rgw_with_only_bind_port_on_networks.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding with haproxy" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tests_rest_sanity_rgw.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-1-extn_rgw_multisite-secondary-to-primary.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW mgr module tests" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_module.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW multisite sync status" # 60 mins, 8 secs
+      suite: suites/umbrella/rgw/tier-1_rgw_and_lc.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW ms lua tests" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_lua.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_spec.yaml
+    - name: "Tier-2 RGW ms on 2+2@4nodes" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_with_haproxy_ec_22_4.yaml
+      global-conf: conf/umbrella/rgw/tier-2_rgw_ms_with_haproxy_conf_4node.yaml
+    - name: "Tier-2 ssl RGW ms tests with ec 8-6 profile" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-2_ssl_rgw_ms_msr_8+6.yaml
+      global-conf: conf/umbrella/rgw/ms-msr-8+6-cluster.yaml
+    - name: "Tier-2 RGW ms 3az tests" # 150 mins, 40 secs
+      suite: suites/umbrella/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
+      global-conf: conf/umbrella/rados/3AZ-cluster-rhos-1.yaml
+
+# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
+# upgrade:
+#   metadata:
+#     cloud:
+#       - ibmc
+#       - aws
+#   suites:
+#     - name: "Tier-1 rgw ms upgrade ssl 81GA to 9x latest"
+#       suite: suites/umbrella/rgw/tier-1_rgw_ssl_multisite_test_upgrade_81GA_to_9x_latest.yaml
+#       global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+#       platform:
+#         - rhel-9
+#     - name: "Tier-1 rgw upgrade ssl archive 81GA to 9x latest"
+#       suite: suites/umbrella/rgw/tier-1_rgw_upgrade_archive_ssl_ecpool_81GA_to_9x_latest.yaml
+#       global-conf: conf/umbrella/rgw/3-way-archive-ec-profile-2+2@4nodes.yaml
+#       platform:
+#         - rhel-9
+#     - name: "Tier-1 rgw multirealm upgrade 81GA to 9x latest"
+#       suite: suites/umbrella/rgw/tier-1_rgw_ms_upgrade_multirealm_81GA_to_9x_latest.yaml
+#       global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+#       platform:
+#         - rhel-9
+#     - name: "Tier-1 rgw ms upgrade 71GA to 9x latest"
+#       suite: suites/umbrella/rgw/tier-1_rgw_ms_upgrade_71GA_to_9x_latest.yaml
+#       global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+#       platform:
+#         - rhel-9
+#     - name: "Tier-1 rgw upgrade ssl ecpool 81GA to 9x latest"
+#       suite: suites/umbrella/rgw/tier-1_rgw_upgrade_ssl_ecpool_81GA_to_9x_latest.yaml
+#       global-conf: conf/umbrella/rgw/ec-profile-4+2-cluster.yaml
+#       platform:
+#         - rhel-9
+#     - name: "Tier-1 rgw ibm upgrade ms ssl 81GA to 9x latest"
+#       suite: suites/umbrella/rgw/tier-1_rgw_ibm_ssl_ms_upgrade_81GA_to_9x_latest.yaml
+#       global-conf: conf/umbrella/rgw/rgw_multisite.yaml
+#       platform:
+#         - rhel-9
+#     - name: "Tier-1 rgw single zone upgrade 71GA to 9x latest"
+#       suite: suites/umbrella/rgw/test_ss_upgrade_7_1_GA_to_9.x_latest.yaml
+#       global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+#       platform:
+#         - rhel-9
