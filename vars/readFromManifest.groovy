@@ -66,7 +66,17 @@ def call(Map parameters) {
     echo "Reading build content from recipe ${recipe}"
 
     // Read recipe file
-    def recipeContent = readYaml file: "${jobDir}/${recipe}"
+    def recipePath = "${jobDir}/${recipe}"
+    def recipeContent
+    try {
+        recipeContent = readYaml file: recipePath
+    } catch (Exception e) {
+        error("Failed to read/parse YAML from manifest recipe file: ${recipePath}. Error: ${e}")
+    }
+
+    if (recipeContent == null) {
+        error("Manifest recipe YAML parsed to null: ${recipePath}")
+    }
 
     // Return content
     return recipeContent

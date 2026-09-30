@@ -168,7 +168,11 @@ def call(Map parameters) {
     echo "Writing manifest changes to ${recipePath}"
 
     // Write build info to recipe
-    writeYaml file: recipePath, data: recipeContent, overwrite: true
+    try {
+        writeYaml file: recipePath, data: recipeContent, overwrite: true
+    } catch (Exception e) {
+        error("Failed to write YAML to manifest recipe file: ${recipePath}. Error: ${e}")
+    }
 
     // Change directory to manifest repo
     dir(jobDir) {
@@ -213,7 +217,7 @@ def call(Map parameters) {
             } catch (hudson.AbortException e) {
                 error(
                     "Failed to push manifest update to origin/main after retries. " +
-                    "Local commit exists but remote was NOT updated. Cause: ${e.message}"
+                    "Local commit exists but remote was NOT updated. Cause: ${e}"
                 )
             }
         } else {
