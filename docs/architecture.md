@@ -105,7 +105,10 @@ These pipelines provision cloud VMs, execute test suites from the CephCI framewo
 | Upgrade | `*-upgrade-ci` | Validates upgrade paths between Ceph versions |
 | Sanity Upgrade | `*-sanity-upgrade-ci` | Sanity check of upgrade paths |
 | Released | `*-released-ci` | Tests against a released (GA) build |
+| RC Respin | `{squid,tentacle}-respin-ci` | RC respin gate; manual trigger |
 | Test Executor | `test-executor` | Ad-hoc manual test run against a single suite |
+
+**RC Respin**: `RELEASE` selects the `respin` or `rc` section in `qe-ceph-manifest` (`{redhat|ibm}/{BUILD_VERSION}.yaml`); Validate aborts if that section is missing or incomplete (build team must publish a complete `respin`/`rc` block, same expectation as BVT). Suites come from `metadata/{squid,tentacle}/common.yaml` (`respin:`), with wave split by metadata `tags` (via `fetchTestSuites`). The pipeline runs **BVT → sanity → upgrades** in sequence (parallel suites within each wave). 
 
 All of these follow the **same six-stage pattern**:
 

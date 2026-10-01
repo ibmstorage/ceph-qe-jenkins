@@ -114,6 +114,7 @@ def get_testsuite(
         "custom_config": ",".join(
             [f"{k}={v}" for k, v in test.get("custom-config", {}).items()]
         ),
+        "tags": list(test.get("tags") or []),
     }
 
     # Only add inventory if it's actually set

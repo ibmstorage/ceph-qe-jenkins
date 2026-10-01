@@ -112,6 +112,58 @@ sanity:
       suite: suites/tentacle/cephadm/tier2-cephadm-agent.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
 
+# RC respin gate (tentacle): BVT + sanity subset only.
+# Squid z-stream / monitoring-stack upgrades: metadata/squid/common.yaml respin
+respin:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    # --- BVT (common.yaml bvt) ---
+    - name: "Build Verification Test RH"
+      suite: suites/tentacle/smoke/bvt.yaml
+      global-conf: conf/tentacle/common/3node-1client.yaml
+      build:
+        - rh
+      tags:
+        - bvt
+    - name: "Build Verification Test IBM"
+      suite: suites/tentacle/smoke/bvt-ibm.yaml
+      global-conf: conf/tentacle/common/6node-1client.yaml
+      vm-size:
+        ibmc: cx2-8x16
+      build:
+        - ibm
+      tags:
+        - bvt
+
+    # --- Sanity subset (common.yaml sanity) ---
+    - name: "Tier-2 RADOS Basic Regression"
+      suite: suites/tentacle/rados/tier-2-rados-basic-regression.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
+    - name: "tier-1 rbd"
+      suite: suites/tentacle/rbd/tier-1_rbd.yaml
+      global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
+    - name: "Tier-1 rgw"
+      suite: suites/tentacle/rgw/tier-1_rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 CephFS Test"
+      suite: suites/tentacle/cephfs/tier-0_fs.yaml
+      global-conf: conf/tentacle/cephfs/tier-0_fs.yaml
+    - name: "Tier-0 NFS Ganesha"
+      suite: suites/tentacle/nfs/tier0-nfs-ganesha-sanity.yaml
+      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 DMFG Service Apply Spec"
+      suite: suites/tentacle/cephadm/tier1-service-apply-spec.yaml
+      global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+
 released:
   metadata:
     cloud:

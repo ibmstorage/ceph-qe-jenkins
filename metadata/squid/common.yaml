@@ -111,6 +111,98 @@ sanity:
       build:
         - ibm
 
+# RC respin gate (squid): bvt + sanity subset + upgrades (sanity-upgrade + dmfg monitoring stack)
+respin:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Build Verification Test RH"
+      suite: suites/squid/smoke/bvt.yaml
+      global-conf: conf/squid/common/3node-1client.yaml
+      build:
+        - rh
+      platform:
+        - rhel-9
+      tags:
+        - bvt
+    - name: "Build Verification Test IBM"
+      suite: suites/squid/smoke/bvt-ibm.yaml
+      global-conf: conf/squid/common/6node-1client.yaml
+      build:
+        - ibm
+      platform:
+        - rhel-9
+      tags:
+        - bvt
+    - name: "Tier-2 RADOS Basic Regression"
+      suite: suites/squid/rados/tier-2-rados-basic-regression.yaml
+      global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: bx2-2x8
+    - name: "Tier-1 RBD"
+      suite: suites/squid/rbd/tier-1_rbd.yaml
+      global-conf: conf/squid/rbd/4-node-cluster-with-1-client.yaml
+      vm-size:
+        ibmc: bx2-4x16
+        aws: m6g.xlarge
+    - name: "Tier-1 RGW"
+      suite: suites/squid/rgw/tier-1_rgw.yaml
+      global-conf: conf/squid/rgw/tier-0_rgw.yaml
+      build:
+        - rh
+    - name: "Tier-1 RGW IBMC"
+      suite: suites/squid/rgw/tier-1_rgw_ibm.yaml
+      global-conf: conf/squid/rgw/tier-0_rgw.yaml
+      build:
+        - ibm
+    - name: "Tier-1 CephFS Test"
+      suite: suites/squid/cephfs/tier-0_fs.yaml
+      global-conf: conf/squid/cephfs/tier-0_fs.yaml
+    - name: "Tier-0 NFS Ganesha"
+      suite: suites/squid/nfs/tier0-nfs-ganesha.yaml
+      global-conf: conf/squid/nfs/1admin-7node-3client.yaml
+    - name: "Tier-1 Service Apply Spec"
+      suite: suites/squid/cephadm/tier1-service-apply-spec.yaml
+      global-conf: conf/squid/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+    - name: "Upgrade RHCS 8x released to 8x latest"
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-8x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+      tags:
+        - upgrade
+    - name: "Upgrade IBMSC 8x released to 8x latest"
+      suite: suites/squid/upgrades/tier1-upgrade-ibm-8x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+      tags:
+        - upgrade
+    - name: "Test DMFG upgrade with monitoring stack RHCS 7x to 8x"
+      suite: suites/squid/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+      tags:
+        - upgrade
+    - name: "Test DMFG upgrade with monitoring stack IBM 7x to 8x"
+      suite: suites/squid/upgrades/tier1-upgrade-with-monitoring-stack-ibm-7x-to-8x.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+      tags:
+        - upgrade
+
 released:
   metadata:
     cloud:

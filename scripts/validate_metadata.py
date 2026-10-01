@@ -28,6 +28,7 @@ import yaml
 VALID_JOB_KEYS = {
     "bvt",
     "sanity",
+    "respin",
     "regression",
     "extended_regression",
     "extended_regression_1",

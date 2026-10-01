@@ -1,0 +1,233 @@
+// Import shared library
+@Library("ceph-qe-libs@main") _
+
+def job = "respin"
+def fg = "common"
+def jobConfigs = [:]
+def suites = [:]
+def bvtSuitesMap = [:]
+def sanitySuitesMap = [:]
+def upgradeSuitesMap = [:]
+
+def classifyRespinWave(suite) {
+    def suitePath = suite.suite ?: ""
+    def tags = suite.tags ?: []
+    def hasTag = { String name ->
+        tags.any { it.toString().equalsIgnoreCase(name) }
+    }
+    if (hasTag("bvt") || suitePath.contains("/smoke/bvt")) {
+        return "bvt"
+    }
+    if (hasTag("upgrade") || suitePath.contains("/upgrades/")) {
+        return "upgrade"
+    }
+    return "sanity"
+}
+
+def parallelWithFailFast(Map suiteClosures) {
+    def spec = [failFast: true]
+    spec.putAll(suiteClosures)
+    parallel spec
+}
+
+def addSuiteToMap(Map targetMap, suite, respinSection, Map configs) {
+    def suiteName = suite.name
+    def suitePath = suite.suite
+    def suiteVmSize = suite.vm_size
+    def suiteCustomConfig = suite.custom_config
+    def effectiveGlobalConf = suite.global_conf ?: respinSection.metadata?.globalConf
+    def effectiveInventory = suite.inventory ?: configs.inventory
+    def stageCustomConfig = respinSection.metadata?.custom_config
+
+    echo "Scheduling suite (${classifyRespinWave(suite)}): ${suitePath}"
+
+    targetMap[suiteName] = {
+        stage(suiteName) {
+            def logDir = [configs.logDir, suiteName].join("/")
+            def prefix = "${configs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
+
+            try {
+                execTestSuites(
+                    gitDir: configs.gitDir,
+                    venvDir: configs.venvDir,
+                    instanceName: prefix,
+                    cloudType: configs.cloudType,
+                    product: configs.product,
+                    release: configs.release,
+                    platform: configs.platform,
+                    logDir: logDir,
+                    globalConf: effectiveGlobalConf,
+                    suite: suitePath,
+                    ibmcCredFile: configs.ibmcCredFile,
+                    inventory: effectiveInventory,
+                    logLevel: configs.logLevel,
+                    customConfig: configs.customConfig,
+                    stageCustomConfig: stageCustomConfig,
+                    suiteCustomConfig: suiteCustomConfig,
+                    buildType: configs.buildType,
+                    enableFirewall: configs.enableFirewall,
+                    rhsCephRepo: configs.rhsCephRepo,
+                    hotfixRepo: configs.hotfixRepo,
+                    containerImage: configs.containerImage,
+                    additionalArgs: configs.additionalArgs,
+                    vmFlavor: suiteVmSize ?: configs.vmFlavor,
+                    skipSosReport: configs.skipSosReport,
+                    vpcName: configs.vpcName,
+                    skipSubscription: configs.skipSubscription,
+                    manifestSection: configs.manifestSection
+                )
+                echo "Test execution for ${suiteName} completed successfully."
+            } catch (Exception e) {
+                echo "Test execution failed: ${e.message}"
+                error("Suite ${suiteName} failed")
+            } finally {
+                cleanupCluster(
+                    gitDir: configs.gitDir,
+                    venvDir: configs.venvDir,
+                    cloudType: configs.cloudType,
+                    instanceName: prefix,
+                    ibmcCredFile: configs.ibmcCredFile,
+                    logLevel: configs.logLevel,
+                    vpcName: configs.vpcName
+                )
+            }
+        }
+    }
+}
+
+pipeline {
+    options {
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+        disableConcurrentBuilds()
+        timeout(time: 15, unit: 'HOURS')
+    }
+
+    agent {
+        label "${params.CLOUD_TYPE == 'aws' ? 'agents-aws' : 'agents'}"
+    }
+
+    stages {
+        stage("Validate") {
+            steps {
+                script {
+                    jobConfigs = generateJobConfigs(job: job)
+                    echo "Parameters validated successfully ..."
+                }
+            }
+        }
+
+        stage("Setup") {
+            steps {
+                script {
+                    setupCephCiRepo(
+                        python: jobConfigs.python,
+                        venvDir: jobConfigs.venvDir,
+                        gitUrl: jobConfigs.gitUrl,
+                        gitDir: jobConfigs.gitDir,
+                        gitBranch: jobConfigs.gitBranch,
+                        cloudType: jobConfigs.cloudType,
+                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                        credentialId: jobConfigs.credentialId
+                    )
+                    echo "Ceph CI repository setup completed successfully ..."
+                }
+            }
+        }
+
+        stage("Fetch Suites") {
+            steps {
+                script {
+                    suites = fetchTestSuites(
+                        rhBuild: jobConfigs.rhBuild,
+                        fg: fg,
+                        job: job,
+                        platform: jobConfigs.platform,
+                        cloudType: jobConfigs.cloudType,
+                        buildType: jobConfigs.buildType,
+                        python: "${jobConfigs.gitDir}/${jobConfigs.venvDir}/bin/python"
+                    )
+                }
+            }
+        }
+
+        stage("Get Stages") {
+            steps {
+                script {
+                    if (!suites.respin?.suites) {
+                        error("No respin suites found for cloud=${jobConfigs.cloudType}, build=${jobConfigs.buildType}")
+                    }
+
+                    suites.respin.suites.each { suite ->
+                        def wave = classifyRespinWave(suite)
+                        def targetMap = (wave == "bvt") ? bvtSuitesMap
+                            : (wave == "upgrade") ? upgradeSuitesMap
+                            : sanitySuitesMap
+                        addSuiteToMap(targetMap, suite, suites.respin, jobConfigs)
+                    }
+
+                    echo "Respin waves: BVT=${bvtSuitesMap.size()}, sanity=${sanitySuitesMap.size()}, upgrade=${upgradeSuitesMap.size()}"
+                }
+            }
+        }
+
+        stage("Execute BVT") {
+            when { expression { bvtSuitesMap.size() > 0 } }
+            steps {
+                script {
+                    parallelWithFailFast(bvtSuitesMap)
+                }
+            }
+        }
+
+        stage("Execute Sanity") {
+            when { expression { sanitySuitesMap.size() > 0 } }
+            steps {
+                script {
+                    parallelWithFailFast(sanitySuitesMap)
+                }
+            }
+        }
+
+        stage("Execute Upgrades") {
+            when { expression { upgradeSuitesMap.size() > 0 } }
+            steps {
+                script {
+                    parallelWithFailFast(upgradeSuitesMap)
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                publishTestResults(
+                    cephVersion: jobConfigs.cephVersion,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
+                    platform: jobConfigs.platform,
+                    cloudType: jobConfigs.cloudType,
+                    logDir: jobConfigs.logDir,
+                    resultsDir: jobConfigs.resultsDir,
+                    resultsSummary: jobConfigs.resultsSummary,
+                    artifacts: jobConfigs.artifacts,
+                    emailBody: jobConfigs.emailBody,
+                    emailAddr: params.EMAIL_ADDRESS,
+                    rpLaunchUrl: jobConfigs.rpLaunchUrl,
+                    rpLaunchName: jobConfigs.rpLaunchName,
+                    rpLaunchDesc: jobConfigs.rpLaunchDesc,
+                    rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
+                    rpProjectName: jobConfigs.rpProjectName
+                )
+            }
+        }
+
+        cleanup {
+            script {
+                echo "Cleanup completed successfully ..."
+            }
+        }
+    }
+}
