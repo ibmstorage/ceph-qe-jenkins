@@ -18,6 +18,10 @@ def generate_jobs(data) {
         release += ["rc", "released", "z0", "z1", "z2"]
         rhelVersion = ["rhel-10", "rhel-9"]
         buildVersion = ["9.2", "9.1", "9.0"]
+    } else if (data.cephVersion.toLowerCase() == "umbrella") {
+        release += [] //Add rc, released, z-streams as it becomes ready for umbrella
+        rhelVersion = ["rhel-10", "rhel-9"]
+        buildVersion = ["10.0"]
     }
     // Add the job configurations
     data.jobsConfiguration.add([
@@ -157,6 +161,70 @@ generate_jobs(
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "Tentacle",
+    fg: "SMB",
+    vpc: ["vpc-neha-london"]
+)
+
+// Create jobs specific to Ceph - Umbrella - DMFG
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "DMFG",
+    vpc: ["vpc-vivek-dallas"]
+)
+
+// Create jobs specific to Ceph - Umbrella - CephFS
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "CephFS",
+    vpc: ["vpc-neha-london"]
+)
+
+// Create jobs specific to Ceph - Umbrella - RADOS
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "RADOS",
+    vpc: ["vpc-neha-london"]
+)
+
+// Create jobs specific to Ceph - Umbrella - NFS-Ganesha
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "NFS-Ganesha",
+    vpc: ["vpc-neha-london"]
+)
+
+// Create jobs specific to Ceph - Umbrella - RBD
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "RBD",
+    vpc: ["vpc-manohar-madrid"]
+)
+
+// Create jobs specific to Ceph - Umbrella - NvmeOF
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "NvmeOF",
+    vpc: ["vpc-manohar-madrid"]
+)
+
+// Create jobs specific to Ceph - Umbrella - RGW
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
+    fg: "RGW",
+    vpc: ["ci-vpc-01"]
+)
+
+// Create jobs specific to Ceph - Umbrella - SMB
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "Umbrella",
     fg: "SMB",
     vpc: ["vpc-neha-london"]
 )

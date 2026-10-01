@@ -46,6 +46,14 @@ generate_jobs(
     rhelVersion: ["rhel-10", "rhel-9"]
 )
 
+// Create jobs specific to Ceph - Umbrella
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "umbrella",
+    buildVersion: ["10.0"],
+    rhelVersion: ["rhel-10", "rhel-9"]
+)
+
 // Create job for each configuration created
 for (jobConfig in jobsConfiguration) {
     def job = pipelineJob(jobConfig.name) {

@@ -37,6 +37,11 @@ def CEPH_RELEASE_CONFIG = [
         buildVersion : ["9.2", "9.1", "9.0"],
         rhelVersion  : ["rhel-10", "rhel-9"],
         releaseExtra : ["rc", "released", "z0", "z1", "z2", "z3"]
+    ],
+    "Umbrella": [
+        buildVersion : ["10.0"],
+        rhelVersion  : ["rhel-10", "rhel-9"],
+        releaseExtra : [] //Add rc, released, z-streams as it becomes ready for umbrella
     ]
 ]
 

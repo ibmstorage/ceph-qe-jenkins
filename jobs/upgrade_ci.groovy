@@ -2,7 +2,7 @@
 def jobsConfiguration = []
 
 // Supported Ceph versions
-def CEPH_VERSIONS = ["Tentacle", "Squid", "Reef"]
+def CEPH_VERSIONS = ["Tentacle", "Squid", "Reef", "Umbrella"]
 
 // FG → VPC mapping — keep in sync with regression_ci.groovy (see quota matrix in that file).
 def FG_VPC = [
@@ -30,6 +30,10 @@ def CEPH_RELEASE_CONFIG = [
     "tentacle": [
         buildVersion: ["9.2", "9.1", "9.0"],
         rhelVersion : ["rhel-9", "rhel-10"]
+    ],
+    "umbrella": [
+        buildVersion: ["10.0"],
+        rhelVersion : ["rhel-10", "rhel-9"]
     ]
 ]
 

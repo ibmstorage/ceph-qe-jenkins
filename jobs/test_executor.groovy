@@ -18,6 +18,8 @@ def generate_jobs(data) {
         release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6"]
     } else if (data.cephVersion.toLowerCase() == "tentacle") {
         release += ["rc", "released", "z0", "z1", "z2", "z3"]
+    } else if (data.cephVersion.toLowerCase() == "umbrella") {
+        release += [] //Add rc, released, z-streams as it becomes ready for umbrella
     }
 
     // Add the job configurations
@@ -54,6 +56,14 @@ generate_jobs(
     jobsConfiguration: jobsConfiguration,
     cephVersion: "tentacle",
     buildVersion: ["9.2", "9.1", "9.0"],
+    rhelVersion: ["rhel-10", "rhel-9"]
+)
+
+// Create jobs specific to Ceph - Umbrella
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "umbrella",
+    buildVersion: ["10.0"],
     rhelVersion: ["rhel-10", "rhel-9"]
 )
 
