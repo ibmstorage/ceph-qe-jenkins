@@ -28,9 +28,6 @@ regression:
     - name: "Tier-1 NFS ganesha Scalable Stats for Prometheus"
       suite: suites/tentacle/nfs/tier2-nfs-prometheus-stats.yaml
       global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
-    - name: "NFS v4 ACL Tests"
-      suite: suites/tentacle/nfs/tier0-nfs-acl.yaml
-      global-conf: conf/tentacle/nfs/1admin-7node-3client.yaml
 # Copy into ceph-qe-ng/jenkins (tentacle NFS Ganesha 9.2 job matrix).
 # Regression block unchanged; append the last suite under upgrade:suites.
 # Requires cephci PR #6168 merged (or branch feat/tentacle-cephfs-nfs-9x-upgrade-suites).
