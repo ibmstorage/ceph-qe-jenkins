@@ -32,6 +32,15 @@ pipeline {
                     // Validate mandatory parameters
                     jobConfigs = generateJobConfigs(job: job)
 
+                    def isFipsSanity = (env.JOB_BASE_NAME ?: env.JOB_NAME)
+                        .toLowerCase().contains("sanity-fips")
+                    env.IS_FIPS_SANITY = isFipsSanity ? 'true' : 'false'
+
+                    if (isFipsSanity) {
+                        jobConfigs.customConfig = (jobConfigs.customConfig ?: []) + ["enable-fips-mode=True"]
+                        echo "FIPS sanity job: appended enable-fips-mode=True to customConfig"
+                    }
+
                     // Debug
                     echo "Parameters validated successfully ..."
                 }
@@ -40,7 +49,9 @@ pipeline {
 
         stage("Check for New Builds") {
             when {
-                expression { !params.SKIP_BUILD_CHECK }
+                expression {
+                    return !params.SKIP_BUILD_CHECK && env.IS_FIPS_SANITY != 'true'
+                }
             }
             steps {
                 script {
@@ -228,8 +239,12 @@ pipeline {
                     rpProjectName: jobConfigs.rpProjectName
                 )
 
-                // Promote nightly section to stable after a passing sanity run
+                // Promote nightly section to stable after a passing sanity run (blocked for FIPS jobs)
                 if (params.UPDATE_SANITY_RESULTS) {
+                    if (env.IS_FIPS_SANITY == 'true') {
+                        echo "Skipped promotion: FIPS sanity runs do not promote results to stable."
+                        return
+                    }
                     if (jobConfigs.nightlySection) {
                         updateSanityResults(
                             resultsSummary: jobConfigs.resultsSummary,

@@ -5,28 +5,39 @@ def jobsConfiguration = []
 def generate_jobs(data) {
     def vpc = ["vpc-cephci"]
     def logLevel = ["DEBUG", "INFO", "ERROR"]
-    def buildType = ["IBM", "RH"]
+    def buildType = data.buildType ?: ["IBM", "RH"]
+    def prefix = data.prefix ?: "sanity"
+    def skipBuildCheck = data.skipBuildCheck != null ? data.skipBuildCheck : false
+    def enablePromotion = data.enablePromotion != null ? data.enablePromotion : true
 
     // Set releases for Ceph versions
-    def release = ["nightly", "stable"]
-    if (data.cephVersion.toLowerCase() == "reef") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
-    } else if (data.cephVersion.toLowerCase() == "squid") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5"]
-    } else if (data.cephVersion.toLowerCase() == "tentacle") {
-        release += ["rc", "released", "z0", "z1", "z2", "z3"]
+    def release = data.release ?: ["nightly", "stable"]
+    if (!data.release) {
+        if (data.cephVersion.toLowerCase() == "reef") {
+            release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
+        } else if (data.cephVersion.toLowerCase() == "squid") {
+            release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5"]
+        } else if (data.cephVersion.toLowerCase() == "tentacle") {
+            release += ["rc", "released", "z0", "z1", "z2", "z3"]
+        }
     }
+
+    def jobName = data.name ?: "${data.cephVersion}-sanity-ci"
+    def displayName = data.displayName ?: "${data.cephVersion} - Sanity Test Pipeline"
 
     // Add the job configurations
     data.jobsConfiguration.add([
-        "name": "${data.cephVersion}-sanity-ci",
-        "displayName": "${data.cephVersion} - Sanity Test Pipeline",
+        "name": jobName,
+        "displayName": displayName,
+        "prefix": prefix,
         "logLevel": logLevel,
         "vpc": vpc,
         "buildVersion": data.buildVersion,
         "rhelVersion": data.rhelVersion,
         "release": release,
         "buildType": buildType,
+        "skipBuildCheck": skipBuildCheck,
+        "enablePromotion": enablePromotion,
         "cronExpr": data.cronExpr
     ])
 }
@@ -57,6 +68,22 @@ generate_jobs(
     cronExpr: "30 3 * * *"
 )
 
+// Weekly Saturday FIPS job for Tentacle (6:00 AM IST / 00:30 UTC Saturday)
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    name: "tentacle-sanity-fips-ci",
+    displayName: "Tentacle - Sanity Test Pipeline (FIPS)",
+    prefix: "sanity-fips",
+    cephVersion: "tentacle",
+    buildVersion: ["9.2", "9.1", "9.0"],
+    rhelVersion: ["rhel-10", "rhel-9"],
+    buildType: ["IBM", "RH"],
+    release: ["stable", "nightly", "rc", "released", "z0", "z1", "z2", "z3"],
+    skipBuildCheck: true,
+    enablePromotion: false,
+    cronExpr: "30 0 * * 6"
+)
+
 // Create job for each configuration created
 for (jobConfig in jobsConfiguration) {
     def job = pipelineJob(jobConfig.name) {
@@ -82,7 +109,7 @@ for (jobConfig in jobsConfiguration) {
             // Add the required parameters for the job
             parameters {
                 choiceParam("CLOUD_TYPE", ["ibmc", "aws"], "Cloud platform (aws runs on agents-aws agent)")
-                stringParam("PREFIX", "sanity", "Prefix for instance name")
+                stringParam("PREFIX", jobConfig.prefix, "Prefix for instance name")
                 stringParam("CEPHCI_REPO", "https://github.com/red-hat-storage/cephci.git", "Ceph CI git repo")
                 stringParam("BRANCH", "main", "Ceph CI git branch")
                 choiceParam("LOG_LEVEL", jobConfig.logLevel , "Ceph CI log level")
@@ -114,8 +141,10 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
-                booleanParam("SKIP_BUILD_CHECK", false, "Skip checking if nightly and stable builds are identical")
-                booleanParam("UPDATE_SANITY_RESULTS", false, "Update Sanity results to manifest")
+                booleanParam("SKIP_BUILD_CHECK", jobConfig.skipBuildCheck, "Skip checking if nightly and stable builds are identical")
+                if (jobConfig.enablePromotion) {
+                    booleanParam("UPDATE_SANITY_RESULTS", false, "Update Sanity results to manifest")
+                }
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
                 stringParam("EMAIL_ADDRESS", "cephqe-devops@wwpdl.vnet.ibm.com", "Email Address")
             }

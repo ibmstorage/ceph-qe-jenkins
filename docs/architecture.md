@@ -98,7 +98,7 @@ These pipelines provision cloud VMs, execute test suites from the CephCI framewo
 | Pipeline | Job Name Pattern | Purpose |
 |---|---|---|
 | BVT | `{reef,squid,tentacle}-bvt-ci` | Quick build-verification gate; triggered by Listener |
-| Sanity | `{reef,squid,tentacle}-sanity-ci` | Broader smoke test; skips if build unchanged |
+| Sanity | `{reef,squid,tentacle}-sanity-ci`, `tentacle-sanity-fips-ci` | Broader smoke test; skips if build unchanged (weekly FIPS run for Tentacle) |
 | Regression | `*-regression-ci` | Full regression per Feature Group (FG) |
 | Extended Regression | `*-extended-regression-ci` | Deeper coverage for specific FGs |
 | Upgrade | `*-upgrade-ci` | Validates upgrade paths between Ceph versions |

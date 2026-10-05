@@ -125,7 +125,7 @@ def call(Map parameters) {
             }
         }
     }
-    customConfig.each { val ->
+    customConfig.unique().each { val ->
         if (val) {
             args += ["--custom-config ${val.replace('@sha256', '')}"]
         }
