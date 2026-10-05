@@ -98,6 +98,14 @@ regression:
         build:
           - ibm
         version: [9.1, 9.2]
+      - name: "Test suite for NVMe failover in stretch cluster"
+        suite: suites/tentacle/nvmeof/tier-2_nvmeof_stretch_cluster.yaml
+        global-conf: conf/tentacle/nvmeof/9-node-cluster-2-clients.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+        version: [9.1, 9.2]
 
 extended_regression:
     metadata:
