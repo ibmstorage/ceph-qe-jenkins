@@ -53,6 +53,8 @@ sanity:
       global-conf: conf/tentacle/iscsi/ceph_iscsi_functional.yaml
       vm-size:
         ibmc: bx2-4x16
+      exclude_cloud:
+        - aws
       build:
         - ibm
     - name: "tier-1 rbd_mirror"
@@ -67,9 +69,13 @@ sanity:
     - name: "tier-2 rgw ms upgrade 9xsanity to 9xlatest" # 90 min
       suite: suites/tentacle/rgw/tier-2_rgw_ms_upgrade_9xsanity_to_9xlatest.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite_ec2+2.yaml
+      exclude_cloud:
+        - aws
     - name: "tier-2 rgw upgrade 9xsanity to 9xlatest" # 40 min
       suite: suites/tentacle/rgw/tier-2_rgw_upgrade_9xsanity_to_9xlatest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      exclude_cloud:
+        - aws
     - name: "Tier-1 CephFS Test"
       suite: suites/tentacle/cephfs/tier-0_fs.yaml
       global-conf: conf/tentacle/cephfs/tier-0_fs.yaml
@@ -203,6 +209,8 @@ released:
         enable-fips-mode: true
       vm-size:
         ibmc: cx2-8x16
+      exclude_cloud:
+        - aws
     - name: "NVMeoTCP functional regression tests"
       suite: suites/tentacle/nvmeof/tier-2_nvmeof_functional_Regression.yaml
       global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml

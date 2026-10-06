@@ -3,7 +3,6 @@ import sys
 import docopt
 import yaml
 
-
 # Set doc description
 doc = """
 This script fetches all the tests to be run for a pipeline based
@@ -76,6 +75,21 @@ def get_testsuite(
 
     # Check for build type in test config
     if build_type and build_type not in test.get("build", ["rh", "ibm", "upstream"]):
+        return None
+
+    # Check for cloud inclusion/exclusion in test config.
+    # "cloud" is an allowlist — suite only runs on listed clouds.
+    # "exclude_cloud" is a denylist — suite is skipped on listed clouds.
+    suite_clouds = test.get("cloud")
+    if isinstance(suite_clouds, str):
+        suite_clouds = [suite_clouds]
+    if cloud and suite_clouds and cloud.lower() not in [c.lower() for c in suite_clouds]:
+        return None
+
+    exclude_clouds = test.get("exclude_cloud")
+    if isinstance(exclude_clouds, str):
+        exclude_clouds = [exclude_clouds]
+    if cloud and exclude_clouds and cloud.lower() in [c.lower() for c in exclude_clouds]:
         return None
 
     # Check if tag is in test config

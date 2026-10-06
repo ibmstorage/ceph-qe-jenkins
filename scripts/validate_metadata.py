@@ -182,6 +182,27 @@ def validate_file(file_path: str) -> tuple[list[str], list[str]]:
                         f"{sloc}: unknown platform {platform!r} (allowed: {sorted(VALID_PLATFORMS)})"
                     )
 
+            # suite-level cloud allowlist
+            suite_clouds = suite.get("cloud", [])
+            if isinstance(suite_clouds, str):
+                suite_clouds = [suite_clouds]
+            for cloud in suite_clouds:
+                if cloud not in VALID_CLOUDS:
+                    errors.append(
+                        f"{sloc}: unknown cloud {cloud!r} in 'cloud' (allowed: {sorted(VALID_CLOUDS)})"
+                    )
+
+            # suite-level exclude_cloud denylist
+            excl_clouds = suite.get("exclude_cloud", [])
+            if isinstance(excl_clouds, str):
+                excl_clouds = [excl_clouds]
+            for excl_cloud in excl_clouds:
+                if excl_cloud not in VALID_CLOUDS:
+                    errors.append(
+                        f"{sloc}: unknown cloud {excl_cloud!r} in 'exclude_cloud' "
+                        f"(allowed: {sorted(VALID_CLOUDS)})"
+                    )
+
             # vm-size cloud keys
             vm_size = suite.get("vm-size")
             if isinstance(vm_size, dict):

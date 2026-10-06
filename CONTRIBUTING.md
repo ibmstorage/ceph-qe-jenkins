@@ -186,6 +186,10 @@ Test suite metadata lives in `metadata/<release>/<fg>.yaml`. The `validate-metad
         - rh         # or ibm, upstream
       platform:      # optional — omit to run on all platforms
         - rhel-9     # or rhel-8, rhel-10
+      cloud:         # optional allowlist — suite only runs on listed clouds
+        - ibmc
+      exclude_cloud: # optional denylist — suite is skipped on listed clouds
+        - aws
       vm-size:       # optional — cloud-keyed override
         ibmc: bx2-4x16
       tags:          # optional — used for tag-based filtering
@@ -204,7 +208,8 @@ Test suite metadata lives in `metadata/<release>/<fg>.yaml`. The `validate-metad
 | `build` values must be one of `rh`, `ibm`, `upstream` | Typos silently exclude a suite from all builds |
 | `platform` values must be one of `rhel-8`, `rhel-9`, `rhel-10` | Typos silently exclude a suite from all platforms |
 | `vm-size` cloud keys must be `ibmc` or `aws` | Unknown keys are silently ignored at runtime |
-| `cloud` in `metadata` must be `ibmc` or `aws` | Unknown values skip the entire job-key silently |
+| `cloud` in `metadata` or suite must be `ibmc` or `aws` | Unknown values skip the entire job-key or suite silently |
+| `exclude_cloud` in suite must be `ibmc` or `aws` | Unknown values fail validation to catch typos (e.g. `awss`) |
 
 ### Allowed `job-key` values
 

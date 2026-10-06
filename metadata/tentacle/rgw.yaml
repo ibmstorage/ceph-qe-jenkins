@@ -324,7 +324,6 @@ upgrade:
   metadata:
     cloud:
       - ibmc
-      - aws
   suites:
     - name: "Tier-1 rgw ms upgrade ssl 81GA to 9x latest"
       suite: suites/tentacle/rgw/tier-1_rgw_ssl_multisite_test_upgrade_81GA_to_9x_latest.yaml
