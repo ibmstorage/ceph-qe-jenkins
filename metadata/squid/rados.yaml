@@ -7,58 +7,86 @@ regression:
     - name: "RADOS Test - OSD Rebalance"
       suite: suites/squid/rados/tier-2_rados_test-osd-rebalance.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 11
     - name: "RADOS Test - EC Pool OSD Rebalance"
       suite: suites/squid/rados/tier-2_rados_test-ecpool-osd-rebalance.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 11
     - name: "RADOS Test - Trim"
       suite: suites/squid/rados/tier-2_rados_trim_tests.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Test - Mon DB Trimming"
       suite: suites/squid/rados/tier-2_rados_test-mon-db-trimming.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 11
     - name: "RADOS Test - Bugfixes"
       suite: suites/squid/rados/tier-2_rados_test-bugfixes.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Test - CBT and COT"
       suite: suites/squid/rados/tier-2_rados_test_cot_cbt.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 13
     - name: "RADOS Test - PG Split and Merge"
       suite: suites/squid/rados/tier-2_rados_test-pg-split-merge.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Test - OMAP"
       suite: suites/squid/rados/tier-2_rados_test_omap.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Test - Scrub Tests"
       suite: suites/squid/rados/tier-3_rados_test-4-node-scrub-tests.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 6
     - name: "RADOS Test - Scrub Tests 2"
       suite: suites/squid/rados/tier-3_rados_test-4-node-scrub-tests-2.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 6
     - name: "RADOS Test - Location Stretch Mode"
       suite: suites/squid/rados/tier-3_rados_test-location-stretch-mode.yaml
       global-conf: conf/squid/rados/13-node-cluster-4-clients.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 17
     - name: "RADOS Test - Parameters"
       suite: suites/squid/rados/tier-2_rados_test_parameters.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Test - OSD Thrashing tests"
       suite: suites/squid/rados/tier-3_rados_osd_thrashing_tests.yaml
       global-conf: conf/squid/rados/9-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 6
     - name: "RADOS Test - OSD deployment workflows"
       suite: suites/squid/rados/tier-2_rados_test_osd_deployment_workflows.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 6
 extended_regression:
   metadata:
@@ -69,30 +97,44 @@ extended_regression:
     - name: "RADOS Test - Pool Functionalities"
       suite: suites/squid/rados/tier-2_rados_test-pool-functionalities.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 11
     - name: "RADOS Test - BlueStore"
       suite: suites/squid/rados/tier-2_rados_test_bluestore.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Test - CIDR Blocklisting"
       suite: suites/squid/rados/tier-3_rados_cidr_blocklisting.yaml
       global-conf: conf/squid/rados/13-node-cluster-4-clients.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 17
     - name: "RADOS Test - Pool OSD Recovery"
       suite: suites/squid/rados/tier-4_rados_test-pool-osd-recovery.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 13
     - name: "RADOS Test - Scrubbing"
       suite: suites/squid/rados/tier-2_rados_test-scrubbing.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
     - name: "RADOS Tier4 tests"
       suite: suites/squid/rados/tier-4_rados_tests.yaml
       global-conf: conf/squid/rados/13-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 13
     - name: "RADOS Test - 4 Node EC Pools"
       suite: suites/squid/rados/tier-3_rados_test-4-node-ecpools.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 6
 upgrade:
   metadata:
@@ -103,30 +145,42 @@ upgrade:
     - name: "RADOS Test - Drain Customer Issue"
       suite: suites/squid/rados/tier-2_rados_test-drain-customer-issue.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 11
       # 7.1z0 -> latest
     - name: "RADOS - Brownfield tests"
       suite: suites/squid/rados/tier-2_rados_test-brownfield.yaml
       global-conf: conf/squid/rados/7-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 7
       # 7.1z1 -> 7.1z2 -> latest
     - name: "RADOS Test - EC Pool Recovery"
       suite: suites/squid/rados/tier-2_rados_ec-pool_recovery.yaml
       global-conf: conf/squid/rados/11-node-cluster.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 11
       # 6.1 GA -> latest
     - name: "RADOS Test - Location Stretch Mode Upgrade"
       suite: suites/squid/rados/tier-2_rados_test-stretch-mode-upgrade.yaml
       global-conf: conf/squid/rados/stretch-mode-host-location-attrs.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 8
       # 8.0 GA -> latest
     - name: "RADOS Test - 3 AZ Cluster"
       suite: suites/squid/rados/tier-3_rados_test-3-AZ-Cluster.yaml
       global-conf: conf/squid/rados/3AZ-cluster-rhos-1.yaml
+      vm-size:
+        ibmc: cx2-4x8
       # VM count: 10
       # 8.0 GA -> latest
     - name: "RADOS Test - 8+6 MSR EC Pools"
       suite: suites/squid/rados/tier-3_rados_test-4-node-8+6-msr-ecpools.yaml
       global-conf: conf/squid/rados/4-node-ec-cluster-1-client.yaml
+      vm-size:
+        ibmc: cx2-8x16
       # VM count: 6
       # 8.0 GA -> latest
