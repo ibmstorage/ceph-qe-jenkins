@@ -129,6 +129,7 @@ jobsConfiguration.each { jobConfig ->
             stringParam("REPO", "", "Repository for RPM builds")
             stringParam("HOTFIX_REPO", "", "Hotfix repository")
             stringParam("CONTAINER_IMAGE", "", "Container image URL")
+            stringParam("INVENTORY", "", "Ceph CI Inventory file name")
             stringParam("CUSTOM_CONFIG", "", "Custom config key=value pairs")
             stringParam("CUSTOM_IMAGES", "", "Custom images")
 

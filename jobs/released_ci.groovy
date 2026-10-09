@@ -73,6 +73,7 @@ jobsConfiguration.each { jobConfig ->
                 choiceParam("BUILD_TYPE", ["IBM", "RH"], "RH or IBM build")
                 choiceParam("RHEL_VERSION", jobConfig.rhel_version, "RHEL OS Version")
                 stringParam("RELEASE", "released", "Ceph release to test (released build)")
+                stringParam("INVENTORY", "", "Ceph CI Inventory file name")
                 stringParam("CUSTOM_CONFIG", "", "Custom configs with comma separated 'key=value' values")
 
                 // VM_FLAVOR: choices depend on CLOUD_TYPE (IBM Cloud profile or AWS EC2 instance type)
