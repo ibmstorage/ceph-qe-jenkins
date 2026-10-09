@@ -349,6 +349,7 @@ Key credential IDs and their usage:
 | Credential ID | Type | Used by |
 |---|---|---|
 | `osp-cred` | File (YAML) | All IBM Cloud CI pipelines — global cephci cloud config |
+| `cephci-conf` | File (YAML → `.cephci.yaml`) | CephCI lab config on agents (`~/.cephci.yaml`); source `/secrets/cephci_conf` — see [structure](secrets/cephci_conf.md) |
 | `aws-osp-cred` | File (YAML) | AWS CI pipelines |
 | `all-cr-auth` | File (JSON) | Skopeo authentication for all container registries |
 | `ceph-qe-sa-pat` | Username+Password | Git clone of IBM GitHub repos (manifest, jenkins) |
@@ -406,6 +407,7 @@ Dashboard views are declared in `views/infra_view.groovy` and group jobs by rege
 
 ## Related Documentation
 
+- [cephci_conf / `.cephci.yaml` structure](secrets/cephci_conf.md)
 - [ODF Interop Pipeline](jobs/odf_interop.md)
 - [FDF Interop Pipeline](jobs/fdf_interop.md)
 - [Sync Manifest Images](jobs/sync_manifest_images.md)
