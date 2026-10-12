@@ -15,18 +15,13 @@ upgrade:
       build:
         - rh
     - name: tier1 upgrade rhcs 6x to 7x
-      suite: suites/reef/upgrades/tier1-upgrade-rhcs-6x-to-7x.yaml
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-6x-released-to-7x-latest.yaml
       global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
       build:
         - rh
     - name: tier1 upgrade rhcs 5x to 7x
-      suite: suites/reef/upgrades/tier1-upgrade-rhcs-5x-to-7x.yaml
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-5x-released-to-7x-latest.yaml
       global-conf: conf/6-node-cluster-with-1-client.yaml
-      build:
-        - rh
-    - name: tier1 upgrade rhcs 5x to 7x mix os
-      suite: suites/reef/upgrades/tier1-upgrade-rhcs-5x-to-7x-mix-os.yaml
-      global-conf: conf/reef/upgrades/upgrade_8-node-cluster_mix_os.yaml
       build:
         - rh
     - name: tier2 upgrade rhcs staggered 5x to 7x
@@ -35,27 +30,17 @@ upgrade:
       build:
         - rh
     - name: tier1 upgrade rhcs 7x to 7x latest
-      suite: suites/reef/upgrades/tier1-upgrade-rhcs-7x-to-7x-latest.yaml
+      suite: suites/reef/upgrades/tier1-upgrade-rhcs-7x-released-to-7x-latest.yaml
       global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
       build:
         - rh
     - name: tier1 upgrade ibm 6x to 7x
-      suite: suites/reef/upgrades/tier1-upgrade-ibm-6x-to-7x.yaml
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-6x-released-to-7x-latest.yaml
       global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
       build:
         - ibm
     - name: tier1 upgrade ibm 5x to 7x
-      suite: suites/reef/upgrades/tier1-upgrade-ibm-5x-to-7x.yaml
-      global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
-      build:
-        - ibm
-    - name: tier1 upgrade ibm 5x to 7x mix os
-      suite: suites/reef/upgrades/tier1-upgrade-ibm-5x-to-7x-mix-os.yaml
-      global-conf: conf/reef/upgrades/upgrade_8-node-cluster_mix_os.yaml
-      build:
-        - ibm
-    - name: tier2 upgrade ibm staggered 5x to 7x
-      suite: suites/reef/upgrades/tier2-upgrade-ibm-staggered-5x-to-7x.yaml
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-5x-released-to-7x-latest.yaml
       global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
       build:
         - ibm
@@ -65,7 +50,7 @@ upgrade:
       build:
         - ibm
     - name: tier1 upgrade ibm 7x to 7x latest
-      suite: suites/reef/upgrades/tier1-upgrade-ibm-7x-to-7x-latest.yaml
+      suite: suites/reef/upgrades/tier1-upgrade-ibm-7x-released-to-7x-latest.yaml
       global-conf: conf/reef/upgrades/upgrade_4-node-cluster.yaml
       build:
         - ibm
