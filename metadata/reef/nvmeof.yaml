@@ -89,3 +89,5 @@ upgrade:
           ibmc: cx2-8x16
         build:
           - ibm
+        platform:
+          - rhel-9
