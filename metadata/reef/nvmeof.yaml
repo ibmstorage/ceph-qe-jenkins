@@ -76,12 +76,16 @@ regression:
          - ibm
         platform:
           - rhel-9
-      - name: "NVMeOF Upgrade tests with mtls"
-        suite: suites/reef/nvmeof/tier-2_nvmeof_b2b_upgrade_with_mtls.yaml
+upgrade:
+    metadata:
+      cloud:
+        - ibmc
+        - aws
+    suites:
+      - name: "TEST NVMe Upgrade from Build to Build Latest"
+        suite: suites/reef/nvmeof/tier-2_nvmeof_b2b_upgrade.yaml
         global-conf: conf/reef/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
         vm-size:
           ibmc: cx2-8x16
         build:
-         - ibm
-        platform:
-          - rhel-9
+          - ibm
