@@ -208,7 +208,7 @@ Test suite metadata lives in `metadata/<release>/<fg>.yaml`. The `validate-metad
 
 ### Allowed `job-key` values
 
-`bvt` · `sanity` · `regression` · `extended_regression` · `upgrade` · `sanity-upgrade` · `released`
+`bvt` · `sanity` · `regression` · `extended_regression` · `upgrade` · `sanity-upgrade` · `released` · `rook_defaults`
 
 ---
 

@@ -1,0 +1,9 @@
+rook_defaults:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Sample rook default test suite"
+      suite: suites/tentacle/rook/deploy_rook_defaults_ceph.yaml
+      global-conf: conf/tentacle/common/3node-1client.yaml

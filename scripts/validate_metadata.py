@@ -35,6 +35,7 @@ VALID_JOB_KEYS = {
     "upgrade",
     "sanity-upgrade",
     "released",
+    "rook_defaults",
 }
 
 VALID_BUILDS = {"rh", "ibm", "upstream"}

@@ -1,0 +1,204 @@
+// Import shared library
+@Library("ceph-qe-libs@main") _
+
+// Set job parameters
+def job = "rook_defaults"
+def fg = "rook"
+def jobConfigs = [:]
+
+// Set suite parameters
+def suites = [:]
+def testSuitesMap = [:]
+
+
+// Pipeline definition
+pipeline {
+    options {
+        // Set build archive policy
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+        timeout(time: 5, unit: 'HOURS')
+    }
+
+    agent {
+        // Use agents-aws agent for AWS cloud, agents for IBM Cloud
+        label "${params.CLOUD_TYPE == 'aws' ? 'agents-aws' : 'agents'}"
+    }
+
+    stages {
+        stage("Validate") {
+            steps {
+                script {
+                    // Validate mandatory parameters
+                    jobConfigs = generateJobConfigs(job: job)
+
+                    // Always apply ODF/Rook defaults for this pipeline
+                    jobConfigs.customConfig = (jobConfigs.customConfig ?: []) + ["apply-odf-defaults=true"]
+                    echo "Rook defaults job: appended apply-odf-defaults=true to customConfig"
+
+                    // Debug
+                    echo "Parameters validated successfully ..."
+                }
+            }
+        }
+
+        stage("Setup") {
+            steps {
+                script {
+                    // Setup Ceph CI repository and virtual environment
+                    setupCephCiRepo(
+                        python: jobConfigs.python,
+                        venvDir: jobConfigs.venvDir,
+                        gitUrl: jobConfigs.gitUrl,
+                        gitDir: jobConfigs.gitDir,
+                        gitBranch: jobConfigs.gitBranch,
+                        cloudType: jobConfigs.cloudType,
+                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                        credentialId: jobConfigs.credentialId
+                    )
+
+                    // Debug
+                    echo "Ceph CI repository setup completed successfully ..."
+                }
+            }
+        }
+
+        stage("Fetch Suites") {
+            steps {
+                script {
+                    // Get suites for rook FG (metadata/tentacle/rook.yaml)
+                    suites = fetchTestSuites(
+                        rhBuild: jobConfigs.rhBuild,
+                        fg: fg,
+                        job: job,
+                        platform: jobConfigs.platform,
+                        cloudType: jobConfigs.cloudType,
+                        buildType: jobConfigs.buildType,
+                        python: "${jobConfigs.gitDir}/${jobConfigs.venvDir}/bin/python"
+                    )
+                }
+            }
+        }
+
+        stage("Get Stages") {
+            steps {
+                script {
+                    // Iterate over suite list
+                    suites.rook_defaults.suites.each { suite ->
+                        // Bind per-suite values before parallel closure (Groovy late-binding fix)
+                        def suiteName = suite.name
+                        def suitePath = suite.suite
+                        def suiteVmSize = suite.vm_size
+                        def suiteCustomConfig = suite.custom_config
+                        def effectiveGlobalConf = suite.global_conf ?: suites.rook_defaults.metadata?.globalConf
+                        def effectiveInventory = suite.inventory ?: jobConfigs.inventory
+                        def stageCustomConfig = suites.rook_defaults.metadata?.custom_config
+
+                        echo "Executing suite: ${suitePath} with config: ${effectiveGlobalConf}, inventory: ${effectiveInventory}"
+
+                        testSuitesMap[suiteName] = {
+                            stage(suiteName) {
+                                def logDir = [jobConfigs.logDir, suiteName].join("/")
+
+                                // Generate a random prefix with build number for resources
+                                def prefix = "${jobConfigs.prefix.take(6)}${env.BUILD_NUMBER}-${generatePrefixString()}"
+
+                                try {
+                                    // Execute the test job
+                                    execTestSuites(
+                                        gitDir: jobConfigs.gitDir,
+                                        venvDir: jobConfigs.venvDir,
+                                        instanceName: prefix,
+                                        cloudType: jobConfigs.cloudType,
+                                        product: jobConfigs.product,
+                                        release: jobConfigs.release,
+                                        platform: jobConfigs.platform,
+                                        logDir: logDir,
+                                        globalConf: effectiveGlobalConf,
+                                        suite: suitePath,
+                                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                                        inventory: effectiveInventory,
+                                        logLevel: jobConfigs.logLevel,
+                                        customConfig: jobConfigs.customConfig,
+                                        stageCustomConfig: stageCustomConfig,
+                                        suiteCustomConfig: suiteCustomConfig,
+                                        buildType: jobConfigs.buildType,
+                                        enableFirewall: jobConfigs.enableFirewall,
+                                        rhsCephRepo: jobConfigs.rhsCephRepo,
+                                        hotfixRepo: jobConfigs.hotfixRepo,
+                                        containerImage: jobConfigs.containerImage,
+                                        additionalArgs: jobConfigs.additionalArgs,
+                                        vmFlavor: suiteVmSize ?: jobConfigs.vmFlavor,
+                                        skipSosReport: jobConfigs.skipSosReport,
+                                        vpcName: jobConfigs.vpcName,
+                                        skipSubscription: jobConfigs.skipSubscription,
+                                        manifestSection: jobConfigs.manifestSection
+                                    )
+
+                                    // Debug
+                                    echo "Test execution for ${suiteName} completed successfully."
+                                } catch (Exception e) {
+                                    // Debug
+                                    echo "Test execution failed: ${e.message}"
+                                    error("Suite ${suiteName} failed")
+                                } finally {
+                                    // Cleanup configs generated
+                                    cleanupCluster(
+                                        gitDir: jobConfigs.gitDir,
+                                        venvDir: jobConfigs.venvDir,
+                                        cloudType: jobConfigs.cloudType,
+                                        instanceName: prefix,
+                                        ibmcCredFile: jobConfigs.ibmcCredFile,
+                                        logLevel: jobConfigs.logLevel,
+                                        vpcName: jobConfigs.vpcName
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Execute Suites") {
+            steps {
+                script {
+                    // Execute all the test suites in parallel
+                    parallel testSuitesMap
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                publishTestResults(
+                    cephVersion: jobConfigs.cephVersion,
+                    rhsCephRepo: jobConfigs.rhsCephRepo,
+                    containerImage: jobConfigs.containerImage,
+                    buildType: jobConfigs.buildType,
+                    rhBuild: jobConfigs.rhBuild,
+                    platform: jobConfigs.platform,
+                    cloudType: jobConfigs.cloudType,
+                    logDir: jobConfigs.logDir,
+                    resultsDir: jobConfigs.resultsDir,
+                    resultsSummary: jobConfigs.resultsSummary,
+                    artifacts: jobConfigs.artifacts,
+                    emailBody: jobConfigs.emailBody,
+                    emailAddr: params.EMAIL_ADDRESS,
+                    rpLaunchUrl: jobConfigs.rpLaunchUrl,
+                    rpLaunchName: jobConfigs.rpLaunchName,
+                    rpLaunchDesc: jobConfigs.rpLaunchDesc,
+                    rpLaunchAttributes: jobConfigs.rpLaunchAttributes,
+                    rpProjectName: jobConfigs.rpProjectName
+                )
+            }
+        }
+
+        cleanup {
+            script {
+                echo "Cleanup completed successfully ..."
+            }
+        }
+    }
+}
