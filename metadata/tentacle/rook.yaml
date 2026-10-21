@@ -4,6 +4,18 @@ rook_defaults:
       - ibmc
       - aws
   suites:
-    - name: "Sample rook default test suite"
-      suite: suites/tentacle/rook/deploy_rook_defaults_ceph.yaml
-      global-conf: conf/tentacle/common/3node-1client.yaml
+    - name: "RBD common with Rook defaults"
+      suite: suites/tentacle/rook/rbd_rook_common.yaml
+      global-conf: conf/tentacle/rbd/4-node-cluster-with-1-client.yaml
+    - name: "RBD mirror common with Rook defaults"
+      suite: suites/tentacle/rook/rbd_mirror_rook_common.yaml
+      global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
+    - name: "RGW sanity with Rook defaults"
+      suite: suites/tentacle/rook/sanity_rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "RGW multisite sanity with Rook defaults"
+      suite: suites/tentacle/rook/sanity_rgw_multisite.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+    - name: "SMB DMFG sanity with Rook defaults"
+      suite: suites/tentacle/rook/sanity_dmfg_smb.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
