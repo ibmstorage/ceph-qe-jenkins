@@ -20,7 +20,6 @@ import os
 import sys
 import yaml
 
-
 # ---------------------------------------------------------------------------
 # Known-good value sets
 # ---------------------------------------------------------------------------
@@ -44,7 +43,7 @@ VALID_CLOUDS = {"ibmc", "aws"}
 VALID_PLATFORMS = {"rhel-8", "rhel-9", "rhel-10"}
 
 # Release names that appear in file paths (e.g. conf/squid/…)
-RELEASE_PATH_NAMES = {"pacific", "quincy", "reef", "squid", "tentacle", "main"}
+RELEASE_PATH_NAMES = {"pacific", "quincy", "reef", "squid", "tentacle", "umbrella", "main"}
 
 
 # ---------------------------------------------------------------------------
