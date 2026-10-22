@@ -19,3 +19,9 @@ rook_defaults:
     - name: "SMB DMFG sanity with Rook defaults"
       suite: suites/tentacle/rook/sanity_dmfg_smb.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+    - name: "NFS Ganesha Tests with Rook Defaults"
+      suite: suites/tentacle/rook/nfs-ganesha-rook.yaml
+      global-conf: conf/tentacle/rook/nfs_cephfs_7-node-rook.yaml
+    - name: "CephFS tests with Rook Defaults"
+      suite: suites/tentacle/rook/cephfs-rook.yaml
+      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
