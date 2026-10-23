@@ -110,6 +110,20 @@ regression:
     - name: "Tier-1 RGW SMB Basic ops" # 54 mins, 37 secs
       suite: suites/umbrella/rgw/tier-1_rgw_smb.yaml
       global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 RGW crimson bluestore"
+      suite: suites/umbrella/rgw/tier-1_rgw_crimson_bluestore.yaml
+      global-conf: conf/umbrella/rgw/tier-1_rgw_crimson.yaml
+      custom-config:
+        crimson: true
+      build:
+        - ibm
+    - name: "Tier-1 RGW crimson seastore"
+      suite: suites/umbrella/rgw/tier-1_rgw_crimson_seastore.yaml
+      global-conf: conf/umbrella/rgw/tier-1_rgw_crimson.yaml
+      custom-config:
+        crimson: true
+      build:
+        - ibm
 extended_regression:
   metadata:
     cloud:
