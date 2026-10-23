@@ -197,10 +197,10 @@ def get_metadata(build, fg):
         file_path.append("tentacle")
 
     elif build.startswith("10."):
-        version = "umbrella"
+        file_path.append("umbrella")
 
     elif build.startswith("11."):
-        version = "main"
+        file_path.append("main")
 
     # Add focus group
     file_path.append(fg)
