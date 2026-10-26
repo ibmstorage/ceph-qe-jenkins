@@ -8,7 +8,9 @@
  * Parameters:
  *   product   - odf | fdf (required)
  *   envName   - ceph-interop --env-name (required)
- *   params    - Jenkins job params map
+ *   params      - Jenkins job params map
+ *   contextFile - optional deployment filename under deployments/infra/ocp/
+ *                 (default: product internal-storage context). Basename only.
  *
  * Sets env.CONTEXT_PATH, env.CONFIGURATION_PATH, and env.CLUSTER_ID.
  */
@@ -57,11 +59,16 @@ def call(Map parameters) {
 
     def openshiftProfile = "ocp-${ocpMinor}-default"
     def serviceProfile = "stable-${odfMinor}"
+    // Interop default: one device set per worker, replica 3.
+    // Chaos passes deviceSetCount 1 (one disk per worker). Profile name follows
+    // DEVICE_SIZE (odf-chaos default 200 → odf-1x200gi / osd-1x200gb).
+    def deviceSetCount = (parameters.deviceSetCount ?: workerCount) as Integer
+    def replicaCount = (parameters.replica ?: 3) as Integer
     def volumeProfile = "osd-${deviceCount}x${deviceSize}gb"
-    def storageProfile = "odf-${workerCount}x${deviceSize}gi"
+    def storageProfile = "odf-${deviceSetCount}x${deviceSize}gi"
     def lsoMax = "${deviceSize * 2}Gi"
 
-    def baseContext = baseContextCheckoutPath(product)
+    def baseContext = baseContextCheckoutPath(product, parameters.contextFile)
     if (!fileExists(baseContext)) {
         throw new RuntimeException(
             "updateCephInteropConfig: deployment context not found: ${baseContext} " +
@@ -118,6 +125,8 @@ def call(Map parameters) {
         storage_profile      : storageProfile,
         device_count         : deviceCount,
         device_size          : deviceSize,
+        device_set_count     : deviceSetCount,
+        replica              : replicaCount,
         worker_count         : workerCount,
         lso_max              : lsoMax,
         odf_operator_channel : odfOperatorChannel,
@@ -227,14 +236,23 @@ private Map buildDeploymentContext(Map args) {
     ]
 }
 
-private String baseContextFileName(String product) {
+private String baseContextFileName(String product, String contextFile) {
+    def requested = contextFile?.toString()?.trim()
+    if (requested) {
+        if (requested.contains('/') || requested.contains('..')) {
+            throw new RuntimeException(
+                "updateCephInteropConfig: contextFile must be a basename, got '${requested}'"
+            )
+        }
+        return requested
+    }
     return product == 'fdf'
         ? 'ocp-ibm-vpc-fdf-internal-storage.yaml'
         : 'ocp-ibm-vpc-odf-internal-storage.yaml'
 }
 
-private String baseContextCheckoutPath(String product) {
-    return "deployments/infra/ocp/${baseContextFileName(product)}"
+private String baseContextCheckoutPath(String product, String contextFile) {
+    return "deployments/infra/ocp/${baseContextFileName(product, contextFile)}"
 }
 
 private String resolveClusterIdFromContext(Map ctx, String requestedId) {
