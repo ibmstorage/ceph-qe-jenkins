@@ -24,4 +24,4 @@ rook_defaults:
       global-conf: conf/tentacle/rook/nfs_cephfs_7-node-rook.yaml
     - name: "CephFS tests with Rook Defaults"
       suite: suites/tentacle/rook/cephfs-rook.yaml
-      global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
+      global-conf: conf/tentacle/rook/nfs_cephfs_7-node-rook.yaml
