@@ -13,9 +13,23 @@ rook_defaults:
     - name: "RGW sanity with Rook defaults"
       suite: suites/tentacle/rook/sanity_rgw.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "RGW multisite sanity with Rook defaults"
       suite: suites/tentacle/rook/sanity_rgw_multisite.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "SMB DMFG sanity with Rook defaults"
       suite: suites/tentacle/rook/sanity_dmfg_smb.yaml
       global-conf: conf/tentacle/smb/1admin-4node-1client-cluster.yaml
