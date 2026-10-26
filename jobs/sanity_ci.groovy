@@ -14,11 +14,11 @@ def generate_jobs(data) {
     def release = data.release ?: ["nightly", "stable"]
     if (!data.release) {
         if (data.cephVersion.toLowerCase() == "reef") {
-            release += ["rc", "released", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
+            release += ["rc", "released", "respin", "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
         } else if (data.cephVersion.toLowerCase() == "squid") {
             release += ["rc", "released", "respin", "z0", "z1", "z2", "z3", "z4", "z5"]
         } else if (data.cephVersion.toLowerCase() == "tentacle") {
-            release += ["rc", "released", "z0", "z1", "z2", "z3"]
+            release += ["rc", "released", "respin", "z0", "z1", "z2", "z3"]
         }
     }
 
@@ -78,7 +78,7 @@ generate_jobs(
     buildVersion: ["9.2", "9.1", "9.0"],
     rhelVersion: ["rhel-10", "rhel-9"],
     buildType: ["IBM", "RH"],
-    release: ["stable", "nightly", "rc", "released", "z0", "z1", "z2", "z3"],
+    release: ["stable", "nightly", "rc", "released", "respin", "z0", "z1", "z2", "z3"],
     skipBuildCheck: true,
     enablePromotion: false,
     cronExpr: "30 0 * * 6"
