@@ -90,6 +90,9 @@ def call(String image) {
     } else if ( cephVersion.startsWith("20.2.2") ) {
         result["releaseVersion"] = "9.2"
         result["release"] = "tentacle"
+    } else if ( cephVersion.startsWith("21.1") ) {
+        result["releaseVersion"] = "10.0"
+        result["release"] = "umbrella"
     } else {
         throw new RuntimeException("Error: unknown cephVersion was returned." + cephVersion)
     }

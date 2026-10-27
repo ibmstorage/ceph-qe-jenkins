@@ -104,6 +104,10 @@ pipeline {
                     } else if (buildInfo.application in ["ceph-9-0", "ceph-9-1", "ceph-9-2"]) {
                         jobName = "tentacle-bvt-ci"
                         platform = "rhel-10"
+                    } else if (buildInfo.application in ["ceph-10-0", "ceph-9-10"]) {
+                        // Umbrella / IBM VRMF 9.10.x (upstream 21.x)
+                        jobName = "umbrella-bvt-ci"
+                        platform = "rhel-10"
                     } else {
                         currentBuild.result = "ABORTED"
                         error("Unsupported Ceph version ${buildInfo.application}")
