@@ -3,7 +3,7 @@ Job to sync Red Hat Repository to mirror repository.
 """
 
 // Set default job configuration
-def buildVersion = ["9.1", "9.0", "9.2", "8.1", "8.0", "7.1"]
+def buildVersion = ["10.0", "9.1", "9.0", "9.2", "8.1", "8.0", "7.1"]
 def rhelVersion = ["rhel-10", "rhel-9"]
 
 // Create job to sync RHCS repo

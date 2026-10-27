@@ -19,7 +19,7 @@ pipeline {
                         error("CEPH_VERSION parameter is required.")
                     }
                     if (!params.CephBuildVersion || params.CephBuildVersion.trim().isEmpty()) {
-                        error("CephBuildVersion parameter is required (e.g., 19.2.0-139 or 17.2.1-145).")
+                        error("CephBuildVersion parameter is required (e.g., 21.1.1-1, 20.2.2-181 or 19.2.0-139).")
                     }
                     if (!params.IMAGES || params.IMAGES.trim().isEmpty()) {
                         error("IMAGES parameter is required.")
