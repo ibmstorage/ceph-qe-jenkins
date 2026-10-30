@@ -96,6 +96,12 @@ extended_regression:
     - name: "Test Cephfs Mirroring Multi threading performance improvemnets"
       suite: suites/umbrella/cephfs/tier-2_cephfs_mirror_snapshot_sync_perf.yaml
       global-conf: conf/umbrella/cephfs/tier-1_cephfs_mirror.yaml
+    - name: "Test CephFS Idmapped Mount Tests"
+      suite: suites/umbrella/cephfs/tier-2_cephfs_test-idmap.yaml
+      global-conf: conf/umbrella/cephfs/tier-2_cephfs_7-node-cluster.yaml
+    - name: "Test CephFS Subvolume Quarantine Functionality"
+      suite: suites/umbrella/cephfs/tier-1_cephfs_subvolume_quarantine.yaml
+      global-conf: conf/umbrella/cephfs/tier-2_cephfs_7-node-cluster.yaml
 
 # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
 # upgrade:
