@@ -59,10 +59,6 @@ def generate_jobs(cfg, data) {
     def buildType = ["IBM", "RH"]
     def description  = "IBM or RH build"
     def cronExpr = ""
-    if (fg.equalsIgnoreCase("NvmeOF") && ceph.equalsIgnoreCase("Tentacle")) {
-        logLevel = ["DEBUG", "INFO", "ERROR"]
-        cronExpr = "H 1 * * 6"
-    }
     if (fg == "callhome") {
         cephciRepo   = "https://github.ibm.com/ceph-qe-ng/cephci.git"
         cephciBranch = "callhome"
