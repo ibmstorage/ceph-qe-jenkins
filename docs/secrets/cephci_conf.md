@@ -125,6 +125,11 @@ registries:
     username: <RH-STAGE-USER>
     password: <RH-STAGE-PASS>
 
+  quay.io:
+    product: rh
+    username: <RH-STAGE-USER>
+    password: <RH-STAGE-PASS>
+
 # --- Lab services (keep existing values) ---
 keystone:
   ibmc:
