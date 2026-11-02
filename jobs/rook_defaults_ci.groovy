@@ -90,7 +90,11 @@ for (jobConfig in jobsConfiguration) {
                 stringParam("CUSTOM_IMAGES", "", "Custom images with comma separated values")
                 stringParam("ADDITIONAL_ARGS", "", "Additional cephci arguments with comma separated 'key=value' values")
                 choiceParam("VPC_NAME", jobConfig.vpc, "IBM Cloud VPC to create/destroy resources")
-                stringParam("EMAIL_ADDRESS", "cephqe-devops@wwpdl.vnet.ibm.com", "Email Address")
+                stringParam(
+                    "EMAIL_ADDRESS",
+                    "ibm-ceph-qe-devops-alerts@wwpdl.vnet.ibm.com,ebenahar-all-DG@ibm.com,Mudit.Agarwal2@ibm.com,ebenahar@ibm.com,pbalogh@ibm.com",
+                    "Email Address"
+                )
             }
         }
     }
