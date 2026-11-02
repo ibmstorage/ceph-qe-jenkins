@@ -165,15 +165,7 @@ pipeline {
                             env.DEPLOY_PASSED = 'true'
                             echo "FDF deploy succeeded: ${env.OCP_CLUSTER_NAME ?: env.ENV_NAME}"
                         } catch (Exception deployErr) {
-                            def oc = paths.absOcBinary
-                            def ns = "openshift-storage"
-                            echo "DEPLOY FAILED — collecting diagnostics"
-                            sh """
-                                ${oc} get storagecluster ocs-storagecluster -n ${ns} -o yaml 2>&1 || true
-                                ${oc} get csv -n ${ns} 2>&1 || true
-                                ${oc} get pods -n ${ns} -o wide 2>&1 || true
-                                ${oc} get catalogsource -n openshift-marketplace isf-data-foundation-catalog -o yaml 2>&1 || true
-                            """
+                            collectInteropDeployDiagnostics(product: 'fdf', paths: paths)
                             throw deployErr
                         }
                     }
