@@ -254,42 +254,6 @@ extended_regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-1 rgw upgrade 71GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      platform:
-        - rhel-9
-    - name: "Tier-1 rgw upgrade 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      platform:
-        - rhel-9
-    - name: "Tier-1 rgw archive ms upgrade 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_archive_ms_upgrade_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
-      platform:
-        - rhel-9
-    - name: "Tier-1 rgw ms upgrade 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_ms_upgrade_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-      platform:
-        - rhel-9
-    - name: "Tier-1 rgw upgrade ssl 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ssl_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      platform:
-        - rhel-9
-    - name: "Tier-1 rgw upgrade ms ssl ecpool 81GA to 9x latest"
-      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_81GA_to_9x_latest.yaml
-      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster-2rgw.yaml
-      platform:
-        - rhel-9
-extended_regression_2:
-  metadata:
-    cloud:
-      - ibmc
-      - aws
-  suites:
     - name: "sanity rgw tests" # 169 mins, 20 secs
       suite: suites/tentacle/rgw/sanity_rgw.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
@@ -314,28 +278,6 @@ extended_regression_2:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 rgw bind port test"
-      suite: suites/tentacle/rgw/tier-1_rgw_with_only_bind_port_on_networks.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 rgw ms archive resharding with haproxy" # 150 mins, 40 secs
-      suite: suites/tentacle/rgw/tests_rest_sanity_rgw.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 rgw ms archive resharding" # 150 mins, 40 secs
-      suite: suites/tentacle/rgw/tier-1-extn_rgw_multisite-secondary-to-primary.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-      inventory:
-        ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
-      platform:
-        - rhel-9
-        - rhel-10
-    - name: "Tier-2 RGW mgr module tests" # 150 mins, 40 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_module.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 RGW multisite sync status" # 60 mins, 8 secs
-      suite: suites/tentacle/rgw/tier-1_rgw_and_lc.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
     - name: "Tier-2 RGW ms lua tests" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_lua.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
@@ -348,6 +290,35 @@ extended_regression_2:
     - name: "Tier-2 RGW ms 3az tests" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
       global-conf: conf/tentacle/rados/3AZ-cluster-rhos-1.yaml
+    - name: "Tier-2 rgw ms archive resharding" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-1-extn_rgw_multisite-secondary-to-primary.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+    - name: "Tier-2 RGW multisite sync status" # 60 mins, 8 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_and_lc.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+
+extended_regression_2:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Tier-2 rgw bind port test"
+      suite: suites/tentacle/rgw/tier-1_rgw_with_only_bind_port_on_networks.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 rgw ms archive resharding with haproxy" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tests_rest_sanity_rgw.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW mgr module tests" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_module.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
 
 upgrade:
   metadata:
@@ -390,3 +361,34 @@ upgrade:
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       platform:
         - rhel-9
+#commenting the below upgrade suites as the paths are being revisited.
+#    - name: "Tier-1 rgw upgrade 71GA to 9x latest"
+#      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_71GA_to_9x_latest.yaml
+#      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+#      platform:
+#        - rhel-9
+#    - name: "Tier-1 rgw upgrade 81GA to 9x latest"
+#      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_81GA_to_9x_latest.yaml
+#      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+#      platform:
+#        - rhel-9
+#    - name: "Tier-1 rgw archive ms upgrade 81GA to 9x latest"
+#      suite: suites/tentacle/rgw/tier-1_rgw_archive_ms_upgrade_81GA_to_9x_latest.yaml
+#      global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
+#      platform:
+#        - rhel-9
+#    - name: "Tier-1 rgw ms upgrade 81GA to 9x latest"
+#      suite: suites/tentacle/rgw/tier-1_rgw_ms_upgrade_81GA_to_9x_latest.yaml
+#      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+#      platform:
+#        - rhel-9
+#    - name: "Tier-1 rgw upgrade ssl 81GA to 9x latest"
+#      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ssl_81GA_to_9x_latest.yaml
+#      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+#      platform:
+#        - rhel-9
+#    - name: "Tier-1 rgw upgrade ms ssl ecpool 81GA to 9x latest"
+#      suite: suites/tentacle/rgw/tier-1_rgw_upgrade_ms_ssl_ecpool_81GA_to_9x_latest.yaml
+#      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster-2rgw.yaml
+#      platform:
+#        - rhel-9
