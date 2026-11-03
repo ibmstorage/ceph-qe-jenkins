@@ -76,39 +76,42 @@ regression:
       vm-size:
         ibmc: cx2-8x16
         aws: m6g.xlarge
-    # Commented out for now, as the macos tests need to be updated for the 10.0 release.
-    # - name: "Test SMB macos support"
-    #   suite: suites/umbrella/smb/tier-1-smb-macos.yaml
-    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
-    #   vm-size:
-    #     ibmc: cx2-8x16
-    #     aws: m6g.xlarge
-    #   version:
-    #       - 9.2
-    # - name: "Test SMB intergation with certmgr for GRPC service"
-    #   suite: suites/umbrella/smb/tier-1-grpc-certmgr.yaml
-    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
-    #   vm-size:
-    #     ibmc: cx2-8x16
-    #     aws: m6g.xlarge
-    #   version:
-    #       - 9.2
-    # - name: "Test ceph-smb-ctl remote control"
-    #   suite: suites/umbrella/smb/tier-1-smb-remote-control.yaml
-    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
-    #   vm-size:
-    #     ibmc: cx2-8x16
-    #     aws: m6g.xlarge
-    #   version:
-    #       - 9.2
-    # - name: "Test SMB intergation with certmgr for BYOK"
-    #   suite: suites/umbrella/smb/tier-1-byok-certmgr.yaml
-    #   global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
-    #   vm-size:
-    #     ibmc: cx2-8x16
-    #     aws: m6g.xlarge
-    #   version:
-    #       - 9.2
+    - name: "Test SMB macos support"
+      suite: suites/umbrella/smb/tier-1-smb-macos.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB intergation with certmgr for GRPC service"
+      suite: suites/umbrella/smb/tier-1-grpc-certmgr.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test ceph-smb-ctl remote control"
+      suite: suites/umbrella/smb/tier-1-smb-remote-control.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB intergation with certmgr for BYOK"
+      suite: suites/umbrella/smb/tier-1-byok-certmgr.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Case Insensitive"
+      suite: suites/umbrella/smb/tier-1-smb-case-insensitive-check.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
+    - name: "Test SMB Rolling Upgrade"
+      suite: suites/umbrella/smb/tier-1-smb-rolling-upgrade.yaml
+      global-conf: conf/umbrella/smb/1admin-4node-1client-cluster.yaml
+      vm-size:
+        ibmc: cx2-8x16
+        aws: m6g.xlarge
 extended_regression:
   metadata:
     cloud:
