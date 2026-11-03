@@ -44,25 +44,11 @@ sanity:
     - name: "Tier-0 NFS Ganesha v4"
       suite: suites/squid/nfs/tier0-nfs-ganesha-vers-4-2.yaml
       global-conf: conf/squid/nfs/1admin-7node-3client.yaml
-    - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
-      suite: suites/squid/nvmeof/tier-1_nvmeof_sanity.yaml
-      global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
-      vm-size:
-        ibmc: bx2-4x16
-      build:
-        - ibm
-    - name: "NVMe Basic E2E-Test with FIPS mode enabled"
-      suite: suites/squid/nvmeof/tier-2_nvmeof_e2e_fips.yaml
-      global-conf: conf/squid/nvmeof/ceph_nvmeof_sanity.yaml
-      custom-config:
-        enable-fips-mode: true
-      vm-size:
-        ibmc: bx2-4x16
-      build:
-        - ibm
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/squid/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/squid/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      custom-config:
+        enable-fips-mode: true
       vm-size:
         ibmc: bx2-4x16
       build:
@@ -274,27 +260,27 @@ sanity-upgrade:
       - aws
   suites:
     - name: "Upgrade RHCS 6x released to 8x latest"
-      suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-released-to-8x-latest.yaml  
-      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml 
+      suite: suites/squid/upgrades/tier1-upgrade-rhcs-6x-released-to-8x-latest.yaml
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
       platform:
         - rhel-9
       build:
         - rh
-    - name: "Upgrade RHCS 7x released to 8x latest"  
+    - name: "Upgrade RHCS 7x released to 8x latest"
       suite: suites/squid/upgrades/tier1-upgrade-rhcs-7x-released-to-8x-latest.yaml
-      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml 
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
       platform:
         - rhel-9
       build:
         - rh
     - name: "Upgrade RHCS 8x released to 8x latest"
       suite: suites/squid/upgrades/tier1-upgrade-rhcs-8x-released-to-8x-latest.yaml
-      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml 
+      global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
       platform:
         - rhel-9
       build:
         - rh
-    - name: "Upgrade IBMSC 6x released to 8x latest"  
+    - name: "Upgrade IBMSC 6x released to 8x latest"
       suite: suites/squid/upgrades/tier1-upgrade-ibm-6x-released-to-8x-latest.yaml
       global-conf: conf/squid/upgrades/1admin-3node-1client-upgrade.yaml
       platform:

@@ -4,14 +4,14 @@ bvt:
       - ibmc
       - aws
   suites:
-    - name: "Build Verification Test"
+    - name: "Build Verification Test RH"
       suite: suites/tentacle/smoke/bvt.yaml
       global-conf: conf/tentacle/common/3node-1client.yaml
       build:
         - rh
       tags:
         - bvt
-    - name: "Build Verification Test"
+    - name: "Build Verification Test IBM"
       suite: suites/tentacle/smoke/bvt-ibm.yaml
       global-conf: conf/tentacle/common/6node-1client.yaml
       vm-size:
@@ -27,23 +27,11 @@ sanity:
       - ibmc
       - aws
   suites:
-    - name: "Basic E2E Test NVMEoF Gateway and Run IOs on targets"
-      suite: suites/tentacle/nvmeof/tier-1_nvmeof_sanity.yaml
-      global-conf: conf/tentacle/nvmeof/ceph_nvmeof_sanity.yaml
-      vm-size:
-        ibmc: bx2-4x16
-      build:
-        - ibm
-    - name: "Basic E2E-Test with FIPS mode enabled"
-      suite: suites/tentacle/nvmeof/tier-2_nvmeof_e2e_fips.yaml
-      global-conf: conf/tentacle/nvmeof/ceph_nvmeof_sanity.yaml
-      custom-config:
-        enable-fips-mode: true
-      build:
-        - ibm
     - name: "HA test - 2 NVMe Gateway High availability Sanity"
       suite: suites/tentacle/nvmeof/tier-1_nvmeof_ha_sanity.yaml
       global-conf: conf/tentacle/nvmeof/ceph_nvmeof_ha_cluster.yaml
+      custom-config:
+        enable-fips-mode: true
       vm-size:
         ibmc: bx2-4x16
       build:
