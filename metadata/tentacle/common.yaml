@@ -70,19 +70,16 @@ sanity:
     - name: "tier-1 rbd_mirror"
       suite: suites/tentacle/rbd/tier-1_rbd_mirror.yaml
       global-conf: conf/tentacle/rbd/5-node-2-clusters.yaml
-    - name: "Tier-1 rgw ibm"
-      suite: suites/tentacle/rgw/tier-1_rgw_ibm.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier2ier-1 rgw"
+    - name: "tier-1 rgw" # 28 min
       suite: suites/tentacle/rgw/tier-1_rgw.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 rgw multisite"
+    - name: "tier-1 rgw multisite" # 85 min
       suite: suites/tentacle/rgw/tier-1_rgw_multisite.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    - name: "Tier-2 rgw ms upgrade 9xsanity to 9xlatest"
+      global-conf: conf/tentacle/rgw/rgw_multisite_ec2+2.yaml
+    - name: "tier-2 rgw ms upgrade 9xsanity to 9xlatest" # 90 min
       suite: suites/tentacle/rgw/tier-2_rgw_ms_upgrade_9xsanity_to_9xlatest.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    - name: "Tier-2 rgw upgrade 9xsanity to 9xlatest"
+      global-conf: conf/tentacle/rgw/rgw_multisite_ec2+2.yaml
+    - name: "tier-2 rgw upgrade 9xsanity to 9xlatest" # 40 min
       suite: suites/tentacle/rgw/tier-2_rgw_upgrade_9xsanity_to_9xlatest.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
     - name: "Tier-1 CephFS Test"
