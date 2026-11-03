@@ -365,6 +365,7 @@ Key credential IDs and their usage:
 | `ibm-cos-acces-key` / `ibm-cos-secret-key` | String | rclone upload to IBM COS |
 | `aws-systest-access` / `aws-systest-secret-access` | String | ODF Interop Route53 DNS |
 | `ocs-pull-secret` | File (JSON) | OCP pull secret for ODF Interop |
+| `ibm-si-tenant` | File (JSON → `si-tenant.json`) | Call-home Storage Insights tenant; source `/secrets/ibm_si_tenant` |
 | `gcp-service-account` | File (JSON) | Google Sheets result publishing |
 | `send-grid-api` | Username+Password | SMTP via SendGrid |
 | `repo_access_key` | File | SSH key for RPM repo sync to NGINX |

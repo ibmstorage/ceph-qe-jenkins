@@ -226,6 +226,13 @@ credentials:
               scope: GLOBAL
               secretBytes: "${readFileBase64:/secrets/odf_interop_pull_secret}"
 
+          - file:
+              description: "IBM Storage Insights tenant details for call-home"
+              id: "ibm-si-tenant"
+              fileName: "si-tenant.json"
+              scope: GLOBAL
+              secretBytes: "${readFileBase64:/secrets/ibm_si_tenant}"
+
           - string:
               description: "IBM Taas Artifactory access token"
               id: "artifactory-token"

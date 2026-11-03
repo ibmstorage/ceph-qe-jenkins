@@ -79,6 +79,17 @@ pipeline {
         stage("Get Stages") {
             steps {
                 script {
+                    // Call-home tests read SI tenant details from --custom-config-file
+                    if (params.FG?.equalsIgnoreCase("callhome")) {
+                        def siTenantCredFile = [jobConfigs.jobDir, "si-tenant.json"].join("/")
+                        sh "mkdir -p ${jobConfigs.jobDir}"
+                        withCredentials([file(credentialsId: "ibm-si-tenant", variable: "SI_TENANT_CRED")]) {
+                            def siTenantCredContent = readFile file: "${SI_TENANT_CRED}"
+                            writeFile file: siTenantCredFile, text: "${siTenantCredContent}"
+                        }
+                        jobConfigs.siTenant = siTenantCredFile
+                    }
+
                     // Iterate over suite list
                     suites.regression.suites.each { suite ->
                         def suiteName = suite.name
@@ -101,7 +112,7 @@ pipeline {
 
                                 try {
                                     // Execute the test job
-                                    execTestSuites(
+                                    def execArgs = [
                                         gitDir: jobConfigs.gitDir,
                                         venvDir: jobConfigs.venvDir,
                                         instanceName: prefix,
@@ -129,7 +140,12 @@ pipeline {
                                         vpcName: jobConfigs.vpcName,
                                         skipSubscription: jobConfigs.skipSubscription,
                                         manifestSection: jobConfigs.manifestSection
-                                    )
+                                    ]
+                                    if (params.FG?.equalsIgnoreCase("callhome")) {
+                                        execArgs.tag = "callhome"
+                                        execArgs.siTenant = jobConfigs.siTenant
+                                    }
+                                    execTestSuites(execArgs)
 
                                     // Debug
                                     echo "Test execution for ${suite.name} completed successfully."
