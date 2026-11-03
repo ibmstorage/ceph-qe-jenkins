@@ -39,3 +39,6 @@ rook_defaults:
     - name: "CephFS tests with Rook Defaults"
       suite: suites/tentacle/rook/cephfs-rook.yaml
       global-conf: conf/tentacle/rook/nfs_cephfs_7-node-rook.yaml
+    - name: "RADOS tests with Rook Defaults"
+      suite: suites/tentacle/rook/sanity-rados-rook.yaml
+      global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
