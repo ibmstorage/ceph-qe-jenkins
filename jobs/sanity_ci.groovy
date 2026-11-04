@@ -68,6 +68,15 @@ generate_jobs(
     cronExpr: "30 3 * * *"
 )
 
+// Create jobs specific to Ceph - Umbrella
+generate_jobs(
+    jobsConfiguration: jobsConfiguration,
+    cephVersion: "umbrella",
+    buildVersion: ["10.0"],
+    rhelVersion: ["rhel-10", "rhel-9"],
+    cronExpr: ""
+)
+
 // Weekly Saturday FIPS job for Tentacle (6:00 AM IST / 00:30 UTC Saturday)
 generate_jobs(
     jobsConfiguration: jobsConfiguration,
