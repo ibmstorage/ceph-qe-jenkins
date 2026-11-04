@@ -58,22 +58,18 @@ sanity:
     - name: "tier-1 rbd_mirror"
       suite: suites/umbrella/rbd/tier-1_rbd_mirror.yaml
       global-conf: conf/umbrella/rbd/5-node-2-clusters.yaml
-    - name: "Tier-1 rgw ibm"
-      suite: suites/umbrella/rgw/tier-1_rgw_ibm.yaml
-      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
-    - name: "Tier2ier-1 rgw"
+    - name: "tier-1 rgw"
       suite: suites/umbrella/rgw/tier-1_rgw.yaml
       global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 rgw multisite"
+    - name: "tier-1 rgw multisite"
       suite: suites/umbrella/rgw/tier-1_rgw_multisite.yaml
-      global-conf: conf/umbrella/rgw/rgw_multisite.yaml
-    # Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
-    # - name: "Tier-2 rgw ms upgrade 9xsanity to 9xlatest"
-    #   suite: suites/umbrella/rgw/tier-2_rgw_ms_upgrade_9xsanity_to_9xlatest.yaml
-    #   global-conf: conf/umbrella/rgw/rgw_multisite.yaml
-    # - name: "Tier-2 rgw upgrade 9xsanity to 9xlatest"
-    #   suite: suites/umbrella/rgw/tier-2_rgw_upgrade_9xsanity_to_9xlatest.yaml
-    #   global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_ec2+2.yaml
+    - name: "tier-2 rgw ms upgrade 10xsanity to 10xlatest"
+      suite: suites/umbrella/rgw/tier-2_rgw_ms_upgrade_10xsanity_to_10xlatest.yaml
+      global-conf: conf/umbrella/rgw/rgw_multisite_ec2+2.yaml
+    - name: "tier-2 rgw upgrade 10xsanity to 10xlatest"
+      suite: suites/umbrella/rgw/tier-2_rgw_upgrade_10xsanity_to_10xlatest.yaml
+      global-conf: conf/umbrella/rgw/tier-0_rgw.yaml
     - name: "Tier-1 CephFS Test"
       suite: suites/umbrella/cephfs/tier-0_fs.yaml
       global-conf: conf/umbrella/cephfs/tier-2_cephfs_7-node-cluster.yaml
