@@ -106,94 +106,117 @@ extended_regression:
     #   suite: suites/umbrella/cephadm/tier4-crash-configuration.yaml
     #   global-conf: conf/umbrella/cephadm/2admin-3node-1rgw-1client-sanity.yaml
 
-# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
-# upgrade:
-#   metadata:
-#     cloud:
-#       - ibmc
-#       - aws
-#   suites:
-#     - name: "Test DMFG upgrade RHCS 7x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-7x-released-to-9x-latest.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - rh
-#     - name: "Test DMFG upgrade RHCS 8x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-8x-released-to-9x-latest.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - rh
-#     - name: "Test DMFG upgrade with monitoring stack RHCS 8x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-8x-released-to-9x.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - rh
-#     - name: "Test DMFG upgrade with monitoring stack RHCS 7x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-7x-released-to-9x.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - rh
-#     - name: "Test DMFG staggered upgrade RHCS 8x to 9x"
-#       suite: suites/umbrella/upgrades/tier2-upgrade-rhcs-staggered-8x-released-to-9x.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - rh
-#     - name: "Test DMFG staggered upgrade RHCS 9x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-released-to-9x-latest.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - rh
-#     - name: "Test DMFG upgrade IBMSC 7x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-7x-released-to-9x-latest.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - ibm
-#     - name: "Test DMFG upgrade IBMSC 8x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-8x-released-to-9x-latest.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - ibm
-#     - name: "Test DMFG upgrade IBMSC 9x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-released-to-9x-latest.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - ibm
-#     - name: "Test DMFG upgrade with monitoring stack IBMSC 8x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-ibm-8x-released-to-9x.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - ibm
-#     - name: "Test DMFG upgrade with monitoring stack IBM 7x to 9x"
-#       suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-ibm-7x-released-to-9x.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - ibm
-#     - name: "Test DMFG staggered upgrade IBMSC 8x to 9x"
-#       suite: suites/umbrella/upgrades/tier2-upgrade-ibm-staggered-8x-released-to-9x.yaml
-#       global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
-#       platform:
-#         - rhel-9
-#       build:
-#         - ibm
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "Test DMFG upgrade RHCS 9.2 to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-released-to-10x-latest.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+      build:
+        - rh
+    - name: "Test DMFG upgrade RHCS 9.1 to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-to-10x-latest.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+      build:
+        - rh
+    - name: "Test DMFG upgrade RHCS 8x to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-8x-released-to-10x-latest.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Test DMFG upgrade with monitoring stack RHCS 8x to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-8x-released-to-10x.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+    - name: "Test DMFG upgrade with monitoring stack RHCS 9x to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-rhcs-9x-released-to-10x.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+      build:
+        - rh
+    - name: "Test DMFG staggered upgrade RHCS 8x to 10x"
+      suite: suites/umbrella/upgrades/tier2-upgrade-rhcs-staggered-8x-released-to-10x.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - rh
+# staggered upgrade suite needs to be created for 9x to 10x scenario, keeping this as placeholder
+#    - name: "Test DMFG staggered upgrade RHCS 9x to 10x"
+#      suite: suites/umbrella/upgrades/tier1-upgrade-rhcs-9x-released-to-9x-latest.yaml
+#      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#      platform:
+#        - rhel-9
+#        - rhel-10
+#      build:
+#        - rh
+    - name: "Test DMFG upgrade IBMSC 9.2 to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-released-to-10x-latest.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+      build:
+        - ibm
+    - name: "Test DMFG upgrade IBMSC 9.1 to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-to-10x-latest.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+      build:
+        - ibm
+    - name: "Test DMFG upgrade IBMSC 8x to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-ibm-8x-released-to-10x-latest.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Test DMFG upgrade with monitoring stack IBMSC 8x to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-ibm-8x-released-to-10x.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+    - name: "Test DMFG upgrade with monitoring stack IBM 9x to 10x"
+      suite: suites/umbrella/upgrades/tier1-upgrade-with-monitoring-stack-ibm-9x-released-to-10x.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+        - rhel-10
+      build:
+        - ibm
+    - name: "Test DMFG staggered upgrade IBMSC 8x to 10x"
+      suite: suites/umbrella/upgrades/tier2-upgrade-ibm-staggered-8x-released-to-10x.yaml
+      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+      platform:
+        - rhel-9
+      build:
+        - ibm
+# staggered upgrade suite needs to be created for 9x to 10x scenario, keeping this as placeholder
+#    - name: "Test DMFG staggered upgrade IBM 9x to 10x"
+#      suite: suites/umbrella/upgrades/tier1-upgrade-ibm-9x-released-to-9x-latest.yaml
+#      global-conf: conf/umbrella/upgrades/1admin-3node-1client-upgrade.yaml
+#      platform:
+#        - rhel-9
+#        - rhel-10
+#      build:
+#        - ibm
