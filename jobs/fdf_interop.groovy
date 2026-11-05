@@ -104,7 +104,19 @@ def job = pipelineJob("fdf-interop") {
             stringParam(
                 "WORKER_COUNT",
                 "3",
-                "Number of worker nodes (min 3)"
+                "Number of worker nodes (min 3 when EC_SCHEME=false). When EC_SCHEME is 2+2 or 4+2, workers are raised to k+m+1 (5 or 7) if this value is lower."
+            )
+
+            choiceParam(
+                "EC_SCHEME",
+                ["false", "2+2", "4+2"],
+                "Day-1 erasure coding for default RBD, CephFS, and RGW pools. false keeps replica defaults. 2+2 uses 5 workers; 4+2 uses 7 workers (unless WORKER_COUNT is already higher)."
+            )
+
+            booleanParam(
+                "ENABLE_FIPS",
+                false,
+                "Install OCP with FIPS (openshift-install-fips). Requires OCP ≥ 4.16. Sets openshift profile fips: true in the per-build configuration."
             )
 
             stringParam(

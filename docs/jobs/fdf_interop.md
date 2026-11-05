@@ -63,6 +63,8 @@ FDF job exposes deployment parameters only (no `OCS_CI_*`, `PVC_COUNT`, or `INTE
 - `CEPH_IMAGE` (required)
 - `OCP_CHANNEL`, `OCP_VERSION`, `FDF_CHANNEL`, `FDF_CATALOG_IMAGE`, `FDF_OPERATOR_CHANNEL`
 - `IBM_REGION`, `VPC_NAME`, `MASTER_COUNT`, `WORKER_COUNT`, `DEVICE_SIZE`, `DEVICE_COUNT`
+- `EC_SCHEME` — `false` (default, replica), `2+2` (workers raised to 5), or `4+2` (workers raised to 7). Day-1 EC for default RBD, CephFS, and RGW. A higher `WORKER_COUNT` is kept.
+- `ENABLE_FIPS` — `false` by default. When true, sets `openshift.*.fips: true` (install-time FIPS). Requires OCP ≥ 4.16.
 - `ENV_NAME`, `EMAIL_ADDRESS`
 
 ## Artifacts

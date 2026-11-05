@@ -136,7 +136,9 @@ For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-intero
 | `IBM_REGION` | `eu-de` | IBM Cloud region |
 | `VPC_NAME` | `vpc-ceph-integration` | IBM Cloud VPC name |
 | `MASTER_COUNT` | `3` | Number of control plane nodes |
-| `WORKER_COUNT` | `3` | Number of worker nodes (min: 3) |
+| `WORKER_COUNT` | `3` | Worker nodes when `EC_SCHEME=false` (min 3). If a scheme is selected and this is lower than k+m+1, the build raises it |
+| `EC_SCHEME` | `false` | `false` (replica defaults), `2+2` (5 workers), or `4+2` (7 workers). Sets day-1 EC on RBD, CephFS, and RGW in the per-build context and ODF profile, and `DEPLOYMENT.ec_default_pools` for ocs-ci |
+| `ENABLE_FIPS` | `false` | When true, sets `openshift.*.fips: true` in the per-build configuration (install-time FIPS via `openshift-install-fips`). Requires OCP ≥ 4.16 |
 | `DEVICE_SIZE` | `50` | OSD disk size in GB |
 | `DEVICE_COUNT` | `3` | Number of OSD disks per worker |
 | `PVC_COUNT` | `2` | PVCs per storage type for workload tests |

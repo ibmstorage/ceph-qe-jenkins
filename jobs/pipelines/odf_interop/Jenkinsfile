@@ -236,10 +236,18 @@ pipeline {
                         env.OCSCI_CLUSTER_NAME = state.cluster_name.toString().trim()
                         echo "ocs-ci cluster-path: ${env.OCSCI_CLUSTER_PATH}"
                         echo "ocs-ci cluster-name: ${env.OCSCI_CLUSTER_NAME}"
+                        def deploymentConf = [skip_download_client: true]
+                        if (env.EC_DEFAULT_POOLS == 'true') {
+                            deploymentConf.ec_default_pools = true
+                            deploymentConf.ec_data_chunks = (env.EC_DATA_CHUNKS ?: '2') as Integer
+                            deploymentConf.ec_coding_chunks = (env.EC_CODING_CHUNKS ?: '2') as Integer
+                            deploymentConf.ec_failure_domain = 'host'
+                            deploymentConf.local_storage = true
+                        }
                         writeYaml(file: 'interop-runtime-config.yaml', data: [
                             AUTH: [ibmcloud: [api_key: env.IBM_CLOUD_API_KEY, account_id: env.IBM_CLOUD_ACCOUNT_ID]],
                             RUN: [bin_dir: paths.absBinDir, log_dir: "${env.WORKSPACE}/ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}", chrome_binary_path: '/bin/google-chrome-stable'],
-                            DEPLOYMENT: [skip_download_client: true],
+                            DEPLOYMENT: deploymentConf,
                             ENV_DATA: [skip_ocs_deployment: true, skip_ocp_deployment: true, deployment_type: 'upi', region: params.IBM_REGION],
                             UI_SELENIUM: [browser_type: "chrome", chrome_type: "google-chrome", headless: true, ignore_ssl: true],
                         ], overwrite: true)

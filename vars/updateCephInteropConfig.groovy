@@ -27,9 +27,18 @@ def call(Map parameters) {
     def requestedClusterId = parameters.clusterId?.toString()?.trim() ?: ''
 
     def masterCount = (params.MASTER_COUNT?.trim() ?: '3') as Integer
-    def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
+    def requestedWorkers = (params.WORKER_COUNT?.trim() ?: '3') as Integer
     def deviceSize = (params.DEVICE_SIZE?.trim() ?: '50') as Integer
     def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
+    def ec = resolveEcScheme(scheme: params.EC_SCHEME, workerCount: requestedWorkers)
+    if (ec.error) {
+        throw new RuntimeException("updateCephInteropConfig: ${ec.error}")
+    }
+    def workerCount = ec.workerCount as Integer
+    def ecDefaultPools = ec.enabled as boolean
+    def ecDataChunks = ec.k as Integer
+    def ecCodingChunks = ec.m as Integer
+    def enableFips = asBool(params.ENABLE_FIPS)
     def cephImage = params.CEPH_IMAGE?.trim() ?: ''
     def ibmRegion = params.IBM_REGION?.trim() ?: 'eu-de'
     def vpcName = params.VPC_NAME?.trim() ?: 'vpc-ceph-integration'
@@ -114,6 +123,11 @@ def call(Map parameters) {
         odf_operator_channel : odfOperatorChannel,
         catalog_image        : catalogImage,
         ceph_image           : cephImage,
+        ec_default_pools     : ecDefaultPools,
+        ec_data_chunks       : ecDataChunks,
+        ec_coding_chunks     : ecCodingChunks,
+        ec_failure_domain    : 'host',
+        fips                 : enableFips,
     ]
     writeJSON file: 'configs/.jenkins-patch.json', json: patchArgs
     sh """
@@ -153,6 +167,15 @@ def call(Map parameters) {
     echo "  OCP version       : ${ocpVersion} (${ocpChannel})"
     echo "  catalog_image     : ${catalogImage ?: '(redhat-operators / none)'}"
     echo "  ceph_image        : ${cephImage ?: '(none)'}"
+    echo "  ec_scheme         : ${ec.scheme} (${ecDataChunks}+${ecCodingChunks}, enabled=${ecDefaultPools})"
+    echo "  fips              : ${enableFips}"
+    echo "  workers           : ${workerCount} (requested ${requestedWorkers})"
+
+    env.EC_SCHEME = ec.scheme.toString()
+    env.EC_DEFAULT_POOLS = ecDefaultPools ? 'true' : 'false'
+    env.EC_DATA_CHUNKS = ecDataChunks.toString()
+    env.EC_CODING_CHUNKS = ecCodingChunks.toString()
+    env.ENABLE_FIPS = enableFips ? 'true' : 'false'
 
     return [
         contextPath      : contextPath,
@@ -239,4 +262,11 @@ private String resolveClusterIdFromContext(Map ctx, String requestedId) {
 private String parseMinor(String version) {
     def m = (version?.toString() ?: '') =~ /(\d+\.\d+)/
     return m.find() ? m.group(1) : '4.20'
+}
+
+private boolean asBool(Object value) {
+    if (value instanceof Boolean) {
+        return value
+    }
+    return value?.toString()?.trim()?.toLowerCase() in ['1', 'true', 'yes', 'on']
 }
