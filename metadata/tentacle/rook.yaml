@@ -42,3 +42,10 @@ rook_defaults:
     - name: "RADOS tests with Rook Defaults"
       suite: suites/tentacle/rook/sanity-rados-rook.yaml
       global-conf: conf/tentacle/rados/4-node-ec-cluster-1-client.yaml
+    - name: "nvmeof tests with rook defaults"
+      suite: suites/tentacle/rook/nvmeof-rook.yaml
+      global-conf: conf/tentacle/nvmeof/ceph_nvmeof_functional.yaml
+      vm-size:
+        ibmc: cx2-8x16
+      build:
+        - ibm
