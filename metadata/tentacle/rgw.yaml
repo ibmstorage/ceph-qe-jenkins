@@ -4,22 +4,15 @@ regression:
       - ibmc
       - aws
   suites:
-    - name: "Tier1 RGW MS ecpool regression test" # 169 mins, 20 secs
-      suite: suites/tentacle/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
-      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
+    - name: "Tier-2 rgw test using s3cmd" # 406 mins, 55 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_using_s3cmd.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
     - name: "Tier2 RGW 3way MS" # 238 mins, 28 secs
       suite: suites/tentacle/rgw/tier-2_rgw_3_way_multisite.yaml
       global-conf: conf/tentacle/rgw/3-way-ms-ec-profile-2+2@4nodes.yaml
-    - name: "Tier2 RGW regression test" # 198 mins, 0 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_regression_test.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-      inventory:
-        ibmc:
-          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
-          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
-      platform:
-        - rhel-9
-        - rhel-10
+    - name: "Tier-2 rgw ms archive resharding granular sync" # 409 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms-archive_resharding_granular_sync.yaml
+      global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
     - name: "Tier-2 RGW MS regression tests" # 193 mins, 8 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_regression_test.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
@@ -32,8 +25,8 @@ regression:
     - name: "Tier-2 RGW MS failover failback" # 160 mins, 20 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_failover_failback.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite.yaml
-    - name: "Tier-2 RGW regression extended" # 300 mins, 37 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_regression_extended.yaml
+    - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
@@ -42,8 +35,8 @@ regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
+    - name: "Tier-2 rgw single site regression extended"
+      suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
@@ -75,12 +68,12 @@ regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 RGW ingress multirealm" # 70 mins, 35 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_ingress_multi_realm.yaml
-      global-conf: conf/tentacle/rgw/tier-1_rgw_multirealm.yaml
-    - name: "Tier-2 SSL RGW regression" # 217 mins, 1 secs
-      suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_test.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-2 RGW ms on 2+2@4nodes" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_with_haproxy_ec_22_4.yaml
+      global-conf: conf/tentacle/rgw/tier-2_rgw_ms_with_haproxy_conf_4node.yaml
+    - name: "Tier-2 rgw ms archive resharding" # 150 mins, 40 secs
+      suite: suites/tentacle/rgw/tier-1-extn_rgw_multisite-secondary-to-primary.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
       inventory:
         ibmc:
           rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
@@ -110,13 +103,9 @@ regression:
     - name: "Tier-1 RGW SMB Basic ops" # 54 mins, 37 secs
       suite: suites/tentacle/rgw/tier-1_rgw_smb.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-1 RGW crimson bluestore"
-      suite: suites/tentacle/rgw/tier-1_rgw_crimson_bluestore.yaml
-      global-conf: conf/tentacle/rgw/tier-1_rgw_crimson.yaml
-      custom-config:
-        crimson: true
-      build:
-        - ibm
+    - name: "Tier-2 RGW multisite sync status" # 60 mins, 8 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_and_lc.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
 extended_regression:
   metadata:
     cloud:
@@ -142,12 +131,19 @@ extended_regression:
     - name: "Tier-2 rgw test lifecycle" # 347 mins, 35 secs
       suite: suites/tentacle/rgw/tier-2_rgw_test_lifecycle.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 rgw test using s3cmd" # 406 mins, 55 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_test_using_s3cmd.yaml
+    - name: "Tier1 RGW MS ecpool regression test" # 169 mins, 20 secs
+      suite: suites/tentacle/rgw/tier-1_rgw_ms_ecpool_regression_test.yaml
+      global-conf: conf/tentacle/rgw/ms-ec-profile-4+2-cluster.yaml
+    - name: "Tier2 RGW regression test" # 198 mins, 0 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_regression_test.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
-    - name: "Tier-2 rgw ms archive resharding granular sync" # 409 mins, 40 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_ms-archive_resharding_granular_sync.yaml
-      global-conf: conf/tentacle/rgw/rgw_ms_archive.yaml
+      inventory:
+        ibmc:
+          rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
+          rhel-10: conf/inventory/ibm-eu-rhel-10-latest-rgw.yaml
+      platform:
+        - rhel-9
+        - rhel-10
     - name: "Tier-2 rgw server access logging test"
       suite: suites/tentacle/rgw/tier-2_rgw_server_access_logging_test.yaml
       global-conf:  conf/tentacle/rgw/tier-0_rgw.yaml
@@ -197,8 +193,8 @@ extended_regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 rgw test bucket notifications" # 110 mins, 7 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications.yaml
+    - name: "Tier-2 RGW regression extended" # 300 mins, 37 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_regression_extended.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
@@ -207,8 +203,8 @@ extended_regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 rgw single site regression extended"
-      suite: suites/tentacle/rgw/tier-2_rgw_single_site_regression_extended.yaml
+    - name: "Tier-2 RGW test bucket notifications kafka sasl" # 220 mins, 16 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_test_bucket_notifications_kafka_sasl.yaml
       global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
@@ -281,18 +277,18 @@ extended_regression:
     - name: "Tier-2 RGW ms lua tests" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-2_rgw_ms_lua.yaml
       global-conf: conf/tentacle/rgw/rgw_multisite_spec.yaml
-    - name: "Tier-2 RGW ms on 2+2@4nodes" # 150 mins, 40 secs
-      suite: suites/tentacle/rgw/tier-2_rgw_ms_with_haproxy_ec_22_4.yaml
-      global-conf: conf/tentacle/rgw/tier-2_rgw_ms_with_haproxy_conf_4node.yaml
+    - name: "Tier-2 RGW ingress multirealm" # 70 mins, 35 secs
+      suite: suites/tentacle/rgw/tier-2_rgw_ingress_multi_realm.yaml
+      global-conf: conf/tentacle/rgw/tier-1_rgw_multirealm.yaml
     - name: "Tier-2 ssl RGW ms tests with ec 8-6 profile" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-2_ssl_rgw_ms_msr_8+6.yaml
       global-conf: conf/tentacle/rgw/ms-msr-8+6-cluster.yaml
     - name: "Tier-2 RGW ms 3az tests" # 150 mins, 40 secs
       suite: suites/tentacle/rgw/tier-3_rgw_3AZ_ec_ms_test.yaml
       global-conf: conf/tentacle/rados/3AZ-cluster-rhos-1.yaml
-    - name: "Tier-2 rgw ms archive resharding" # 150 mins, 40 secs
-      suite: suites/tentacle/rgw/tier-1-extn_rgw_multisite-secondary-to-primary.yaml
-      global-conf: conf/tentacle/rgw/rgw_multisite.yaml
+    - name: "Tier-2 SSL RGW regression" # 217 mins, 1 secs
+      suite: suites/tentacle/rgw/tier-2_ssl_rgw_regression_test.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
       inventory:
         ibmc:
           rhel-9: conf/inventory/ibm-eu-rhel-9-latest-rgw.yaml
@@ -300,9 +296,13 @@ extended_regression:
       platform:
         - rhel-9
         - rhel-10
-    - name: "Tier-2 RGW multisite sync status" # 60 mins, 8 secs
-      suite: suites/tentacle/rgw/tier-1_rgw_and_lc.yaml
-      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+    - name: "Tier-1 RGW crimson bluestore"
+      suite: suites/tentacle/rgw/tier-1_rgw_crimson_bluestore.yaml
+      global-conf: conf/tentacle/rgw/tier-1_rgw_crimson.yaml
+      custom-config:
+        crimson: true
+      build:
+        - ibm
 
 extended_regression_2:
   metadata:
