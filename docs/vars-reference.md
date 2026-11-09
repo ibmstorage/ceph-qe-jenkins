@@ -1,6 +1,6 @@
 # Shared Library — `vars/` Reference
 
-This document describes every custom step defined in the `vars/` directory of the `ceph-qe-ng/jenkins` shared library. Each entry covers the method's **purpose**, **parameters**, and **return value**.
+This document describes every custom step defined in the `vars/` directory of the `ibmstorage/ceph-qe-jenkins` shared library. Each entry covers the method's **purpose**, **parameters**, and **return value**.
 
 ---
 

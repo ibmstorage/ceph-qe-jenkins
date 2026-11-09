@@ -1,6 +1,6 @@
 # Jenkins Repository — Architecture Overview
 
-This document describes the high-level architecture of the `ceph-qe-ng/jenkins` repository: how the system is structured, how components interact, and how a build progresses from source to tested artifact.
+This document describes the high-level architecture of the `ibmstorage/ceph-qe-jenkins` repository: how the system is structured, how components interact, and how a build progresses from source to tested artifact.
 
 ---
 

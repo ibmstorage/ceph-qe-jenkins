@@ -325,4 +325,4 @@ After merging the `odf-interop` branch to `main`:
 
 For issues or questions:
 - Email: ibm-ceph-qe-devops-alerts-dg@wwpdl.vnet.ibm.com
-- Repository: https://github.ibm.com/ceph-qe-ng/jenkins
+- Repository: https://github.com/ibmstorage/ceph-qe-jenkins
