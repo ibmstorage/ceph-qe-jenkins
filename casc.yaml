@@ -19,8 +19,9 @@ jenkins:
   # w3id Preproduction SAML 2.0 (IBM Verify / Production BluePages).
   # IdP entityID: https://w3id-prep.ice.ibmcloud.com/saml/sps/saml20ip/saml20
   # SP-initiated login: https://preprod.login.w3.ibm.com/saml/sps/saml20ip/saml20/login
-  # Host from /secrets/jenkins_public_host (IP or DNS only, no scheme/newline).
-  # ACS / Entity ID: https://<host>/securityRealm/finishLogin
+  # CasC cannot embed ${readFile:...} inside a larger string. Use whole-file values:
+  # /secrets/jenkins_url          -> https://<host>/
+  # /secrets/jenkins_sp_entity_id -> https://<host>/securityRealm/finishLogin
   securityRealm:
     saml:
       binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
@@ -39,7 +40,7 @@ jenkins:
       advancedConfiguration:
         forceAuthn: false
         authnContextClassRef: ""
-        spEntityId: "https://${readFile:/secrets/jenkins_public_host}/securityRealm/finishLogin"
+        spEntityId: "${readFile:/secrets/jenkins_sp_entity_id}"
         nameIdPolicyFormat: "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
 
   authorizationStrategy:
@@ -518,7 +519,7 @@ unclassified:
 
   location:
     adminAddress: "ceph-qe-sa@ibm.com"
-    url: "https://${readFile:/secrets/jenkins_public_host}/"
+    url: "${readFile:/secrets/jenkins_url}"
 
   scmGit:
     globalConfigEmail: "ceph-qe-sa@ibm.com"
