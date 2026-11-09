@@ -10,6 +10,7 @@ USER jenkins
 # Environment variables
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/casc.yaml"
+ENV SECRETS="/secrets"
 ENV JENKINS_JAVA_OPTIONS="-Xms512m -Xmx4g"
 
 # Install plugins
