@@ -19,8 +19,9 @@ jenkins:
   # w3id Preproduction SAML 2.0 (IBM Verify / Production BluePages).
   # IdP entityID: https://w3id-prep.ice.ibmcloud.com/saml/sps/saml20ip/saml20
   # SP-initiated login: https://preprod.login.w3.ibm.com/saml/sps/saml20ip/saml20/login
-  # ACS / Entity ID: https://149.81.216.83/securityRealm/finishLogin
-  # SP metadata after plugin load: https://149.81.216.83/securityRealm/metadata
+  # Host from /secrets/jenkins_public_host (IP or DNS, no scheme).
+  # ACS / Entity ID: https://<host>/securityRealm/finishLogin
+  # SP metadata after plugin load: https://<host>/securityRealm/metadata
   securityRealm:
     saml:
       binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
@@ -39,7 +40,7 @@ jenkins:
       advancedConfiguration:
         forceAuthn: false
         authnContextClassRef: ""
-        spEntityId: "https://149.81.216.83/securityRealm/finishLogin"
+        spEntityId: "https://${trim:${readFile:/secrets/jenkins_public_host}}/securityRealm/finishLogin"
         nameIdPolicyFormat: "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
 
   authorizationStrategy:
@@ -518,7 +519,7 @@ unclassified:
 
   location:
     adminAddress: "ceph-qe-sa@ibm.com"
-    url: "https://149.81.216.83/"
+    url: "https://${trim:${readFile:/secrets/jenkins_public_host}}/"
 
   scmGit:
     globalConfigEmail: "ceph-qe-sa@ibm.com"
