@@ -52,10 +52,10 @@ jenkins:
             permissions:
               - "Overall/Administer"
             entries:
-              - user: "pragadeeswaran.sathyanarayanan@ibm.com"
-              - user: "rakesh.narayan@ibm.com"
-              - user: "b.veeraraghava.reddy@ibm.com"
-              - user: "krishna.ramaswamy@ibm.com"
+              - user: "${trim:${readFile:/secrets/jenkins_admin_1}}"
+              - user: "${trim:${readFile:/secrets/jenkins_admin_2}}"
+              - user: "${trim:${readFile:/secrets/jenkins_admin_3}}"
+              - user: "${trim:${readFile:/secrets/jenkins_admin_4}}"
           - name: "qe-team"
             description: "Users of the CI."
             permissions:
