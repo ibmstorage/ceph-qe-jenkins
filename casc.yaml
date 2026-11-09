@@ -266,6 +266,13 @@ credentials:
               scope: GLOBAL
               secret: "${readFile:/secrets/gh_ceph_qe_sa_pat}"
 
+          - usernamePassword:
+              description: "GitHub.com ceph-qe-sa PAT for git HTTPS (ibmstorage)"
+              id: "gh-ceph-qe-sa-git"
+              scope: GLOBAL
+              username: "x-access-token"
+              password: "${readFile:/secrets/gh_ceph_qe_sa_pat}"
+
           - string:
               description: "Google Sheet ID for recording Ceph 9.0 test results."
               id: "gsheet-id-ibm-90"
@@ -514,7 +521,7 @@ unclassified:
             scm:
               gitSource:
                 remote: "https://github.com/ibmstorage/ceph-qe-jenkins.git"
-                credentialsId: "ceph-qe-sa-pat"
+                credentialsId: "gh-ceph-qe-sa-git"
 
   location:
     adminAddress: "ceph-qe-sa@ibm.com"

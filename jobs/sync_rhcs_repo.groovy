@@ -18,7 +18,7 @@ def job = pipelineJob("sync-rhcs-repo") {
                 git {
                     remote {
                         url("https://github.com/ibmstorage/ceph-qe-jenkins.git")
-                        credentials("ceph-qe-sa-pat")
+                        credentials("gh-ceph-qe-sa-git")
                     }
                     branch("*/main")
                 }

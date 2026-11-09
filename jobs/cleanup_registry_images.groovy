@@ -53,7 +53,7 @@ def job = pipelineJob("cleanup-registry-images") {
                     branch("*/main")
                     remote {
                         url("https://github.com/ibmstorage/ceph-qe-jenkins.git")
-                        credentials("ceph-qe-sa-pat")
+                        credentials("gh-ceph-qe-sa-git")
                     }
                 }
             }

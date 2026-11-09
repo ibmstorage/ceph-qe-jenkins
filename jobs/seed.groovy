@@ -24,7 +24,7 @@ def job = freeStyleJob('seed') {
             remote {
                 name('origin')
                 url('${JOBS_REPOSITORY}')
-                credentials('ceph-qe-sa-pat')
+                credentials('gh-ceph-qe-sa-git')
             }
         }
     }
