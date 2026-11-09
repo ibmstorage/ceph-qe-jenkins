@@ -10,7 +10,7 @@ def job = freeStyleJob('seed') {
     }
 
     parameters {
-        stringParam('JOBS_REPOSITORY', 'https://github.ibm.com/ceph-qe-ng/jenkins.git', 'Jobs Repository to clone')
+        stringParam('JOBS_REPOSITORY', 'https://github.com/ibmstorage/ceph-qe-jenkins.git', 'Jobs Repository to clone')
         stringParam('JOBS_REPOSITORY_BRANCH', 'main', 'Name of branch from Jobs Repository to checkout')
         booleanParam('JOBS', true, 'Generate jobs')
         booleanParam('VIEWS', true, 'Generate views')

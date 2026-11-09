@@ -1,6 +1,6 @@
 # Contributing Guide
 
-This document explains the conventions, tooling, and workflow expected for all contributions to `ceph-qe-ng/jenkins`.
+This document explains the conventions, tooling, and workflow expected for all contributions to `ibmstorage/ceph-qe-jenkins`.
 
 ---
 
