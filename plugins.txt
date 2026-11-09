@@ -16,6 +16,7 @@ extra-columns
 git
 github-oauth
 groovy
+saml
 jackson2-api
 job-dsl
 mailer

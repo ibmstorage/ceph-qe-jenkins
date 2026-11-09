@@ -16,13 +16,31 @@ jenkins:
       checkClientIP: false
       xorMasking: true
 
+  # w3id Preproduction SAML 2.0 (IBM Verify / Production BluePages).
+  # IdP entityID: https://w3id-prep.ice.ibmcloud.com/saml/sps/saml20ip/saml20
+  # SP-initiated login: https://preprod.login.w3.ibm.com/saml/sps/saml20ip/saml20/login
+  # ACS / Entity ID: https://149.81.216.83/securityRealm/finishLogin
+  # SP metadata after plugin load: https://149.81.216.83/securityRealm/metadata
   securityRealm:
-    github:
-      githubWebUri: "https://github.ibm.com"
-      githubApiUri: "https://api.github.ibm.com/api/v3"
-      clientID: "9b8b8842d5bfe366ce3c"
-      clientSecret: "7daba8a4c1aa1692c34c4791be7910f6ffd7f2cc"
-      oauthScopes: "read:org,user:email,repo"
+    saml:
+      binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      displayNameAttributeName: "displayName"
+      emailAttributeName: "emailAddress"
+      groupsAttributeName: "blueGroups"
+      usernameAttributeName: "emailAddress"
+      usernameCaseConversion: "lowercase"
+      # IdP browser session = 18h; assertion lifetime = 10m
+      maximumAuthenticationLifetime: 64800
+      logoutUrl: "https://preprod.login.w3.ibm.com/saml/sps/saml20ip/saml20/slo"
+      idpMetadataConfiguration:
+        # 2025 signing cert; refresh daily so IdP cert rotation is picked up
+        period: 1440
+        url: "https://preprod.login.w3.ibm.com/v1.0/saml/federations/saml20ip/metadata?keyLabel=saml-signing-cert-2025"
+      advancedConfiguration:
+        forceAuthn: false
+        authnContextClassRef: ""
+        spEntityId: "https://149.81.216.83/securityRealm/finishLogin"
+        nameIdPolicyFormat: "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
 
   authorizationStrategy:
     roleBased:
@@ -33,7 +51,10 @@ jenkins:
             permissions:
               - "Overall/Administer"
             entries:
-              - group: "ceph-qe-ng*ceph-qe-ng-admins"
+              - user: "pragadeeswaran.sathyanarayanan@ibm.com"
+              - user: "rakesh.narayan@ibm.com"
+              - user: "b.veeraraghava.reddy@ibm.com"
+              - user: "krishna.ramaswamy@ibm.com"
           - name: "qe-team"
             description: "Users of the CI."
             permissions:
@@ -47,8 +68,8 @@ jenkins:
               - "Run/Update"
               - "Run/Replay"
             entries:
-              - group: "ceph-qe-ng*ceph-qe-ibm"
-              - group: "ceph-qe-ng*build-team"
+              # Matches ISV groupWithDN -> blueGroups (full DN)
+              - group: "cn=sgn-tenant-ceph-bt-user,ou=memberlist,ou=ibmgroups,o=ibm.com"
 
   slaveAgentPort: -1
 
