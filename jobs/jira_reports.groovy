@@ -86,7 +86,7 @@ for (jobConfig in jiraReporterJobs) {
                     git {
                         branch("*/main")
                         remote {
-                            url("https://github.ibm.com/ceph-qe-ng/jira-reporter.git")
+                            url("https://github.com/ibmstorage/ceph-qe-jira-reporter.git")
                             credentials("ceph-qe-sa-pat")
                         }
                     }
