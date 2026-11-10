@@ -80,7 +80,7 @@ pipeline {
                     git(
                         url: params.CEPH_INTEROP_REPO,
                         branch: params.CEPH_INTEROP_BRANCH.trim(),
-                        credentialsId: "ceph-qe-sa-pat"
+                        credentialsId: "gh-ceph-qe-sa-pat"
                     )
                 }
             }

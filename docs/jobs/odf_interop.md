@@ -150,8 +150,8 @@ IBM Cloud SSH key names are fixed in the Jenkins configuration template (`ceph-q
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `CEPH_INTEROP_REPO` | `https://github.ibm.com/ceph-qe-ng/ceph-interop.git` | Deployment automation repository |
-| `CEPH_INTEROP_BRANCH` | `new` | Branch to checkout (framework on `new`; `main` is legacy) |
+| `CEPH_INTEROP_REPO` | `https://github.com/ibmstorage/ceph-qe-interop.git` | Deployment automation repository |
+| `CEPH_INTEROP_BRANCH` | `main` | Branch to checkout |
 
 ## Pipeline Stages
 
@@ -266,7 +266,8 @@ User: john.doe | Cluster: ocp-ibmc-29031a | OCP: 4.20.13 (released) | Ceph: rhce
 - `aws-systest-access` - AWS access key (for Route53)
 - `aws-systest-secret-access` - AWS secret key (for Route53)
 - `ocs-pull-secret` - OCP pull secret (Jenkins **file** credential; JSON content, CasC `secretBytes` from base64-encoded file)
-- `ceph-qe-sa-pat` - GitHub PAT for repository access
+- `gh-ceph-qe-sa-pat` - GitHub.com PAT for cloning `ceph-qe-jenkins` / `ceph-qe-interop` / ocs-ci
+- `ceph-qe-sa-pat` - GitHub IBM PAT (legacy / remaining IBM-hosted repos)
 
 ### IBM Cloud Resources
 - Existing VPC (`vpc-ceph-integration`)
@@ -321,7 +322,7 @@ After merging the `odf-interop` branch to `main`:
 - [FDF Interop Pipeline](./fdf_interop.md)
 - [Cleanup Registry Images](./cleanup_registry_images.md)
 - [Sync Manifest Images](./sync_manifest_images.md)
-- [ceph-interop Repository](https://github.ibm.com/ceph-qe-ng/ceph-interop)
+- [ceph-qe-interop Repository](https://github.com/ibmstorage/ceph-qe-interop)
 
 ## Support
 
