@@ -2,7 +2,7 @@ FROM docker.io/jenkins/jenkins:lts-rhel-ubi9-jdk25
 
 # Copy the required files
 COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
-COPY --chown=jenkins:jenkins casc.yaml /usr/share/jenkins/casc.yaml
+COPY --chown=jenkins:jenkins external/github.ibm.com/jenkins/casc.yaml /usr/share/jenkins/casc.yaml
 COPY --chown=jenkins:jenkins jobs/seed.groovy /usr/share/jenkins/seed.groovy
 
 USER jenkins
