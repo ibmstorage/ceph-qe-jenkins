@@ -41,6 +41,7 @@ progress-bar-column-plugin
 rebuild
 resource-disposer
 role-strategy
+saml
 script-security
 strict-crumb-issuer
 ssh-credentials
