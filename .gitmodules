@@ -1,0 +1,4 @@
+[submodule "external/github.ibm.com/jenkins"]
+	path = external/github.ibm.com/jenkins
+	url = git@github.ibm.com:ceph-qe-ng/jenkins.git
+	branch = main
