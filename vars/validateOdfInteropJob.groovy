@@ -84,6 +84,7 @@ def call(Map parameters) {
     }
 
     validateClusterParams(params, errors, product)
+    validateFips(params, result, errors)
     validateCredentials(parameters.credentials ?: [:], errors)
 
     populateEnv(result)
@@ -255,13 +256,46 @@ def validateBuildChannel(String channel, String label) {
 def validateClusterParams(Map params, List errors, String product = 'odf') {
     def workerCount = (params.WORKER_COUNT?.trim() ?: '3') as Integer
     def productLabel = product == 'fdf' ? 'FDF' : 'ODF'
-    if (workerCount < 3) {
+    def ec = resolveEcScheme(scheme: params.EC_SCHEME, workerCount: workerCount)
+    if (ec.error) {
+        errors << ec.error
+    } else if (!ec.enabled && workerCount < 3) {
         errors << "WORKER_COUNT must be >= 3 for ${productLabel} (got ${workerCount})"
     }
     def deviceCount = (params.DEVICE_COUNT?.trim() ?: '3') as Integer
     if (deviceCount < 1) {
         errors << "DEVICE_COUNT must be >= 1 (got ${deviceCount})"
     }
+}
+
+def validateFips(Map params, Map result, List errors) {
+    def enableFips = asBool(params.ENABLE_FIPS)
+    if (!enableFips) {
+        return
+    }
+    def ocpVersion = result.ocpVersion?.toString()?.trim() ?: ''
+    if (!ocpVersion) {
+        errors << 'ENABLE_FIPS=true requires a resolved OCP_VERSION (set OCP_VERSION or allow auto-resolve)'
+        return
+    }
+    def minor = parseOdfMinor(ocpVersion)
+    if (!minor) {
+        errors << "ENABLE_FIPS=true: could not parse OCP minor from '${ocpVersion}'"
+        return
+    }
+    def parts = minor.tokenize('.')
+    def major = parts[0] as Integer
+    def minorNum = parts[1] as Integer
+    if (major < 4 || (major == 4 && minorNum < 16)) {
+        errors << "ENABLE_FIPS=true requires OCP ≥ 4.16 (got ${ocpVersion})"
+    }
+}
+
+def asBool(Object value) {
+    if (value instanceof Boolean) {
+        return value
+    }
+    return value?.toString()?.trim()?.toLowerCase() in ['1', 'true', 'yes', 'on']
 }
 
 def validateCredentials(Map creds, List errors) {

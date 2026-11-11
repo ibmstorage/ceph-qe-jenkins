@@ -136,7 +136,9 @@ For **released** ODF (`ODF_CHANNEL=released`, no catalog image), the ceph-intero
 | `IBM_REGION` | `eu-de` | IBM Cloud region |
 | `VPC_NAME` | `vpc-ceph-integration` | IBM Cloud VPC name |
 | `MASTER_COUNT` | `3` | Number of control plane nodes |
-| `WORKER_COUNT` | `3` | Number of worker nodes (min: 3) |
+| `WORKER_COUNT` | `3` | Worker nodes when `EC_SCHEME=false` (min 3). If a scheme is selected and this is lower than k+m+1, the build raises it |
+| `EC_SCHEME` | `false` | `false` (replica defaults), `2+2` (5 workers), or `4+2` (7 workers). Sets day-1 EC on RBD, CephFS, and RGW in the per-build context and ODF profile, and `DEPLOYMENT.ec_default_pools` for ocs-ci |
+| `ENABLE_FIPS` | `false` | When true, sets `openshift.*.fips: true` in the per-build configuration (install-time FIPS via `openshift-install-fips`). Requires OCP ≥ 4.16 |
 | `DEVICE_SIZE` | `50` | OSD disk size in GB |
 | `DEVICE_COUNT` | `3` | Number of OSD disks per worker |
 | `PVC_COUNT` | `2` | PVCs per storage type for workload tests |
@@ -148,8 +150,8 @@ IBM Cloud SSH key names are fixed in the Jenkins configuration template (`ceph-q
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `CEPH_INTEROP_REPO` | `https://github.ibm.com/ceph-qe-ng/ceph-interop.git` | Deployment automation repository |
-| `CEPH_INTEROP_BRANCH` | `new` | Branch to checkout (framework on `new`; `main` is legacy) |
+| `CEPH_INTEROP_REPO` | `https://github.com/ibmstorage/ceph-qe-interop.git` | Deployment automation repository |
+| `CEPH_INTEROP_BRANCH` | `main` | Branch to checkout |
 
 ## Pipeline Stages
 
@@ -264,7 +266,8 @@ User: john.doe | Cluster: ocp-ibmc-29031a | OCP: 4.20.13 (released) | Ceph: rhce
 - `aws-systest-access` - AWS access key (for Route53)
 - `aws-systest-secret-access` - AWS secret key (for Route53)
 - `ocs-pull-secret` - OCP pull secret (Jenkins **file** credential; JSON content, CasC `secretBytes` from base64-encoded file)
-- `ceph-qe-sa-pat` - GitHub PAT for repository access
+- `gh-ceph-qe-sa-pat` - GitHub.com PAT for cloning `ceph-qe-jenkins` / `ceph-qe-interop` / ocs-ci
+- `ceph-qe-sa-pat` - GitHub IBM PAT (legacy / remaining IBM-hosted repos)
 
 ### IBM Cloud Resources
 - Existing VPC (`vpc-ceph-integration`)
@@ -319,7 +322,7 @@ After merging the `odf-interop` branch to `main`:
 - [FDF Interop Pipeline](./fdf_interop.md)
 - [Cleanup Registry Images](./cleanup_registry_images.md)
 - [Sync Manifest Images](./sync_manifest_images.md)
-- [ceph-interop Repository](https://github.ibm.com/ceph-qe-ng/ceph-interop)
+- [ceph-qe-interop Repository](https://github.com/ibmstorage/ceph-qe-interop)
 
 ## Support
 

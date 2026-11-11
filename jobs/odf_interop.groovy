@@ -13,7 +13,7 @@ def job = pipelineJob("odf-interop") {
                     branch("*/main")
                     remote {
                         url("https://github.com/ibmstorage/ceph-qe-jenkins.git")
-                        credentials("ceph-qe-sa-pat")
+                        credentials("gh-ceph-qe-sa-pat")
                     }
                 }
             }
@@ -30,7 +30,7 @@ def job = pipelineJob("odf-interop") {
 
             stringParam(
                 "CEPH_INTEROP_REPO",
-                "https://github.ibm.com/ceph-qe-ng/ceph-interop.git",
+                "https://github.com/ibmstorage/ceph-qe-interop.git",
                 "Ceph Interop repository URL"
             )
 
@@ -107,7 +107,19 @@ def job = pipelineJob("odf-interop") {
             stringParam(
                 "WORKER_COUNT",
                 "3",
-                "Number of worker nodes (must be >= 3 for ODF)"
+                "Number of worker nodes (min 3 when EC_SCHEME=false). When EC_SCHEME is 2+2 or 4+2, workers are raised to k+m+1 (5 or 7) if this value is lower."
+            )
+
+            choiceParam(
+                "EC_SCHEME",
+                ["false", "2+2", "4+2"],
+                "Day-1 erasure coding for default RBD, CephFS, and RGW pools. false keeps replica defaults. 2+2 uses 5 workers; 4+2 uses 7 workers (unless WORKER_COUNT is already higher)."
+            )
+
+            booleanParam(
+                "ENABLE_FIPS",
+                false,
+                "Install OCP with FIPS (openshift-install-fips). Requires OCP ≥ 4.16. Sets openshift profile fips: true in the per-build configuration."
             )
 
             stringParam(

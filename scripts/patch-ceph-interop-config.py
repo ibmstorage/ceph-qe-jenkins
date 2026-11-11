@@ -72,6 +72,22 @@ def ensure_profiles(config: dict[str, Any], section: str) -> dict[str, Any]:
     return profiles
 
 
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _ec_profile_fields(args: dict[str, Any]) -> dict[str, Any]:
+    """Day-1 EC keys merged onto the ODF/FDF service profile."""
+    return {
+        "ec_default_pools": _as_bool(args.get("ec_default_pools", False)),
+        "ec_data_chunks": int(args.get("ec_data_chunks", 2)),
+        "ec_coding_chunks": int(args.get("ec_coding_chunks", 2)),
+        "ec_failure_domain": str(args.get("ec_failure_domain") or "host"),
+    }
+
+
 def patch_configuration(config: dict[str, Any], args: dict[str, Any]) -> None:
     product = str(args.get("product", "odf")).lower()
     infra_profile = str(args.get("infra_profile", "qe_eu"))
@@ -82,6 +98,7 @@ def patch_configuration(config: dict[str, Any], args: dict[str, Any]) -> None:
         "base_domain": "ceph-qe.rh-ocs.com",
         "version": args.get("ocp_version", ""),
         "channel": args.get("ocp_channel", "released"),
+        "fips": _as_bool(args.get("fips", False)),
         "allow_unsigned_images": True,
         "network_type": "OVNKubernetes",
         "cluster_network_cidr": "10.128.0.0/14",
@@ -145,6 +162,7 @@ def patch_configuration(config: dict[str, Any], args: dict[str, Any]) -> None:
             "ceph_image": ceph_image,
             "must_gather_image": "",
             "storage_profile": args["storage_profile"],
+            **_ec_profile_fields(args),
         }
     else:
         odf_profiles = ensure_profiles(config, "odf")
@@ -160,6 +178,7 @@ def patch_configuration(config: dict[str, Any], args: dict[str, Any]) -> None:
             "ceph_image": ceph_image,
             "must_gather_image": "",
             "storage_profile": args["storage_profile"],
+            **_ec_profile_fields(args),
         }
 
 
@@ -188,6 +207,10 @@ def main() -> int:
 
     print(f"wrote {output_path} (from {base_path})")
     print(f"  openshift.{openshift_profile}.version={args.get('ocp_version', '')}")
+    print(
+        f"  openshift.{openshift_profile}.fips="
+        f"{_as_bool(args.get('fips', False))}"
+    )
     if product == "fdf":
         fdf = ensure_profiles(config, "fdf")[service_profile]
         print(f"  fdf.{service_profile}.catalog_image={fdf.get('catalog_image', '')}")
