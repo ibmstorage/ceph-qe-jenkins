@@ -137,9 +137,9 @@ def patch_configuration(config: dict[str, Any], args: dict[str, Any]) -> None:
     storage_profiles = ensure_profiles(config, "storage")
     device_size = int(args.get("device_size", 50))
     storage_profiles[str(args["storage_profile"])] = {
-        "device_set_count": int(args.get("worker_count", 3)),
+        "device_set_count": int(args.get("device_set_count", args.get("worker_count", 3))),
         "osd_size": f"{device_size}Gi",
-        "replica": 3,
+        "replica": int(args.get("replica", 3)),
         "lso_min_device_size": "1Gi",
         "lso_max_device_size": args.get("lso_max", f"{device_size * 2}Gi"),
     }

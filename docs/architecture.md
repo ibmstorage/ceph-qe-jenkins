@@ -74,7 +74,7 @@ Five permanent agents are declared in `casc.yaml`, each with a dedicated label:
 | `infra-vm-jenkins-agent-02` | `infra` | Infrastructure & image sync jobs |
 | `infra-vm-jenkins-agent-03` | `agents` | General IBM Cloud test execution |
 | `infra-vm-jenkins-agent-aws-01` | `agents-aws` | AWS test execution |
-| `agent-interop` | `agents-interop` | ODF Interop long-running deployments |
+| `agent-interop` | `agents-interop` | ODF Interop and ODF Chaos long-running deployments |
 
 All agents share the same remote root at `/data/jenkins` and are connected over SSH.
 
@@ -139,8 +139,9 @@ These pipelines mirror container images and RPM repositories from upstream regis
 |---|---|---|---|
 | ODF Interop | `odf-interop` | `jobs/pipelines/odf_interop/Jenkinsfile` | Deploy OCP + ODF, IO workloads, ocs-ci acceptance + tier-1 |
 | FDF Interop | `fdf-interop` | `jobs/pipelines/fdf_interop/Jenkinsfile` | Deploy OCP + FDF + IO workloads (no ocs-ci) |
+| ODF Chaos | `odf-chaos` | `jobs/pipelines/odf_chaos/Jenkinsfile` | Deploy OCP + ODF, patch Ceph image, ocs-ci Krkn chaos (manual only) |
 
-The ODF job is triggered by `bvt-ci` when `BUILD_TYPE=rh` and `TRIGGER_DATA_FOUNDATION_INTEROP=true`. FDF is triggered when `BUILD_TYPE=ibm` and the same flag is set (e.g. from `sync-blue-ceph-images`).
+`odf-interop` is triggered by `bvt-ci` when `BUILD_TYPE=rh` and `TRIGGER_DATA_FOUNDATION_INTEROP=true`. `fdf-interop` is triggered when `BUILD_TYPE=ibm` and the same flag is set (e.g. from `sync-blue-ceph-images`). `odf-chaos` is manual only and is not on the BVT path.
 
 ### 4. Maintenance Pipelines
 
@@ -261,6 +262,8 @@ This repository is registered as the global Jenkins shared library `ceph-qe-libs
 | `syncBlueRepos` | SSH to NGINX server; run containerised repo-sync for each RPM repo |
 | `processCephBaseImage` | Introspect IBM Ceph image via podman; extract version, release, OS platform |
 | `fetchCephImageMetadata` | Run `cephadm version` inside container to get Ceph version metadata |
+| `runOdfChaosPostActions` | odf-chaos only: teardown, per-suite junit, COS, chaos email |
+| `sendOdfChaosEmail` | odf-chaos HTML email with one row per Krkn suite |
 | `fetchCephVersion` | Run `dnf repoquery` inside UBI container to read Ceph package version |
 | `updateBvtResults` / `updateSanityResults` | Parse result JSON; promote to `stable` in manifest if PASS (sanity copies full `nightly` section) |
 | `checkImageInRegistry` | HTTP-check whether an image already exists in the local registry |
@@ -414,6 +417,7 @@ Dashboard views are declared in `views/infra_view.groovy` and group jobs by rege
 
 - [cephci_conf / `.cephci.yaml` structure](secrets/cephci_conf.md)
 - [ODF Interop Pipeline](jobs/odf_interop.md)
+- [ODF Chaos Pipeline](jobs/odf_chaos.md)
 - [FDF Interop Pipeline](jobs/fdf_interop.md)
 - [Sync Manifest Images](jobs/sync_manifest_images.md)
 - [Cleanup Registry Images](jobs/cleanup_registry_images.md)

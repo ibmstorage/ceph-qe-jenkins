@@ -39,6 +39,8 @@ This document describes every custom step defined in the `vars/` directory of th
 31. [updateSanityResults](#updatesanityresults)
 32. [validateKonfluxBuilds](#validatekonfluxbuilds)
 33. [writeToManifest](#writetomanifest)
+34. [runOdfChaosPostActions](#runodfchaospostactions)
+35. [sendOdfChaosEmail](#sendodfchaosemail)
 
 ---
 
@@ -569,6 +571,53 @@ None. Sends an email via the Jenkins `mail` step.
 | `readCephMetadata()` | Reads Ceph version details from the workspace |
 | `buildCephSubjectToken()` | Builds the version token used in the email subject line |
 | `buildTestCaseRows()` | Generates the HTML table rows for individual test results |
+
+---
+
+## runOdfChaosPostActions
+
+**File:** [`vars/runOdfChaosPostActions.groovy`](../vars/runOdfChaosPostActions.groovy)
+
+Post-build actions for **odf-chaos only**. Tears down the IBM Cloud cluster **only on SUCCESS** (retains the cluster on failure for live debug), archives secret-free runtime YAMLs plus per-suite Krkn JUnit/HTML, publishes each JUnit file, parses pass/fail/error/skip from XML for email, uploads artifacts to COS under `odf-chaos/<BUILD_NUMBER>/`, and sends the chaos email. Never archives `auth-ibmcloud.yaml`.
+
+Do not call this from `odf-interop` or `fdf-interop`. Those jobs use `runInteropPostActions`.
+
+### Parameters
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `product` | String | ✗ | Product label passed to the email. Default `odf` |
+| `cosPrefix` | String | ✗ | COS path prefix. Default `odf-chaos` |
+| `suites` | List | ✗ | Maps of `id`, `label`, and `passedEnv` for each chaos stage. Defaults to the seven Krkn suites |
+
+### Return Value
+
+None.
+
+---
+
+## sendOdfChaosEmail
+
+**File:** [`vars/sendOdfChaosEmail.groovy`](../vars/sendOdfChaosEmail.groovy)
+
+HTML email for an ODF chaos run. Includes the OCP + ODF deploy result and one row per Krkn suite (`Passed` / `Failed` / `Errors` / `Skipped` / `Total`). Softens the action-required note when only pytest `<error>` outcomes are present (for example teardown timeouts). Does not include FIO or ocs-ci acceptance/tier-1 rows.
+
+Called only from `runOdfChaosPostActions`.
+
+### Parameters
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `envName` | String | ✗ | ceph-interop environment name |
+| `clusterName` | String | ✗ | OpenShift cluster name |
+| `hasCluster` | Boolean | ✗ | Whether deploy was attempted |
+| `product` | String | ✗ | Default `odf` |
+| `chaosSummaries` | List | ✗ | Per-suite maps (`label`, `executed`, `pass`, `fail`, `error`, `skip`, `total`, `junitPath`, `passedFlag`) |
+| `cosResultsUrl` | String | ✗ | COS URL for the log archive |
+
+### Return Value
+
+None. Sends mail via `emailext`.
 
 ---
 
