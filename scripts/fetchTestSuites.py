@@ -142,6 +142,11 @@ def get_testsuites(metadata, job, platform, cloud, build, build_type, tag):
     """Get stage and testsuites"""
     # Check for stages in metadata
     stages = metadata.get(job)
+    if stages is None:
+        available = ", ".join(sorted(metadata.keys())) if metadata else "(empty)"
+        raise ValueError(
+            f"Job '{job}' not found in metadata. Available jobs: {available}"
+        )
     if "metadata" in stages.keys():
         stages = {job: stages}
 
