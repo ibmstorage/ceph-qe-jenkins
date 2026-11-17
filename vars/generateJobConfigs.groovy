@@ -248,7 +248,8 @@ def call(Map parameters) {
 
     // Snapshot nightly AFTER all overrides (REPO, CONTAINER_IMAGE) are applied so
     // promotion reflects the exact repo/image that sanity validated, not raw manifest data.
-    if (recipeContent.nightly) {
+    // updateSanityResults still promotes only when the run's manifest section is nightly.
+    if (params.UPDATE_SANITY_RESULTS && recipeContent.nightly) {
         jobConfig.nightlySection = ManifestUtils.buildPromotionSection(
             recipeContent.nightly,
             containerImage: jobConfig.containerImage,

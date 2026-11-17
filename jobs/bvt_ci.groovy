@@ -119,6 +119,12 @@ for (jobConfig in jobsConfiguration) {
                     false,
                     "After successful BVT, trigger odf-interop (BUILD_TYPE=RH) or fdf-interop (BUILD_TYPE=IBM)"
                 )
+
+                booleanParam(
+                    "TRIGGER_SANITY",
+                    false,
+                    "Trigger Sanity test pipeline when BVT succeeds"
+                )
             }
         }
     }

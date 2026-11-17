@@ -11,6 +11,42 @@ def suites = [:]
 def testSuitesMap = [:]
 def skipSosReport = true
 
+// Trigger sanity-ci for IBM builds
+def triggerSanityCi(jobConfigs) {
+    def releaseTag = jobConfigs.manifestSection
+    def repoUrl = jobConfigs.rhsCephRepo?.toString()?.trim()
+    def cephBase = jobConfigs.containerImage?.toString()?.trim()
+    if (!repoUrl || !cephBase) {
+        throw new Exception("missing repo or ceph-base from the BVT run")
+    }
+
+    def customConfigs = (jobConfigs.customConfig ?: [])
+        .collect { it?.toString()?.trim() }
+        .findAll { it }
+        .join(",")
+
+    def cephRelease = env.JOB_NAME.replaceAll(/-bvt-ci$/, "")
+    def triggered = build([
+        wait: false,
+        propagate: false,
+        job: "${cephRelease}-sanity-ci",
+        parameters: [
+            string(name: "BUILD_VERSION", value: jobConfigs.rhBuild),
+            string(name: "RHEL_VERSION", value: jobConfigs.platform),
+            string(name: "BUILD_TYPE", value: jobConfigs.buildType),
+            string(name: "RELEASE", value: releaseTag),
+            string(name: "REPO", value: repoUrl),
+            string(name: "CONTAINER_IMAGE", value: cephBase),
+            string(name: "CUSTOM_CONFIG", value: customConfigs),
+            string(name: "CLOUD_TYPE", value: jobConfigs.cloudType),
+            string(name: "EMAIL_ADDRESS", value: params.EMAIL_ADDRESS ?: "cephqe-devops@wwpdl.vnet.ibm.com"),
+            booleanParam(name: "SKIP_BUILD_CHECK", value: true),
+            booleanParam(name: "UPDATE_SANITY_RESULTS", value: false)
+        ]
+    ])
+    echo "Triggered '${cephRelease}-sanity-ci' (build #${triggered?.number ?: 'n/a'})"
+}
+
 // Pipeline definition
 pipeline {
     options {
@@ -166,10 +202,10 @@ pipeline {
     post {
         always {
             script {
+                def result = currentBuild.currentResult ?: currentBuild.result
+                def buildType = params.BUILD_TYPE?.toLowerCase()
                 try {
-                    def result = currentBuild.currentResult ?: currentBuild.result
                     def cephImage = jobConfigs.containerImage?.toString()?.trim()
-                    def buildType = params.BUILD_TYPE?.toLowerCase()
 
                     echo "Check for Data Foundation interop trigger (BUILD_TYPE=${buildType})"
 
@@ -194,6 +230,14 @@ pipeline {
                     }
                 } catch (Exception e) {
                     echo "Interop trigger failed (non-fatal; publishTestResults still runs): ${e.message}"
+                }
+
+                try {
+                    if (params.TRIGGER_SANITY && buildType == 'ibm' && result == 'SUCCESS') {
+                        triggerSanityCi(jobConfigs, job)
+                    }
+                } catch (Exception e) {
+                    echo "Sanity trigger failed (non-fatal): ${e.message}"
                 }
 
                 echo "Send results to ${params.EMAIL_ADDRESS}"

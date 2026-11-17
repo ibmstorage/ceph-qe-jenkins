@@ -9,7 +9,7 @@ def orderNestedMap(sourceMap, referenceMap = null) {
     if (!(sourceMap instanceof Map)) {
         return sourceMap
     }
-    def result = new LinkedHashMap()
+    def result = new TreeMap()
     if (referenceMap instanceof Map) {
         referenceMap.each { key, refValue ->
             if (sourceMap.containsKey(key)) {
@@ -30,15 +30,14 @@ def orderNestedMap(sourceMap, referenceMap = null) {
     return result
 }
 
-// Manifest sections use version -> repositories -> images key order for readable diffs.
-// Extra top-level keys (e.g. future fields) are preserved and appended after these
-// canonical keys; they are not dropped.
+// Manifest sections keep version, repositories, and images, plus any extra keys.
+// TreeMap gives a stable alphabetical order.
 @NonCPS
 def normalizeManifestSection(section, referenceSection = null) {
     if (section == null) {
         return null
     }
-    def ordered = new LinkedHashMap()
+    def ordered = new TreeMap()
     def topLevelKeys = ["version", "repositories", "images"]
     topLevelKeys.each { key ->
         if (section.containsKey(key)) {
