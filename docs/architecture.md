@@ -361,7 +361,8 @@ Key credential IDs and their usage:
 | `icr-token` / `stg-icr-token` | String | IBM Container Registry authentication |
 | `vmLoginAccessKey` / `vmLoginAccessKey2` | SSH key | SSH login to provisioned test VMs |
 | `jenkinsAgentSSHKey` / `awsAgentSSHKey` | SSH key | Jenkins controller → agent connection |
-| `ibmc-api-key` / `ibmc-account-id` | String | ODF Interop IBM Cloud operations |
+| `ibmc-api-key` / `ibmc-account-id` | String | ODF Interop / Scale CES IBM Cloud operations |
+| `rh-cdn-access` | Username+Password | Scale CES RHSM (`rhel_subscription` in credentials.yaml) |
 | `ibm-cos-acces-key` / `ibm-cos-secret-key` | String | rclone upload to IBM COS |
 | `aws-systest-access` / `aws-systest-secret-access` | String | ODF Interop Route53 DNS |
 | `ocs-pull-secret` | File (JSON) | OCP pull secret for ODF Interop |
