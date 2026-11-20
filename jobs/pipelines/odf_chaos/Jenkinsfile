@@ -1,0 +1,514 @@
+// ODF Chaos: OCP + ODF on IBM Cloud, Ceph image patch, then ocs-ci Krkn chaos.
+// Manual trigger only. Does not run FIO or acceptance. Does not call interop post/email steps.
+
+@Library("ceph-qe-libs@main") _
+
+pipeline {
+    agent { label "agents-interop" }
+
+    options {
+        timeout(time: 72, unit: 'HOURS')
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: "10", daysToKeepStr: "30"))
+    }
+
+    environment {
+        IBM_CLOUD_API_KEY       = credentials('ibmc-api-key')
+        IBM_CLOUD_ACCOUNT_ID    = credentials('ibmc-account-id')
+        IBM_COS_HMAC_ACCESS_KEY = credentials('ibm-cos-acces-key')
+        IBM_COS_HMAC_SECRET_KEY = credentials('ibm-cos-secret-key')
+        AWS_ACCESS_KEY_ID       = credentials('aws-systest-access')
+        AWS_SECRET_ACCESS_KEY   = credentials('aws-systest-secret-access')
+
+        VENV_DIR       = "${WORKSPACE}/ceph-interop/.venv"
+        OCSCI_VENV_DIR = "${WORKSPACE}/ocs-ci/.venv"
+        INTEROP_PRODUCT = "odf"
+    }
+
+    stages {
+
+        stage("Initialize Environment") {
+            steps {
+                script {
+                    def envName = params.ENV_NAME?.trim()
+                    if (!envName) {
+                        envName = params.CLUSTER_NAME?.trim()
+                    }
+                    if (!envName) {
+                        envName = "odf-chaos-${env.BUILD_NUMBER}"
+                    }
+                    env.ENV_NAME = envName
+                    echo "Environment name: ${env.ENV_NAME}"
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} - ${env.ENV_NAME}"
+                }
+            }
+        }
+
+        stage("Validate Parameters") {
+            steps {
+                script {
+                    def validation = null
+                    withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                        validation = validateInteropJob(
+                            product: 'odf',
+                            params: params,
+                            pullSecretFile: env.PULL_SECRET_FILE,
+                            defaults: [ocpChannel: 'nightly', odfChannel: 'nightly'],
+                            credentials: [
+                                ibmApiKey    : env.IBM_CLOUD_API_KEY,
+                                ibmCosAccess : env.IBM_COS_HMAC_ACCESS_KEY,
+                                ibmCosSecret : env.IBM_COS_HMAC_SECRET_KEY,
+                                awsAccessKey : env.AWS_ACCESS_KEY_ID,
+                                awsSecretKey : env.AWS_SECRET_ACCESS_KEY,
+                            ],
+                        )
+                    }
+
+                    if (validation.skip) {
+                        error("Unsupported RHCS version -- exiting gracefully as NOT_BUILT")
+                    }
+                    if (validation.errors) {
+                        error("Validation failed:\n" + validation.errors.collect { "  - ${it}" }.join("\n"))
+                    }
+
+                    currentBuild.description = formatInteropBuildDescription(
+                        product: 'odf',
+                        envName: env.ENV_NAME,
+                        cephImage: params.CEPH_IMAGE,
+                    )
+                }
+            }
+        }
+
+        stage("Clone ceph-interop") {
+            steps {
+                dir("ceph-interop") {
+                    git(
+                        url: params.CEPH_INTEROP_REPO,
+                        branch: params.CEPH_INTEROP_BRANCH.trim(),
+                        credentialsId: "gh-ceph-qe-sa-pat"
+                    )
+                }
+            }
+        }
+
+        stage("Setup Environment") {
+            steps {
+                dir("ceph-interop") {
+                    sh """
+                        python3.12 -m venv ${VENV_DIR}
+                        ${VENV_DIR}/bin/pip3.12 install --upgrade pip "setuptools<71" wheel
+                        ${VENV_DIR}/bin/pip3.12 install --no-build-isolation -e .
+                    """
+                }
+            }
+        }
+
+        stage("Ceph image metadata") {
+            steps {
+                script {
+                    def img = params.CEPH_IMAGE?.trim()
+                    if (!img) { return }
+                    withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                        fetchCephImageMetadata(image: img, pullSecretFile: env.PULL_SECRET_FILE)
+                    }
+                    currentBuild.description = formatInteropBuildDescription(
+                        product: 'odf',
+                        envName: env.ENV_NAME,
+                        cephImage: params.CEPH_IMAGE,
+                    )
+                }
+            }
+        }
+
+        stage("Prepare Credentials") {
+            steps {
+                dir("ceph-interop") {
+                    script {
+                        sh 'mkdir -p configs'
+                        def secretPath = "configs/pull-secret.json"
+                        withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                            sh "cp \"\${PULL_SECRET_FILE}\" ${secretPath} && chmod 600 ${secretPath}"
+                        }
+                        writeYaml(file: 'configs/credentials.yaml', data: [
+                            aws: [access_key_id: env.AWS_ACCESS_KEY_ID, secret_access_key: env.AWS_SECRET_ACCESS_KEY],
+                            pull_secret_path: "${env.WORKSPACE}/ceph-interop/${secretPath}",
+                            accounts: [ibm_qe: [ibmcloud: [
+                                api_key: env.IBM_CLOUD_API_KEY,
+                                cos_hmac_access_key_id: env.IBM_COS_HMAC_ACCESS_KEY,
+                                cos_hmac_secret_access_key: env.IBM_COS_HMAC_SECRET_KEY,
+                            ]]],
+                        ], overwrite: true)
+                    }
+                }
+            }
+        }
+
+        stage("Update Config") {
+            steps {
+                dir("ceph-interop") {
+                    updateCephInteropConfig(
+                        product: 'odf',
+                        envName: env.ENV_NAME,
+                        params: params,
+                        contextFile: 'ocp-ibm-vpc-odf-chaos.yaml',
+                        deviceSetCount: 1,
+                        replica: 3,
+                    )
+                }
+            }
+        }
+
+        stage("Deploy OCP + ODF") {
+            steps {
+                dir("ceph-interop") {
+                    script {
+                        env.TEARDOWN_REQUIRED = 'true'
+                        def paths = cephInteropPaths(envName: env.ENV_NAME, clusterId: env.CLUSTER_ID)
+                        try {
+                            sh """
+                                ${VENV_DIR}/bin/ceph-interop deploy \
+                                    --context '${env.CONTEXT_PATH}' \
+                                    --env-name '${env.ENV_NAME}' \
+                                    --cluster-id '${env.CLUSTER_ID}' \
+                                    --credentials configs/credentials.yaml \
+                                    --configuration '${env.CONFIGURATION_PATH}'
+                            """
+                            readCephInteropClusterState(envName: env.ENV_NAME, clusterId: env.CLUSTER_ID)
+                            env.DEPLOY_PASSED = 'true'
+                            echo "ODF deploy succeeded: ${env.OCP_CLUSTER_NAME}"
+                        } catch (Exception deployErr) {
+                            def oc = paths.absOcBinary
+                            def ns = "openshift-storage"
+                            echo "DEPLOY FAILED — collecting diagnostics"
+                            sh """
+                                ${oc} get storagecluster ocs-storagecluster -n ${ns} -o yaml 2>&1 || true
+                                ${oc} get csv -n ${ns} 2>&1 || true
+                                ${oc} get pods -n ${ns} -o wide 2>&1 || true
+                                ${oc} get catalogsource -n openshift-marketplace redhat-operators -o yaml 2>&1 || true
+                            """
+                            throw deployErr
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Clone ocs-ci") {
+            steps {
+                dir("ocs-ci") {
+                    git(
+                        url: params.OCS_CI_REPO,
+                        branch: params.OCS_CI_BRANCH?.trim() ?: 'master',
+                        credentialsId: "gh-ceph-qe-sa-pat"
+                    )
+                }
+            }
+        }
+
+        stage("Setup ocs-ci Environment") {
+            steps {
+                dir("ocs-ci") {
+                    sh """
+                        python3.11 -m venv ${OCSCI_VENV_DIR}
+                        ${OCSCI_VENV_DIR}/bin/pip install --upgrade pip setuptools wheel
+                        ${OCSCI_VENV_DIR}/bin/pip install -r requirements.txt
+                    """
+                }
+            }
+        }
+
+        stage("Prepare ocs-ci Config") {
+            steps {
+                dir("ocs-ci") {
+                    script {
+                        env.OCS_CI_VERSION = params.OCS_VERSION?.trim() ?: env.RESOLVED_OCS_VERSION
+                        def paths = cephInteropPaths(envName: env.ENV_NAME, clusterId: env.CLUSTER_ID)
+                        def state = readCephInteropClusterState(
+                            envName: env.ENV_NAME,
+                            clusterId: env.CLUSTER_ID,
+                            required: true,
+                        )
+                        env.OCSCI_CLUSTER_PATH = paths.absOpenshiftDir
+                        env.OCSCI_CLUSTER_NAME = state.cluster_name.toString().trim()
+                        def ibmRegion = params.IBM_REGION?.trim() ?: 'eu-de'
+                        echo "ocs-ci cluster-path: ${env.OCSCI_CLUSTER_PATH}"
+                        echo "ocs-ci cluster-name: ${env.OCSCI_CLUSTER_NAME}"
+                        // Platform (no secrets, no krkn workloads). Shared by every suite
+                        // including NooBaa. Omit AUTH.ibmcloud.api_endpoint — the VPC Gen2
+                        // URL is not a valid ibmcloud login -a target; Krkn builds IBMC_URL
+                        // from region.
+                        writeYaml(file: 'chaos-ibmcloud-platform-config.yaml', data: [
+                            RUN: [
+                                bin_dir: paths.absBinDir,
+                                log_dir: "${env.WORKSPACE}/ocs-ci/ocs-ci-logs-${env.BUILD_NUMBER}",
+                                chrome_binary_path: '/bin/google-chrome-stable',
+                            ],
+                            DEPLOYMENT: [skip_download_client: true],
+                            ENV_DATA: [
+                                skip_ocs_deployment: true,
+                                skip_ocp_deployment: true,
+                                deployment_type: 'upi',
+                                platform: 'ibm_cloud',
+                                region: ibmRegion,
+                            ],
+                            UI_SELENIUM: [
+                                browser_type: "chrome",
+                                chrome_type: "google-chrome",
+                                headless: true,
+                                ignore_ssl: true,
+                            ],
+                        ], overwrite: true)
+                        // VDBENCH / bgops sizing for ~200Gi usable. Applied to every suite
+                        // except NooBaa (applyRuntimeOverride: false) so MCG_WORKLOAD stays.
+                        // Keep snapshot/clone lifecycle (lighter than aggressive_*);
+                        // space them with operation_interval 120. Small VDBENCH PVCs
+                        // keep each clone/restore ~10Gi on ~200Gi usable.
+                        writeYaml(file: 'chaos-vdbench-runtime-config.yaml', data: [
+                            ENV_DATA: [krkn_config: [
+                                workloads: ['VDBENCH'],
+                                run_workload: true,
+                                enable_verification: true,
+                                vdbench_config: [
+                                    num_rbd_pvcs: 2,
+                                    num_cephfs_pvcs: 2,
+                                    pvc_size: 10,
+                                    threads: 8,
+                                    elapsed: 300,
+                                    workload_loop: 5,
+                                    max_workload_restarts: 5,
+                                    max_verification_threads: 4,
+                                    block: [size: '5g'],
+                                ],
+                                background_cluster_operations: [
+                                    enabled: true,
+                                    operation_interval: 120,
+                                    max_concurrent_operations: 2,
+                                    enabled_operations: [
+                                        'snapshot_lifecycle',
+                                        'clone_lifecycle',
+                                        'node_taint_churn',
+                                        'osd_operations',
+                                        'mds_failover',
+                                        'rgw_restart',
+                                        'reclaim_space',
+                                    ],
+                                ],
+                            ]],
+                        ], overwrite: true)
+                        // Secrets only — never archive this file.
+                        writeYaml(file: 'auth-ibmcloud.yaml', data: [
+                            AUTH: [ibmcloud: [
+                                api_key: env.IBM_CLOUD_API_KEY,
+                                account_id: env.IBM_CLOUD_ACCOUNT_ID,
+                            ]],
+                        ], overwrite: true)
+                        sh 'chmod 600 auth-ibmcloud.yaml'
+                        withCredentials([file(credentialsId: 'ocs-pull-secret', variable: 'PULL_SECRET_FILE')]) {
+                            sh 'mkdir -p data && cp "${PULL_SECRET_FILE}" data/pull-secret && chmod 600 data/pull-secret'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Chaos - Container") {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    dir("ocs-ci") {
+                        script {
+                            runOdfChaosSuite(
+                                suiteId: 'container',
+                                chaosConf: 'conf/ocsci/krkn_chaos_config.yaml',
+                                testPaths: ['tests/cross_functional/krkn_chaos/test_krkn_container_chaos.py'],
+                                applyRuntimeOverride: true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Moderate suites enabled after container sample (build #4) passed.
+        // Hog (includes MAXIMUM CPU/RAM) and Random (needs podman/docker + krknctl)
+        // stay off until a dedicated follow-up.
+        stage("Chaos - Application Outage") {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    dir("ocs-ci") {
+                        script {
+                            runOdfChaosSuite(
+                                suiteId: 'app-outage',
+                                chaosConf: 'conf/ocsci/krkn_chaos_config.yaml',
+                                testPaths: ['tests/cross_functional/krkn_chaos/test_krkn_application_outage_scenarios.py'],
+                                applyRuntimeOverride: true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Chaos - Network") {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    dir("ocs-ci") {
+                        script {
+                            runOdfChaosSuite(
+                                suiteId: 'network',
+                                chaosConf: 'conf/ocsci/krkn_chaos_config.yaml',
+                                testPaths: ['tests/cross_functional/krkn_chaos/test_krkn_network_chaos_scenarios.py'],
+                                applyRuntimeOverride: true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Chaos - Node") {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    dir("ocs-ci") {
+                        script {
+                            runOdfChaosSuite(
+                                suiteId: 'node',
+                                chaosConf: 'conf/ocsci/krkn_chaos_config.yaml',
+                                testPaths: ['tests/cross_functional/krkn_chaos/test_krkn_node_scenarios.py'],
+                                applyRuntimeOverride: true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Chaos - NooBaa") {
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    dir("ocs-ci") {
+                        script {
+                            runOdfChaosSuite(
+                                suiteId: 'noobaa',
+                                chaosConf: 'conf/ocsci/krkn_noobaa_chaos_config.yaml',
+                                testPaths: [
+                                    'tests/cross_functional/krkn_chaos/test_krkn_noobaa_chaos.py',
+                                    'tests/cross_functional/krkn_chaos/test_krkn_noobaa_container_chaos.py',
+                                    'tests/cross_functional/krkn_chaos/test_krkn_noobaa_node_disruption.py',
+                                ],
+                                applyRuntimeOverride: false,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // stage("Chaos - Hog") { ... MAXIMUM stress; enable later }
+        // stage("Chaos - Random") { ... needs podman/docker + krknctl; enable later }
+
+    }
+
+    post {
+        always {
+            script {
+                if (env.PIPELINE_SKIP == 'true') {
+                    currentBuild.result = 'NOT_BUILT'
+                    return
+                }
+                runOdfChaosPostActions(
+                    product: 'odf',
+                    cosPrefix: 'odf-chaos',
+                    suites: [
+                        [id: 'container',  label: 'Container',            passedEnv: 'CHAOS_CONTAINER_PASSED'],
+                        [id: 'app-outage', label: 'Application Outage',   passedEnv: 'CHAOS_APP_OUTAGE_PASSED'],
+                        [id: 'network',    label: 'Network',              passedEnv: 'CHAOS_NETWORK_PASSED'],
+                        [id: 'node',       label: 'Node',                 passedEnv: 'CHAOS_NODE_PASSED'],
+                        [id: 'noobaa',     label: 'NooBaa',               passedEnv: 'CHAOS_NOOBAA_PASSED'],
+                        // [id: 'hog',        label: 'Hog',                  passedEnv: 'CHAOS_HOG_PASSED'],
+                        // [id: 'random',     label: 'Random',               passedEnv: 'CHAOS_RANDOM_PASSED'],
+                    ],
+                )
+            }
+        }
+    }
+}
+
+// Empty OCS_CI_TESTS keeps BASIC + STRENGTH (drops random pod-kill high).
+// ALL clears the filter. A caller -k replaces it.
+def chaosPytestExtra() {
+    def userExtra = params.OCS_CI_TESTS?.trim() ?: ''
+    if (userExtra.equalsIgnoreCase('ALL')) {
+        return ''
+    }
+    if (userExtra.contains('-k')) {
+        return userExtra
+    }
+    def filter = "-k 'not high-12pods'"
+    return userExtra ? "${filter} ${userExtra}" : filter
+}
+
+def runOdfChaosSuite(Map cfg) {
+    def suiteId = cfg.suiteId
+    def logDir = "ocs-ci-logs-${env.BUILD_NUMBER}"
+    // Order: suite base → platform → VDBENCH override (optional) → AUTH (later wins).
+    def confArgs = [
+        "--ocsci-conf ${cfg.chaosConf}",
+        '--ocsci-conf chaos-ibmcloud-platform-config.yaml',
+    ]
+    if (cfg.applyRuntimeOverride) {
+        confArgs << '--ocsci-conf chaos-vdbench-runtime-config.yaml'
+    }
+    confArgs << '--ocsci-conf auth-ibmcloud.yaml'
+    def extra = chaosPytestExtra()
+    def tests = cfg.testPaths.collect { "'${it}'" }.join(' ')
+    sh "mkdir -p ${logDir}"
+    // Mark failed first so a hard sh abort still records the suite as executed.
+    setChaosSuiteFlag(suiteId, 'false')
+    sh """
+        PYTHONUNBUFFERED=1 ${env.OCSCI_VENV_DIR}/bin/run-ci \
+            --cluster-path '${env.OCSCI_CLUSTER_PATH}' \
+            --cluster-name '${env.OCSCI_CLUSTER_NAME}' \
+            ${extra} \
+            ${confArgs.join(' ')} \
+            --ocs-version '${env.OCS_CI_VERSION}' \
+            --skip-download-client \
+            --log-level DEBUG --collect-logs \
+            -vvv \
+            --html=${logDir}/chaos-${suiteId}-report.html --self-contained-html \
+            --junit-xml=${logDir}/chaos-${suiteId}-junit-results.xml \
+            -W ignore::pytest.PytestUnknownMarkWarning \
+            --rootdir '${env.WORKSPACE}/ocs-ci' \
+            --confcutdir '${env.WORKSPACE}/ocs-ci' \
+            ${tests}
+    """
+    setChaosSuiteFlag(suiteId, 'true')
+}
+
+def setChaosSuiteFlag(String suiteId, String value) {
+    switch (suiteId) {
+        case 'container':
+            env.CHAOS_CONTAINER_PASSED = value
+            break
+        case 'app-outage':
+            env.CHAOS_APP_OUTAGE_PASSED = value
+            break
+        case 'network':
+            env.CHAOS_NETWORK_PASSED = value
+            break
+        case 'hog':
+            env.CHAOS_HOG_PASSED = value
+            break
+        case 'node':
+            env.CHAOS_NODE_PASSED = value
+            break
+        case 'noobaa':
+            env.CHAOS_NOOBAA_PASSED = value
+            break
+        case 'random':
+            env.CHAOS_RANDOM_PASSED = value
+            break
+        default:
+            echo "Unknown chaos suite id: ${suiteId}"
+    }
+}
