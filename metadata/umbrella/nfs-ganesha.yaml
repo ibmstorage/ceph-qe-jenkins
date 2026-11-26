@@ -37,51 +37,55 @@ regression:
     - name: "NFS Ganesha Enhanced Prometheus Metrics tests"
       suite: suites/umbrella/nfs/tier2-nfs-prometheus-metrics-new.yaml
       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "NFS Ganesha Authentication Tests"
+      suite: suites/umbrella/nfs/tier0-nfs-ganesha-authentication.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+    - name: "NFS Ganesha 10.0 Features suite"
+      suite: suites/umbrella/nfs/nfs-10_0_features_suite.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
 
-# Copy into ibmstorage/ceph-qe-jenkins (tentacle NFS Ganesha 9.2 job matrix).
-# Regression block unchanged; append the last suite under upgrade:suites.
-# Requires cephci PR #6168 merged (or branch feat/umbrella-cephfs-nfs-9x-upgrade-suites).
+upgrade:
+  metadata:
+    cloud:
+      - ibmc
+      - aws
+  suites:
+    - name: "TEST Ceph NFS Ganesha Upgrade from 9.0 to 10.0 Latest"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-90-to-10x.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-10
+      vm-size:
+        ibmc: cx2-4x8
+    - name: "TEST Ceph NFS Ganesha Upgrade from 9.1 to 10.0 Latest"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-91-to-10x.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-10
+      vm-size:
+        ibmc: cx2-4x8
+    - name: "TEST Ceph NFS Ganesha Upgrade from 9.2 to 10.0 Latest"
+      suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-92-to-10x.yaml
+      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+      platform:
+        - rhel-10
+      vm-size:
+        ibmc: cx2-4x8
 
-# Commented out for now, as the upgrade tests need to be updated for the 10.0 release.
-# upgrade:
-#   metadata:
-#     cloud:
-#       - ibmc
-#       - aws
-#   suites:
-#     - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 9.0 Latest"
-#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-7-1x-to-9x-latest.yaml
-#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
-#       platform:
-#         - rhel-9
-#       vm-size:
-#         ibmc: cx2-4x8
-#     - name: "TEST Ceph NFS Ganesha Upgrade from 8.0 to 9.0 Latest"
-#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-8x-to-9x-latest.yaml
-#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
-#       platform:
-#         - rhel-9
-#       vm-size:
-#         ibmc: cx2-4x8
-#     - name: "TEST Ceph NFS Ganesha Upgrade from 7.1x to 8.1x to 9.0 Latest"
-#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-7-1x-to-8.1x-to-9x-latest.yaml
-#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
-#       platform:
-#         - rhel-9
-#       vm-size:
-#         ibmc: cx2-4x8
-#     - name: "TEST Ceph NFS Ganesha Upgrade from 9.0x to 9.x Latest"
-#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-9x-to-9x-latest.yaml
-#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
-#       platform:
-#         - rhel-9
-#       vm-size:
-#         ibmc: cx2-4x8
-#     - name: "TEST Ceph NFS Ganesha Upgrade from 9.1x to 9.x Latest"
-#       suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-9-1-to-9x-latest.yaml
-#       global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
-#       platform:
-#         - rhel-9
-#       vm-size:
-#         ibmc: cx2-4x8
-
+# Commented out until the 10.0 manifest ships a rhel-9 repo (8.1 is rhel-9 only,
+# 10.0 is rhel-10 only, so these paths currently have no runnable platform).
+# Uncomment once 10.0 rhel-9 repos are available.
+#    - name: "TEST Ceph NFS Ganesha Upgrade from 8.1 to 10.0 Latest"
+#      suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-81-to-10x.yaml
+#      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#      platform:
+#        - rhel-9
+#      vm-size:
+#        ibmc: cx2-4x8
+#    - name: "TEST Ceph NFS Ganesha Upgrade from 8.1 to 9.1 to 10.0 Latest"
+#      suite: suites/umbrella/nfs/tier1-nfs-ganesha-upgrade-81-to-91-to-10x.yaml
+#      global-conf: conf/umbrella/nfs/1admin-7node-3client.yaml
+#      platform:
+#        - rhel-9
+#      vm-size:
+#        ibmc: cx2-4x8
