@@ -83,6 +83,31 @@ regression:
     - name: "Test DMFG Tier-4 Service Operations"
       suite: suites/umbrella/cephadm/tier4-service-operations.yaml
       global-conf: conf/umbrella/cephadm/1admin-4node-1client-cluster.yaml
+    # ~50 OSD hosts (52 VMs). The 151-host run is agent_scale, not this job.
+    - name: "Test DMFG Tier-3 Cephadm Agent Scale Regression"
+      suite: suites/umbrella/cephadm/tier3-cephadm-agent-scale-regression.yaml
+      global-conf: conf/umbrella/cephadm/1admin-51node-1client-agent-scale-ibmc.yaml
+      cloud:
+        - ibmc
+      platform:
+        - rhel-9
+        - rhel-10
+
+# Own pipeline (umbrella-dmfg-agent-scale-ci). 151 cluster hosts + 1 client.
+# Kept off regression and extended_regression, which start every suite in parallel.
+agent_scale:
+  metadata:
+    cloud:
+      - ibmc
+  suites:
+    - name: "Test DMFG Tier-3 Cephadm Agent Scale Regression 151 Hosts"
+      suite: suites/umbrella/cephadm/tier3-cephadm-agent-scale-regression-151.yaml
+      global-conf: conf/umbrella/cephadm/1admin-151node-1client-agent-scale-ibmc.yaml
+      cloud:
+        - ibmc
+      platform:
+        - rhel-9
+        - rhel-10
 
 extended_regression:
   metadata:

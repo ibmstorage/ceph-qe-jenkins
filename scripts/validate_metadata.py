@@ -32,6 +32,7 @@ VALID_JOB_KEYS = {
     "extended_regression",
     "extended_regression_1",
     "extended_regression_2",
+    "agent_scale",
     "upgrade",
     "sanity-upgrade",
     "released",

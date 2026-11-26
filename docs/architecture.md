@@ -102,6 +102,7 @@ These pipelines provision cloud VMs, execute test suites from the CephCI framewo
 | Rook Defaults | `tentacle-rook-defaults-ci` | Tentacle cephci suites with `--custom-config apply-odf-defaults=true` (metadata: `metadata/tentacle/rook.yaml`) |
 | Regression | `*-regression-ci` | Full regression per Feature Group (FG) |
 | Extended Regression | `*-extended-regression-ci` | Deeper coverage for specific FGs |
+| Agent Scale | `umbrella-dmfg-agent-scale-ci` | Umbrella 10.0 cephadm agent scale only (151 hosts). The ~50-host suite stays on DMFG regression |
 | Upgrade | `*-upgrade-ci` | Validates upgrade paths between Ceph versions |
 | Sanity Upgrade | `*-sanity-upgrade-ci` | Sanity check of upgrade paths |
 | Released | `*-released-ci` | Tests against a released (GA) build |
