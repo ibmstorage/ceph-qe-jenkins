@@ -74,31 +74,27 @@ regression:
           ibmc: cx2-8x16
         build:
           - ibm
-      # Commented out for now, as the namespace masking tests need to be updated for the 10.0 release.
-      # - name: "Test suite to scale to 1GW with 32 subsystems and 16k namespace masking"
-      #   suite: suites/umbrella/nvmeof/tier-2_nvmeof_16K_namespace_masking_in_a_single_GW_group.yaml
-      #   global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
-      #   vm-size:
-      #     ibmc: cx2-8x16
-      #   build:
-      #     - ibm
-      #   version: [9.1, 9.2]
-      # - name: "Test suite for 9.1 Features"
-      #   suite: suites/umbrella/nvmeof/tier-2_nvmeof_9-1_feature.yaml
-      #   global-conf: conf/umbrella/nvmeof/ceph_nvmeof_2GW_1Client.yaml
-      #   vm-size:
-      #     ibmc: cx2-8x16
-      #   build:
-      #     - ibm
-      #   version: [9.1, 9.2]
-      # - name: "Test suite for BYOK namespace Feature"
-      #   suite: suites/umbrella/nvmeof/tier-2_nvmeof_9-2_byok.yaml
-      #   global-conf: conf/umbrella/nvmeof/ceph_nvmeof_2GW_1Client.yaml
-      #   vm-size:
-      #     ibmc: cx2-8x16
-      #   build:
-      #     - ibm
-      #   version: [9.1, 9.2]
+      - name: "Test suite to scale to 1GW with 32 subsystems and 16k namespace masking"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_16K_namespace_masking_in_a_single_GW_group.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_ha_cluster_4nodes.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Test suite for 9.1 Features"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_9-1_feature.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_2GW_1Client.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
+      - name: "Test suite for BYOK namespace Feature"
+        suite: suites/umbrella/nvmeof/tier-2_nvmeof_9-2_byok.yaml
+        global-conf: conf/umbrella/nvmeof/ceph_nvmeof_2GW_1Client.yaml
+        vm-size:
+          ibmc: cx2-8x16
+        build:
+          - ibm
 
 extended_regression:
     metadata:
