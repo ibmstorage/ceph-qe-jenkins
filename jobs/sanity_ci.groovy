@@ -8,7 +8,7 @@ def generate_jobs(data) {
     def buildType = data.buildType ?: ["IBM", "RH"]
     def prefix = data.prefix ?: "sanity"
     def skipBuildCheck = data.skipBuildCheck != null ? data.skipBuildCheck : false
-    def enablePromotion = data.enablePromotion != null ? data.enablePromotion : true
+    def enablePromotion = data.enablePromotion != null ? data.enablePromotion : false
 
     // Set releases for Ceph versions
     def release = data.release ?: ["nightly", "stable"]
@@ -19,6 +19,8 @@ def generate_jobs(data) {
             release += ["rc", "released", "respin", "z0", "z1", "z2", "z3", "z4", "z5"]
         } else if (data.cephVersion.toLowerCase() == "tentacle") {
             release += ["rc", "released", "respin", "z0", "z1", "z2", "z3"]
+        } else if (data.cephVersion.toLowerCase() == "umbrella") {
+            release += [] //Add rc, released, respin, z-streams as it becomes ready for umbrella
         }
     }
 

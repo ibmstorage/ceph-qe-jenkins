@@ -8,9 +8,9 @@ class ManifestUtils implements Serializable {
             return null
         }
         if (section instanceof Map) {
-            def result = new LinkedHashMap()
+            def result = new HashMap()
             section.each { key, value ->
-                result[key.toString()] = deepCopySection(value)
+                result.put(key.toString(), deepCopySection(value))
             }
             return result
         }
@@ -30,17 +30,21 @@ class ManifestUtils implements Serializable {
     @NonCPS
     static def buildPromotionSection(
             nightlySection,
-            Map overrides = [:]
+            Map overrides = null
     ) {
         def section = deepCopySection(nightlySection)
         if (!section) {
             return null
         }
 
+        if (overrides == null) {
+            overrides = new HashMap()
+        }
+
         def containerImage = overrides.containerImage?.toString()
         if (containerImage) {
             if (!section.images) {
-                section.images = [:]
+                section.images = new HashMap()
             }
             section.images["ceph-base"] = containerImage
         }
@@ -50,10 +54,10 @@ class ManifestUtils implements Serializable {
         def repoDC = overrides.repoDC?.toString()
         if (rhsCephRepo && platform && repoDC) {
             if (!section.repositories) {
-                section.repositories = [:]
+                section.repositories =  new HashMap()
             }
             if (!section.repositories[repoDC]) {
-                section.repositories[repoDC] = [:]
+                section.repositories[repoDC] =  new HashMap()
             }
             section.repositories[repoDC][platform] = rhsCephRepo
         }
