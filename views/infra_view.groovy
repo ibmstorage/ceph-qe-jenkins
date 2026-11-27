@@ -8,6 +8,7 @@ def view_list = [
   ["name": "Umbrella", "description": "Ceph Umbrella Jobs", "job_regex": ".*umbrella.*"],
   ["name": "Executor", "description": "Test executor jobs", "job_regex": ".*executor.*"],
   ["name": "Infrastructure", "description": "Infrastructure and Maintenance Jobs", "job_regex": ".*(sync|dns-cleanup|cleanup_vms).*"],
+  ["name": "Scale", "description": "IBM Storage Scale jobs", "job_regex": "scale-.*"],
   ["name": "Reports", "description": "Reporter Jobs", "job_regex": "jira-reporter-.*"]
 ]
 

@@ -1,0 +1,308 @@
+// Storage Scale + CES: deploy, pytest suite, teardown (ceph-qe-zypper).
+// Shared by scale-ces (sanity / nfs+smb) and scale-ces-s3 (tests/s3 / S3-only CES).
+
+@Library("ceph-qe-libs@main") _
+
+pipeline {
+    agent { label "agents-interop" }
+
+    options {
+        timeout(time: 24, unit: 'HOURS')
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: "20", daysToKeepStr: "45"))
+    }
+
+    environment {
+        // zypper credentials.yaml accounts.ibm_qe.ibmcloud (+ optional COS HMAC)
+        IBM_CLOUD_API_KEY       = credentials('ibmc-api-key')
+        IBM_COS_HMAC_ACCESS_KEY = credentials('ibm-cos-acces-key')
+        IBM_COS_HMAC_SECRET_KEY = credentials('ibm-cos-secret-key')
+
+        VENV_DIR = "${WORKSPACE}/ceph-qe-zypper/.venv"
+    }
+
+    stages {
+
+        stage("Initialize Environment") {
+            steps {
+                script {
+                    def envName = params.ENV_NAME?.trim()
+                    if (!envName) {
+                        // Job name prefix: scale-ces-42 / scale-ces-s3-42
+                        envName = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
+                    }
+                    env.ENV_NAME = envName
+                    // Match live CLI for scale-ces-s3:
+                    //   run-tests --context …/scale-ibm-vpc-ces-s3.yaml --suite tests/s3 -m s3
+                    def jobName = (env.JOB_NAME ?: '').toString()
+                    def isS3Job = jobName.contains('ces-s3') || jobName.endsWith('-s3')
+                    def defaultContext = isS3Job \
+                        ? 'deployments/infra/scale/scale-ibm-vpc-ces-s3.yaml' \
+                        : 'deployments/infra/scale/scale-ibm-vpc-ces.yaml'
+                    def defaultSuite = isS3Job ? 'tests/s3' : 'tests/sanity'
+                    def defaultMarker = isS3Job ? 's3' : 'sanity'
+                    env.CONTEXT_PATH = params.CONTEXT?.trim() ?: defaultContext
+                    env.PYTEST_SUITE = params.PYTEST_SUITE?.trim() ?: defaultSuite
+                    env.PYTEST_MARKER = params.PYTEST_MARKER?.trim() ?: defaultMarker
+                    env.PROTOCOLS_LABEL = params.PROTOCOLS_LABEL?.trim() ?: (isS3Job ? 's3' : 'nfs, smb')
+                    env.TEST_STAGE_LABEL = params.TEST_STAGE_LABEL?.trim() ?: (isS3Job ? 'S3 (pytest)' : 'Sanity (pytest)')
+                    env.NODES_LABEL = params.NODES_LABEL?.trim() ?: (
+                        isS3Job
+                            ? '3 NSD + 1 admin + 2 protocol + 1 S3 client + 1 gpfs client'
+                            : '3 Scale + protocol/gpfs clients (context default)'
+                    )
+                    env.DEPLOY_PASSED = ''
+                    env.TESTS_PASSED = ''
+                    env.TEARDOWN_REQUIRED = 'false'
+                    echo "Environment name: ${env.ENV_NAME}"
+                    echo "Context: ${env.CONTEXT_PATH} | suite: ${env.PYTEST_SUITE} -m ${env.PYTEST_MARKER}"
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} - ${env.ENV_NAME}"
+                    currentBuild.description = "Scale CES | ${env.ENV_NAME} | ${env.PYTEST_SUITE} | ${params.INSTALLER_FILENAME ?: params.INSTALLER_EXPORT}"
+                }
+            }
+        }
+
+        stage("Validate Parameters") {
+            steps {
+                script {
+                    def errors = []
+                    def exportPath = params.INSTALLER_EXPORT?.trim()
+                    def filename = params.INSTALLER_FILENAME?.trim()
+                    def source = params.INSTALLER_SOURCE?.trim() ?: 'local'
+
+                    if (!exportPath) {
+                        errors << 'INSTALLER_EXPORT is required'
+                    }
+                    if (source == 'local' && exportPath) {
+                        if (!fileExists(exportPath)) {
+                            errors << "INSTALLER_EXPORT path not found on agent: ${exportPath}"
+                        } else {
+                            def isDir = sh(script: "test -d '${exportPath}'", returnStatus: true) == 0
+                            if (isDir && !filename) {
+                                errors << 'INSTALLER_FILENAME is required when INSTALLER_EXPORT is a directory'
+                            }
+                            if (isDir && filename) {
+                                def installerFile = "${exportPath}/${filename}"
+                                if (!fileExists(installerFile)) {
+                                    errors << "Installer file not found: ${installerFile}"
+                                }
+                            }
+                        }
+                    }
+                    if (!params.EMAIL_ADDRESS?.trim()) {
+                        echo 'WARNING: EMAIL_ADDRESS is empty — no notification will be sent'
+                    }
+                    if (errors) {
+                        error("Validation failed:\n" + errors.collect { "  - ${it}" }.join("\n"))
+                    }
+                }
+            }
+        }
+
+        stage("Clone ceph-qe-zypper") {
+            steps {
+                dir("ceph-qe-zypper") {
+                    // Private fork: use git@ SSH. Agent ~/.ssh/id_ed25519 already
+                    // clones this host (HTTPS anonymous fails; ceph-qe-sa-pat has no access).
+                    git(
+                        url: params.ZYPPER_REPO,
+                        branch: params.ZYPPER_BRANCH.trim(),
+                    )
+                }
+            }
+        }
+
+        stage("Validate Context") {
+            steps {
+                script {
+                    def ctx = "ceph-qe-zypper/${env.CONTEXT_PATH}"
+                    if (!fileExists(ctx)) {
+                        error("Context file not found in checkout: ${env.CONTEXT_PATH}")
+                    }
+                }
+            }
+        }
+
+        stage("Setup Environment") {
+            steps {
+                dir("ceph-qe-zypper") {
+                    // Operator path: docs/getting-started.md
+                    // pytest-html is Jenkins-only for --html reports.
+                    sh """
+                        python3.12 -m venv .venv
+                        make install
+                        .venv/bin/pip install pytest-html
+                    """
+                }
+            }
+        }
+
+        stage("Prepare Credentials") {
+            steps {
+                script {
+                    prepareScaleCredentials()
+                }
+            }
+        }
+
+        stage("Deploy Scale and CES") {
+            steps {
+                dir("ceph-qe-zypper") {
+                    script {
+                        env.TEARDOWN_REQUIRED = 'true'
+                        def paths = scaleZypperPaths(envName: env.ENV_NAME)
+                        def verboseFlag = boolParamTrue(params.VERBOSE, false) ? '-v' : ''
+                        def sshLog = (params.SSH_LOG?.trim() in ['full', 'summary']) \
+                            ? params.SSH_LOG.trim() : 'full'
+                        def freshFlag = boolParamTrue(params.FRESH, false) ? '--fresh' : ''
+                        def pubKeyFlag = ''
+                        def pubKey = params.SSH_PUBLIC_KEY?.trim()
+                        if (pubKey) {
+                            pubKeyFlag = "--ssh-public-key '${pubKey}'"
+                        }
+
+                        def source = params.INSTALLER_SOURCE?.trim() ?: 'local'
+                        def exportPath = params.INSTALLER_EXPORT?.trim()
+                        def filename = params.INSTALLER_FILENAME?.trim()
+                        // zypper: --installer-filename only when export is a folder
+                        def filenameFlag = ''
+                        if (source == 'local' && exportPath) {
+                            def isDir = sh(script: "test -d '${exportPath}'", returnStatus: true) == 0
+                            if (isDir && filename) {
+                                filenameFlag = "--installer-filename '${filename}'"
+                            }
+                        } else if (filename) {
+                            filenameFlag = "--installer-filename '${filename}'"
+                        }
+
+                        sh "mkdir -p '${paths.logsDir}' '${paths.reportsDir}'"
+                        try {
+                            // Align with README live deploy: context, env-name, installer, log-file
+                            sh """
+                                ${VENV_DIR}/bin/ceph-zypper deploy \\
+                                    --context '${env.CONTEXT_PATH}' \\
+                                    --env-name '${env.ENV_NAME}' \\
+                                    --credentials configs/credentials.yaml \\
+                                    --installer-source '${source}' \\
+                                    --installer-export '${exportPath}' \\
+                                    ${filenameFlag} \\
+                                    ${freshFlag} \\
+                                    ${pubKeyFlag} \\
+                                    ${verboseFlag} \\
+                                    --ssh-log '${sshLog}' \\
+                                    --log-file '${paths.deployLog}'
+                            """
+                            // fileExists() under dir() can false-negative; use absolute path.
+                            def absRunYaml = "${env.WORKSPACE}/ceph-qe-zypper/${paths.runYaml}"
+                            if (sh(script: "test -f '${absRunYaml}'", returnStatus: true) != 0) {
+                                error("Deploy exited 0 but run.yaml missing at ${absRunYaml}")
+                            }
+                            env.DEPLOY_PASSED = 'true'
+                            echo "Deploy succeeded for ${env.ENV_NAME}; manifest ${absRunYaml}"
+                        } catch (Exception deployErr) {
+                            env.DEPLOY_PASSED = 'false'
+                            archiveIfExists("ceph-qe-zypper/${paths.deployLog}")
+                            throw deployErr
+                        }
+                        archiveIfExists("ceph-qe-zypper/${paths.deployLog}")
+                        archiveIfExists("ceph-qe-zypper/${paths.runYaml}")
+                    }
+                }
+            }
+        }
+
+        stage("Run Tests") {
+            steps {
+                dir("ceph-qe-zypper") {
+                    script {
+                        def paths = scaleZypperPaths(envName: env.ENV_NAME)
+                        // Do not use fileExists() here — it returned false for an on-disk
+                        // work/context/.../run.yaml under dir("ceph-qe-zypper").
+                        def absRunYaml = "${env.WORKSPACE}/ceph-qe-zypper/${paths.runYaml}"
+                        if (sh(script: "test -f '${absRunYaml}'", returnStatus: true) != 0) {
+                            error("run.yaml missing after deploy: ${absRunYaml}")
+                        }
+                        def verboseFlag = boolParamTrue(params.VERBOSE, false) ? '-v' : ''
+                        def sshLog = (params.SSH_LOG?.trim() in ['full', 'summary']) \
+                            ? params.SSH_LOG.trim() : 'full'
+                        // pytest capture hides INFO without -s; needed for live SSH / TEST START.
+                        def captureFlag = (sshLog == 'full') ? '-s' : ''
+                        def suite = env.PYTEST_SUITE ?: 'tests/s3'
+                        def marker = env.PYTEST_MARKER ?: 's3'
+                        def stageLabel = env.TEST_STAGE_LABEL ?: 'Tests'
+                        // Align with local CLI log name for S3; sanity keeps run-tests.log
+                        def testsLog = suite.startsWith('tests/s3') \
+                            ? paths.s3TestsLog \
+                            : paths.runTestsLog
+                        echo "Running ${stageLabel}: suite=${suite} -m ${marker} --ssh-log ${sshLog}"
+                        sh "mkdir -p '${paths.reportsDir}' '${paths.logsDir}'"
+                        try {
+                            // Same shape as local:
+                            //   ceph-zypper run-tests --context …ces-s3.yaml --suite tests/s3 -m s3
+                            //   --log-file work/context/{env}/logs/s3-tests.log
+                            // Jenkins also adds credentials + junit/html for CI.
+                            sh """
+                                ${VENV_DIR}/bin/ceph-zypper run-tests \\
+                                    --context '${env.CONTEXT_PATH}' \\
+                                    --env-name '${env.ENV_NAME}' \\
+                                    --credentials configs/credentials.yaml \\
+                                    --suite '${suite}' \\
+                                    --log-file '${testsLog}' \\
+                                    --ssh-log '${sshLog}' \\
+                                    -m '${marker}' \\
+                                    --junitxml='${paths.junitXml}' \\
+                                    --html='${paths.reportHtml}' --self-contained-html \\
+                                    ${verboseFlag} \\
+                                    ${captureFlag}
+                            """
+                            env.TESTS_PASSED = 'true'
+                        } catch (Exception testErr) {
+                            env.TESTS_PASSED = 'false'
+                            throw testErr
+                        } finally {
+                            [
+                                testsLog,
+                                paths.runTestsLog,
+                                paths.junitXml,
+                                paths.reportHtml,
+                            ].each { rel ->
+                                archiveIfExists("ceph-qe-zypper/${rel}")
+                            }
+                            if (fileExists("ceph-qe-zypper/${paths.junitXml}")) {
+                                junit testResults: "ceph-qe-zypper/${paths.junitXml}", allowEmptyResults: true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                runScalePostActions(
+                    envName: env.ENV_NAME,
+                    skipTeardown: boolParamTrue(params.SKIP_TEARDOWN, false),
+                )
+            }
+        }
+    }
+}
+
+/** Jenkins booleanParam can arrive as Boolean or String. */
+boolean boolParamTrue(Object value, boolean defaultValue) {
+    if (value == null) {
+        return defaultValue
+    }
+    if (value instanceof Boolean) {
+        return value
+    }
+    return value.toString().trim().equalsIgnoreCase('true')
+}
+
+void archiveIfExists(String workspaceRelPath) {
+    if (fileExists(workspaceRelPath)) {
+        archiveArtifacts artifacts: workspaceRelPath, allowEmptyArchive: true
+    }
+}
