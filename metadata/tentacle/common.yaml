@@ -103,7 +103,7 @@ sanity:
       suite: suites/tentacle/cephadm/tier2-cephadm-agent.yaml
       global-conf: conf/tentacle/cephadm/1admin-4node-1client-cluster.yaml
 
-# RC respin gate (tentacle): BVT + sanity subset only.
+# RC respin gate (tentacle): BVT + sanity subset + RGW released-to-latest upgrades
 # Squid z-stream / monitoring-stack upgrades: metadata/squid/common.yaml respin
 respin:
   metadata:
@@ -154,6 +154,22 @@ respin:
     - name: "Tier-1 DMFG Service Apply Spec"
       suite: suites/tentacle/cephadm/tier1-service-apply-spec.yaml
       global-conf: conf/tentacle/cephadm/2admin-3node-1rgw-1client-sanity.yaml
+
+    # --- Upgrades (RGW 9x released → 9x latest; requires cephci PR #6367) ---
+    - name: "tier-2 rgw upgrade 9xreleased to 9xlatest"
+      suite: suites/tentacle/rgw/tier-2_rgw_upgrade_9xreleased_to_9xlatest.yaml
+      global-conf: conf/tentacle/rgw/tier-0_rgw.yaml
+      exclude_cloud:
+        - aws
+      tags:
+        - upgrade
+    - name: "tier-2 rgw ms upgrade 9xreleased to 9xlatest"
+      suite: suites/tentacle/rgw/tier-2_rgw_ms_upgrade_9xreleased_to_9xlatest.yaml
+      global-conf: conf/tentacle/rgw/rgw_multisite_ec2+2.yaml
+      exclude_cloud:
+        - aws
+      tags:
+        - upgrade
 
 released:
   metadata:

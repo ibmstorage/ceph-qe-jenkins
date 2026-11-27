@@ -188,6 +188,16 @@ respin:
         - ibm
       tags:
         - upgrade
+    - name: "Tier-2 RGW Upgrade 8x released to 8x latest"
+      suite: suites/squid/rgw/tier-2_rgw_upgrade_8xreleased_to_8xlatest.yaml
+      global-conf: conf/squid/rgw/tier-0_rgw.yaml
+      tags:
+        - upgrade
+    - name: "Tier-2 RGW MS Upgrade 8x released to 8x latest"
+      suite: suites/squid/rgw/tier-2_rgw_ms_upgrade_8xreleased_to_8xlatest.yaml
+      global-conf: conf/squid/rgw/rgw_multisite.yaml
+      tags:
+        - upgrade
 
 released:
   metadata:
